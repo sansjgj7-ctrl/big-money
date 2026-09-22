@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Big Money</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07110d;color:#f4fff9;font-family:Arial,sans-serif}
+.app{max-width:480px;margin:auto;min-height:100vh;padding:18px 16px 90px;background:linear-gradient(180deg,#081710,#06100c)}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-size:25px;font-weight:800}.brand span{color:#39e58c}
+.card{background:#10231a;border:1px solid #1d4633;border-radius:20px;padding:20px;margin-bottom:14px;box-shadow:0 10px 30px #0005}
+.balance-label{color:#91aa9d;font-size:13px}.balance{font-size:38px;font-weight:800;margin:8px 0}.balance small{font-size:17px;color:#55e89b}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{border:0;border-radius:14px;padding:14px;font-weight:700;font-size:15px;background:#25d97c;color:#03150c}.btn.alt{background:#163328;color:#bfffdc;border:1px solid #24563e}
+.section-title{font-size:18px;font-weight:800;margin:20px 2px 10px}.row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #1a362a}.row:last-child{border:0}.muted{color:#8fa89c;font-size:13px}.pill{padding:7px 10px;border-radius:10px;background:#173b2a;color:#62efa1;font-size:12px}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);display:grid;grid-template-columns:repeat(4,1fr);background:#091710ee;border-top:1px solid #1b3a2b;padding:10px 8px 12px;backdrop-filter:blur(12px)}
+.nav button{background:none;border:0;color:#7e988c;font-size:11px}.nav button.active{color:#49ed98}.icon{font-size:20px;display:block;margin-bottom:3px}
+input{width:100%;padding:14px;border-radius:12px;border:1px solid #28533e;background:#091710;color:#fff;margin:8px 0 12px;font-size:15px}
+.hidden{display:none}.notice{font-size:12px;color:#9eb7aa;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header"><div class="brand">Big <span>Money</span></div><div class="pill">TRC20</div></header>
+
+<section id="home">
+<div class="card">
+<div class="balance-label">Your balance</div>
+<div class="balance"><span id="balance">0.0000</span> <small>USDT</small></div>
+<div class="grid"><button class="btn" onclick="show('deposit')">Deposit</button><button class="btn alt" onclick="show('withdraw')">Withdraw</button></div>
+</div>
+<div class="section-title">Daily Reward</div>
+<div class="card"><div class="row"><div><b>Daily check-in</b><div class="muted">Claim your daily reward</div></div><button class="btn" onclick="claimReward()">Claim</button></div></div>
+<div class="section-title">Quick Tasks</div>
+<div class="card">
+<div class="row"><div><b>Daily task</b><div class="muted">Complete tasks to earn rewards</div></div><span class="pill">Soon</span></div>
+<div class="row"><div><b>Invite friends</b><div class="muted">Referral rewards</div></div><button class="btn alt" onclick="show('profile')">Open</button></div>
+</div>
+</section>
+
+<section id="deposit" class="hidden">
+<div class="section-title">Deposit USDT</div>
+<div class="card">
+<div class="muted">Network</div><h3>TRON (TRC20)</h3>
+<div class="muted">Deposit address</div>
+<input id="addr" value="TAmkXMpkcqSZmG9oRvtXfBvpLWr53wXEdx" readonly>
+<button class="btn" onclick="copyAddress()">Copy Address</button>
+<p class="notice">Send only USDT on TRC20 to this address. The balance changes only after the deposit is actually verified.</p>
+</div></section>
+
+<section id="withdraw" class="hidden">
+<div class="section-title">Withdraw USDT</div>
+<div class="card">
+<div class="muted">Available balance</div><h2><span id="wbalance">0.0000</span> USDT</h2>
+<input id="waddr" placeholder="TRON address (T...)">
+<input id="wamount" type="number" min="0" step="0.0001" placeholder="Amount USDT">
+<button class="btn" onclick="withdraw()">Request Withdrawal</button>
+<p class="notice">Withdrawals are requests only in this demo version. No real blockchain transfer is performed.</p>
+</div></section>
+
+<section id="profile" class="hidden">
+<div class="section-title">Profile</div>
+<div class="card"><div class="row"><b>Telegram User</b><span class="pill">Guest</span></div><div class="row"><b>Referral code</b><span class="muted">BIGMONEY</span></div></div>
+</section>
+
+<nav class="nav">
+<button class="active" onclick="show('home')"><span class="icon">⌂</span>Home</button>
+<button onclick="show('deposit')"><span class="icon">↓</span>Deposit</button>
+<button onclick="show('withdraw')"><span class="icon">↑</span>Withdraw</button>
+<button onclick="show('profile')"><span class="icon">◉</span>Profile</button>
+</nav>
+</div>
+
+<script>
+let balance=Number(localStorage.getItem('bm_balance')||0);
+function render(){document.querySelector('#balance').textContent=balance.toFixed(4);document.querySelector('#wbalance').textContent=balance.toFixed(4)}
+function show(id){document.querySelectorAll('section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');render()}
+function claimReward(){alert('Daily rewards will be connected to the backend in the next step.');}
+function copyAddress(){navigator.clipboard?.writeText(document.getElementById('addr').value);alert('Address copied');}
+function withdraw(){alert('Withdrawal request recorded in demo mode.');}
+render();
+</script>
+</body>
+</html>

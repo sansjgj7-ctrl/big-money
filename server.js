@@ -1,4 +1,7 @@
-const express = require("express");
+from pathlib import Path
+
+p = Path("/mnt/data/server_fixed.js")
+p.write_text(r'''const express = require("express");
 const cors = require("cors");
 
 const app = express();
@@ -48,8 +51,7 @@ app.get("/api/deposits/scan", async (req, res) => {
     const headers = {};
 
     if (process.env.TRONGRID_API_KEY) {
-      headers["TRON-PRO-API-KEY"] =
-        process.env.TRONGRID_API_KEY;
+      headers["TRON-PRO-API-KEY"] = process.env.TRONGRID_API_KEY;
     }
 
     const response = await fetch(url, { headers });
@@ -84,7 +86,6 @@ app.get("/api/deposits/scan", async (req, res) => {
       depositAddress: DEPOSIT_ADDRESS,
       deposits: incoming
     });
-
   } catch (error) {
     console.error(error);
 
@@ -96,7 +97,6 @@ app.get("/api/deposits/scan", async (req, res) => {
 });
 
 app.post("/api/deposits/request", (req, res) => {
-
   const { telegramUserId, amount, txid } = req.body || {};
 
   if (!telegramUserId || !amount) {
@@ -107,7 +107,7 @@ app.post("/api/deposits/request", (req, res) => {
   }
 
   const deposit = {
-id: `wd_${Date.now()}`,
+    id: `dep_${Date.now()}`,
     telegramUserId: String(telegramUserId),
     amount: Number(amount),
     txid: txid || null,
@@ -131,14 +131,12 @@ app.get("/api/deposits", (req, res) => {
 });
 
 app.post("/api/withdrawals/request", (req, res) => {
-
   const { telegramUserId, address, amount } = req.body || {};
 
   if (!telegramUserId || !address || !amount) {
     return res.status(400).json({
       ok: false,
-      error:
-        "telegramUserId, address and amount are required"
+      error: "telegramUserId, address and amount are required"
     });
   }
 
@@ -150,7 +148,7 @@ app.post("/api/withdrawals/request", (req, res) => {
   }
 
   const withdrawal = {
-    id: `wd_${Date.now()`,
+    id: `wd_${Date.now()}`,
     telegramUserId: String(telegramUserId),
     address: String(address),
     amount: Number(amount),
@@ -174,7 +172,7 @@ app.get("/api/withdrawals", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(
-    `Big Money backend listening on port ${PORT}`
-  );
+  console.log(`Big Money backend listening on ${PORT}`);
 });
+''', encoding="utf-8")
+print(p)

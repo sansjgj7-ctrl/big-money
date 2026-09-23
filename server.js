@@ -107,7 +107,7 @@ app.post("/api/deposits/request", (req, res) => {
   }
 
   const deposit = {
-    id: `wd_${Date.now()}`,
+id: `wd_${Date.now()}`,
     telegramUserId: String(telegramUserId),
     amount: Number(amount),
     txid: txid || null,

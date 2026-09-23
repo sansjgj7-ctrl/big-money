@@ -205,4 +205,4 @@ app.listen(PORT, "0.0.0.0", () => {
 
 path = Path("/mnt/data/Big_Money_server_v2.js")
 path.write_text(server, encoding="utf-8")
-print(f"فایل آماده شد: {path}")
+print

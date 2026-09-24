@@ -7,7 +7,8 @@ const PORT = process.env.PORT || 10000;
 app.use(cors());
 app.use(express.json());
 
-const DEPOSIT_ADDRESS = "TAmkXMpkcqSZmG9oRvtXfBvpLWr53wXEdx";
+const DEPOSIT_ADDRESS = "TAmkXMpkcqSZmG9oRvtXfBvpLWr53wXEdx";const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+const TRONGRID_URL = "https://api.trongrid.io";
 
 app.get("/", function (req, res) {
   res.json({

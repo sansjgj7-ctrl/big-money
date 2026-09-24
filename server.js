@@ -8,8 +8,45 @@ app.use(cors());
 app.use(express.json());
 
 const DEPOSIT_ADDRESS = "TAmkXMpkcqSZmG9oRvtXfBvpLWr53wXEdx";const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
-const TRONGRID_URL = "https://api.trongrid.io";
+const TRONGRID_URL = "https://api.trongrid.io";async function getUsdtTransfers() {
+  const url =
+    TRONGRID_URL +
+    "/v1/accounts/" +
+    DEPOSIT_ADDRESS +
+    "/transactions/trc20" +
+    "?limit=20&contract_address=" +
+    USDT_CONTRACT;
 
+  const response = await fetch(url, {
+    headers: {
+      "TRON-PRO-API-KEY": process.env.TRONGRID_API_KEY
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("TronGrid request failed");
+  }
+
+  return await response.json();
+}
+app.get("/api/deposits/check", async function (req, res) {
+  try {
+    const data = await getUsdtTransfers();
+
+    res.json({
+      ok: true,
+      depositAddress: DEPOSIT_ADDRESS,
+      transfers: data.data || []
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      ok: false,
+      error: "Could not check TRON transfers"
+    });
+  }
+});
 app.get("/", function (req, res) {
   res.json({
     ok: true,

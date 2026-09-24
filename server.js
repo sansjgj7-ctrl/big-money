@@ -1,6 +1,4 @@
-from pathlib import Path
-
-server = r'''const express = require("express");
+const express = require("express");
 const cors = require("cors");
 
 const app = express();
@@ -59,7 +57,12 @@ app.post("/api/withdrawals/request", function (req, res) {
   const address = String(body.address || "").trim();
   const amount = Number(body.amount);
 
-  if (!telegramUserId || !address || !Number.isFinite(amount) || amount <= 0) {
+  if (
+    !telegramUserId ||
+    !address ||
+    !Number.isFinite(amount) ||
+    amount <= 0
+  ) {
     return res.status(400).json({
       ok: false,
       error: "telegramUserId, address and a valid amount are required"
@@ -88,8 +91,3 @@ app.post("/api/withdrawals/request", function (req, res) {
 app.listen(PORT, "0.0.0.0", function () {
   console.log("Big Money Backend running on port " + PORT);
 });
-'''
-
-path = Path("/mnt/data/Big_Money_server_fixed.js")
-path.write_text(server, encoding="utf-8")
-print(path)

@@ -7,8 +7,28 @@ const PORT = process.env.PORT || 10000;
 app.use(cors());
 app.use(express.json());
 
-const DEPOSIT_ADDRESS = "TAmkXMpkcqSZmG9oRvtXfBvpLWr53wXEdx";const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
-const TRONGRID_URL = "https://api.trongrid.io";async function getUsdtTransfers() {
+const DEPOSIT_ADDRESS = "TAmkXMpkcqSZmG9oRvtXfBvpLWr53wXEdx";
+const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+const TRONGRID_URL = "https://api.trongrid.io";
+
+app.get("/", function (req, res) {
+  res.json({
+    ok: true,
+    name: "Big Money Backend",
+    network: "TRON TRC20"
+  });
+});
+
+app.get("/api/config", function (req, res) {
+  res.json({
+    network: "TRON",
+    token: "USDT",
+    standard: "TRC20",
+    depositAddress: DEPOSIT_ADDRESS
+  });
+});
+
+async function getUsdtTransfers() {
   const url =
     TRONGRID_URL +
     "/v1/accounts/" +
@@ -29,6 +49,7 @@ const TRONGRID_URL = "https://api.trongrid.io";async function getUsdtTransfers()
 
   return await response.json();
 }
+
 app.get("/api/deposits/check", async function (req, res) {
   try {
     const data = await getUsdtTransfers();
@@ -36,7 +57,16 @@ app.get("/api/deposits/check", async function (req, res) {
     res.json({
       ok: true,
       depositAddress: DEPOSIT_ADDRESS,
-      transfers: data.data || []
+      transfers: (data.data || []).map(function (tx) {
+        return {
+          transactionId: tx.transaction_id,
+          from: tx.from,
+          to: tx.to,
+          amountUSDT: Number(tx.value || 0) / 1000000,
+          confirmed: tx.block_timestamp ? true : false,
+          timestamp: tx.block_timestamp || null
+        };
+      })
     });
   } catch (error) {
     console.error(error);
@@ -46,22 +76,6 @@ app.get("/api/deposits/check", async function (req, res) {
       error: "Could not check TRON transfers"
     });
   }
-});
-app.get("/", function (req, res) {
-  res.json({
-    ok: true,
-    name: "Big Money Backend",
-    network: "TRON TRC20"
-  });
-});
-
-app.get("/api/config", function (req, res) {
-  res.json({
-    network: "TRON",
-    token: "USDT",
-    standard: "TRC20",
-    depositAddress: DEPOSIT_ADDRESS
-  });
 });
 
 app.post("/api/deposits/request", function (req, res) {
@@ -95,12 +109,7 @@ app.post("/api/withdrawals/request", function (req, res) {
   const address = String(body.address || "").trim();
   const amount = Number(body.amount);
 
-  if (
-    !telegramUserId ||
-    !address ||
-    !Number.isFinite(amount) ||
-    amount <= 0
-  ) {
+  if (!telegramUserId || !address || !Number.isFinite(amount) || amount <= 0) {
     return res.status(400).json({
       ok: false,
       error: "telegramUserId, address and a valid amount are required"

@@ -209,45 +209,12 @@ function updateQR() {
     "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + a;
 }
 
-async function paid(){
-  const amount = Number(document.getElementById("amount").value);
+async function paid() {
+  const amount = parseFloat(document.getElementById("depAmount").value);
 
-  if(!amount || amount <= 0){
-    alert("Please enter a valid amount");
-    return;
+  if (!amount || amount <= 0) {
+    return alert("Enter a valid amount");
   }
-
-  try {
-    const userId =
-      window.Telegram?.WebApp?.initDataUnsafe?.user?.id || "demo-user";
-
-    const response = await fetch(API + "/api/deposits/request", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        telegramUserId: String(userId),
-        amount: amount,
-        txid: null
-      })
-    });
-
-    const data = await response.json();
-
-    if(!response.ok || !data.ok){
-      throw new Error(data.error || "Deposit request failed");
-    }
-
-    localStorage.setItem("pendingDeposit", JSON.stringify(data.deposit));
-
-    alert("Deposit request submitted. Status: Pending confirmation.");
-
-  } catch(error) {
-    console.error(error);
-    alert("Could not submit deposit request.");
-  }
-}
 
   const box = document.getElementById("depStatus");
   box.innerHTML = '<div class="success">Sending request to server...</div>';
@@ -384,3 +351,6 @@ loadConfig();
 </body>
 </html>'''
 
+path = Path("/mnt/data/Big_Money_Mini_App_v3_connected.html")
+path.write_text(html, encoding="utf-8")
+print(path)

@@ -1779,4 +1779,690 @@ async function withdraw(){
 
   const box =
     document.getElementById(
-      "
+      "wstatus"
+    );
+
+
+  if(
+    !/^T[1-9A-HJ-NP-Za-km-z]{33}$/
+      .test(address)
+  ){
+
+    box.innerHTML =
+      '<div class="error">Enter a valid TRON address.</div>';
+
+    return;
+
+  }
+
+
+  if(
+    !amount ||
+    Number(amount) <= 0
+  ){
+
+    box.innerHTML =
+      '<div class="error">Enter a valid amount.</div>';
+
+    return;
+
+  }
+
+
+  if(
+    Number(amount) >
+    Number(state.balance)
+  ){
+
+    box.innerHTML =
+      '<div class="error">Insufficient available balance.</div>';
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    '<div class="success">Creating withdrawal request...</div>';
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/withdrawals/request",
+        {
+
+          method:"POST",
+
+          body:
+            JSON.stringify({
+
+              address:
+                address,
+
+              amount:
+                amount
+
+            })
+
+        }
+      );
+
+
+    if(
+      !data.ok ||
+      !data.withdrawal
+    ){
+
+      throw new Error(
+        "Withdrawal request failed"
+      );
+
+    }
+
+
+    box.innerHTML =
+      `<div class="success">
+
+        ✅ Withdrawal request submitted.
+
+        <br><br>
+
+        Amount:
+        <b>${escapeHtml(
+          data.withdrawal.amount
+        )} USDT</b>
+
+        <br>
+
+        Status:
+        <b>PENDING</b>
+
+        <br><br>
+
+        Your request must be approved by the administrator before the USDT is sent.
+
+      </div>`;
+
+
+    document.getElementById(
+      "wamount"
+    ).value = "";
+
+
+    document.getElementById(
+      "waddr"
+    ).value = "";
+
+
+    await loadAccount();
+
+    await loadWithdrawalHistory();
+
+  }catch(e){
+
+    box.innerHTML =
+      '<div class="error">' +
+      escapeHtml(
+        e.message
+      ) +
+      '</div>';
+
+  }
+
+}
+
+
+/* =========================
+   WITHDRAWAL HISTORY
+========================= */
+
+async function loadWithdrawalHistory(){
+
+  const box =
+    document.getElementById(
+      "withdrawalHistory"
+    );
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/withdrawals"
+      );
+
+
+    if(
+      !data.withdrawals ||
+      !data.withdrawals.length
+    ){
+
+      box.innerHTML =
+        '<p class="muted">No withdrawal requests yet.</p>';
+
+      return;
+
+    }
+
+
+    box.innerHTML =
+      data.withdrawals
+        .map(
+          x => {
+
+            const status =
+              String(
+                x.status ||
+                ""
+              );
+
+
+            return `
+
+            <div class="item">
+
+              <div class="row">
+
+                <b>
+                  ${escapeHtml(
+                    x.amount
+                  )} USDT
+                </b>
+
+                <span class="badge ${status}">
+                  ${escapeHtml(
+                    status.toUpperCase()
+                  )}
+                </span>
+
+              </div>
+
+              <div class="adminAddress">
+
+                ${escapeHtml(
+                  x.address
+                )}
+
+              </div>
+
+              ${
+                x.txid
+                ?
+                `<div class="small">
+                  TXID:
+                  ${escapeHtml(
+                    x.txid
+                  )}
+                </div>`
+                :
+                ""
+              }
+
+              ${
+                x.adminNote
+                ?
+                `<div class="notice">
+                  ${escapeHtml(
+                    x.adminNote
+                  )}
+                </div>`
+                :
+                ""
+              }
+
+            </div>
+
+            `;
+
+          }
+        )
+        .join("");
+
+  }catch(e){
+
+    box.innerHTML =
+      '<p class="error">' +
+      escapeHtml(
+        e.message
+      ) +
+      '</p>';
+
+  }
+
+}
+
+
+/* =========================
+   ADMIN CHECK
+========================= */
+
+async function checkAdmin(){
+
+  try{
+
+    const data =
+      await api(
+        "/api/admin/status"
+      );
+
+
+    if(
+      data.ok
+    ){
+
+      isAdmin = true;
+
+      addAdminButton();
+
+    }
+
+  }catch(e){
+
+    isAdmin = false;
+
+  }
+
+}
+
+
+function addAdminButton(){
+
+  const nav =
+    document.querySelector(
+      ".navin"
+    );
+
+
+  if(
+    document.getElementById(
+      "adminNavButton"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  const button =
+    document.createElement(
+      "button"
+    );
+
+
+  button.id =
+    "adminNavButton";
+
+
+  button.innerHTML =
+    '<span class="icon">👑</span>Admin';
+
+
+  button.onclick =
+    () => show("admin");
+
+
+  nav.appendChild(
+    button
+  );
+
+}
+
+
+/* =========================
+   ADMIN WITHDRAWALS
+========================= */
+
+async function loadAdminWithdrawals(){
+
+  if(!isAdmin){
+
+    return;
+
+  }
+
+
+  const box =
+    document.getElementById(
+      "adminWithdrawals"
+    );
+
+
+  box.innerHTML =
+    '<p class="muted">Loading requests...</p>';
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/admin/withdrawals"
+      );
+
+
+    const list =
+      data.withdrawals || [];
+
+
+    if(!list.length){
+
+      box.innerHTML =
+        '<div class="success">✅ No pending withdrawal requests.</div>';
+
+      return;
+
+    }
+
+
+    box.innerHTML =
+      list
+        .map(
+          x => {
+
+            return `
+
+            <div
+              class="adminRequest"
+              id="request-${escapeHtml(
+                x.id
+              )}">
+
+              <div class="row">
+
+                <b>
+                  ${escapeHtml(
+                    x.amount
+                  )} USDT
+                </b>
+
+                <span class="badge pending">
+                  PENDING
+                </span>
+
+              </div>
+
+
+              <div
+                class="small"
+                style="margin-top:10px">
+
+                User:
+                ${escapeHtml(
+                  x.username ||
+                  x.telegramUserId
+                )}
+
+              </div>
+
+
+              <div
+                class="small">
+
+                Telegram ID:
+                ${escapeHtml(
+                  x.telegramUserId
+                )}
+
+              </div>
+
+
+              <div class="adminAddress">
+
+                ${escapeHtml(
+                  x.address
+                )}
+
+              </div>
+
+
+              <div
+                class="small">
+
+                Request:
+                ${new Date(
+                  x.createdAt
+                ).toLocaleString()}
+
+              </div>
+
+
+              <div class="adminActions">
+
+                <button
+                  class="admin"
+                  onclick="approveWithdrawal('${escapeHtml(
+                    x.id
+                  )}')">
+
+                  ✅ Approve & Send
+
+                </button>
+
+
+                <button
+                  class="danger"
+                  onclick="rejectWithdrawal('${escapeHtml(
+                    x.id
+                  )}')">
+
+                  ❌ Reject
+
+                </button>
+
+              </div>
+
+            </div>
+
+            `;
+
+          }
+        )
+        .join("");
+
+  }catch(e){
+
+    box.innerHTML =
+      '<div class="error">' +
+      escapeHtml(
+        e.message
+      ) +
+      '</div>';
+
+  }
+
+}
+
+
+/* =========================
+   APPROVE
+========================= */
+
+async function approveWithdrawal(
+  id
+){
+
+  const ok =
+    confirm(
+      "Are you sure you want to approve this withdrawal and send the USDT?"
+    );
+
+
+  if(!ok){
+
+    return;
+
+  }
+
+
+  const status =
+    document.getElementById(
+      "adminStatus"
+    );
+
+
+  status.innerHTML =
+    '<div class="notice">Sending USDT... Please wait.</div>';
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/admin/withdrawals/" +
+        encodeURIComponent(id) +
+        "/approve",
+        {
+
+          method:"POST",
+
+          body:
+            JSON.stringify({})
+
+        }
+      );
+
+
+    if(
+      data.ok
+    ){
+
+      status.innerHTML =
+        `<div class="success">
+
+          ✅ Withdrawal sent successfully.
+
+          <br>
+
+          TXID:
+          ${escapeHtml(
+            data.txid || ""
+          )}
+
+        </div>`;
+
+
+      await loadAdminWithdrawals();
+
+    }
+
+  }catch(e){
+
+    status.innerHTML =
+      '<div class="error">' +
+      escapeHtml(
+        e.message
+      ) +
+      '</div>';
+
+
+    await loadAdminWithdrawals();
+
+  }
+
+}
+
+
+/* =========================
+   REJECT
+========================= */
+
+async function rejectWithdrawal(
+  id
+){
+
+  const note =
+    prompt(
+      "Reason for rejection (optional):"
+    );
+
+
+  if(note === null){
+
+    return;
+
+  }
+
+
+  const status =
+    document.getElementById(
+      "adminStatus"
+    );
+
+
+  status.innerHTML =
+    '<div class="notice">Rejecting request...</div>';
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/admin/withdrawals/" +
+        encodeURIComponent(id) +
+        "/reject",
+        {
+
+          method:"POST",
+
+          body:
+            JSON.stringify({
+              note:
+                note
+            })
+
+        }
+      );
+
+
+    if(
+      data.ok
+    ){
+
+      status.innerHTML =
+        '<div class="success">✅ Withdrawal rejected. No USDT was sent.</div>';
+
+
+      await loadAdminWithdrawals();
+
+    }
+
+  }catch(e){
+
+    status.innerHTML =
+      '<div class="error">' +
+      escapeHtml(
+        e.message
+      ) +
+      '</div>';
+
+  }
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+document.getElementById(
+  "address"
+).value =
+  depositAddress;
+
+
+updateQR();
+
+render();
+
+loadConfig();
+
+loadAccount();
+
+checkAdmin();
+
+</script>
+
+</body>
+    </html>

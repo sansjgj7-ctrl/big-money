@@ -115,7 +115,8 @@ body{
   justify-content:space-between;
   align-items:center;
   padding:14px 0;
-  border-bottom:1px solid #1a362a
+  border-bottom:1px solid #1a362a;
+  gap:12px
 }
 
 .row:last-child{
@@ -207,6 +208,49 @@ input{
 .error{
   color:#ff7777
 }
+
+.referral-link{
+  font-size:12px;
+  line-height:1.5;
+  word-break:break-all;
+  background:#091710;
+  border:1px solid #28533e;
+  border-radius:12px;
+  padding:12px;
+  margin:10px 0
+}
+
+.referral-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px
+}
+
+.stat-box{
+  background:#091710;
+  border:1px solid #1d4633;
+  border-radius:14px;
+  padding:14px;
+  text-align:center
+}
+
+.stat-number{
+  font-size:22px;
+  font-weight:800;
+  color:#55e89b;
+  margin-bottom:5px
+}
+
+.stat-label{
+  font-size:12px;
+  color:#8fa89c
+}
+
+.referral-status{
+  margin-top:10px;
+  font-size:13px
+}
 </style>
 </head>
 
@@ -259,7 +303,7 @@ input{
   </div>
 
 
-  <!-- TEST ADMIN -->
+  <!-- ADMIN TEST -->
 
   <div
     id="testAdminCard"
@@ -291,6 +335,8 @@ input{
   </div>
 
 
+  <!-- DAILY REWARD -->
+
   <div class="section-title">
     Daily Reward
   </div>
@@ -300,25 +346,27 @@ input{
     <div class="row">
 
       <div>
-        <b>Daily check-in</b>
+        <b>Daily reward</b>
 
-        <div class="muted">
-          Claim your daily reward
+        <div
+          id="dailyRewardText"
+          class="muted">
+          Deposit at least 10 USDT to qualify.
         </div>
       </div>
 
-      <button
-        class="btn"
-        onclick="claimReward()">
-
-        Claim
-
-      </button>
+      <span
+        id="dailyRewardStatus"
+        class="pill">
+        0.50 POINT
+      </span>
 
     </div>
 
   </div>
 
+
+  <!-- QUICK TASKS -->
 
   <div class="section-title">
     Quick Tasks
@@ -349,7 +397,7 @@ input{
         <b>Invite friends</b>
 
         <div class="muted">
-          Referral rewards
+          Earn 3 points per successful referral
         </div>
       </div>
 
@@ -515,6 +563,110 @@ input{
 
   </div>
 
+
+  <!-- REFERRAL -->
+
+  <div class="section-title">
+    👥 Invite Friends
+  </div>
+
+  <div class="card">
+
+    <b>Your referral link</b>
+
+    <div
+      id="referralLink"
+      class="referral-link">
+      Loading...
+    </div>
+
+    <button
+      id="copyReferralBtn"
+      class="btn"
+      onclick="copyReferralLink()">
+
+      📋 Copy Referral Link
+
+    </button>
+
+    <div
+      id="referralStatus"
+      class="referral-status">
+    </div>
+
+
+    <div class="referral-stats">
+
+      <div class="stat-box">
+
+        <div
+          id="totalInvited"
+          class="stat-number">
+          0
+        </div>
+
+        <div class="stat-label">
+          Invited
+        </div>
+
+      </div>
+
+
+      <div class="stat-box">
+
+        <div
+          id="successfulReferrals"
+          class="stat-number">
+          0
+        </div>
+
+        <div class="stat-label">
+          Successful
+        </div>
+
+      </div>
+
+
+      <div class="stat-box">
+
+        <div
+          id="referralPoints"
+          class="stat-number">
+          0
+        </div>
+
+        <div class="stat-label">
+          Referral Points
+        </div>
+
+      </div>
+
+
+      <div class="stat-box">
+
+        <div
+          class="stat-number">
+          +3
+        </div>
+
+        <div class="stat-label">
+          Per Referral
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <p class="notice">
+      Invite a friend using your link.
+      When your invited friend makes a confirmed
+      USDT TRC20 deposit of at least 10 USDT,
+      you receive 3 points.
+    </p>
+
+  </div>
+
 </section>
 
 
@@ -656,6 +808,56 @@ function telegramHeaders(){
 
 
 /* =========================
+   REGISTER REFERRAL
+========================= */
+
+async function registerReferral(){
+
+  if (!telegramUser) {
+    return;
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        API +
+        "/api/referral/register",
+        {
+          method:"POST",
+          headers:
+            telegramHeaders(),
+
+          body:JSON.stringify({
+            telegramUserId:
+              telegramUser.id
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      console.log(
+        "Referral registration:",
+        data.error
+      );
+    }
+
+  } catch(error){
+
+    console.log(
+      "Referral registration error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================
    LOAD ACCOUNT
 ========================= */
 
@@ -687,8 +889,14 @@ async function loadAccount(){
 
 
   /*
-    First try authenticated account
-    endpoint.
+    First register referral.
+  */
+
+  await registerReferral();
+
+
+  /*
+    Load account.
   */
 
   try {
@@ -729,6 +937,10 @@ async function loadAccount(){
       ).textContent =
         points.toFixed(2);
 
+      updateDailyReward(
+        data.user.lastDailyRewardDate
+      );
+
       render();
 
     }
@@ -743,15 +955,152 @@ async function loadAccount(){
   }
 
 
-  /*
-    Only show test button when
-    the backend confirms that this
-    Telegram account is an admin.
-
-    We do NOT put admin IDs in HTML.
-  */
-
   checkAdmin();
+
+  loadReferral();
+
+}
+
+
+/* =========================
+   LOAD REFERRAL
+========================= */
+
+async function loadReferral(){
+
+  if (!telegramUser) {
+    return;
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        API +
+        "/api/referral/" +
+        encodeURIComponent(
+          telegramUser.id
+        )
+      );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data.ok
+    ) {
+
+      throw new Error(
+        data.error ||
+        "Could not load referral"
+      );
+
+    }
+
+
+    document.getElementById(
+      "referralLink"
+    ).textContent =
+      data.referralLink || "-";
+
+
+    document.getElementById(
+      "totalInvited"
+    ).textContent =
+      Number(
+        data.totalInvited || 0
+      );
+
+
+    document.getElementById(
+      "successfulReferrals"
+    ).textContent =
+      Number(
+        data.successfulReferrals || 0
+      );
+
+
+    document.getElementById(
+      "referralPoints"
+    ).textContent =
+      Number(
+        data.points || 0
+      );
+
+  } catch(error){
+
+    console.error(
+      "Referral error:",
+      error
+    );
+
+    document.getElementById(
+      "referralLink"
+    ).textContent =
+      "Referral link unavailable";
+
+  }
+
+}
+
+
+/* =========================
+   COPY REFERRAL LINK
+========================= */
+
+async function copyReferralLink(){
+
+  const link =
+    document.getElementById(
+      "referralLink"
+    ).textContent.trim();
+
+  const status =
+    document.getElementById(
+      "referralStatus"
+    );
+
+
+  if (
+    !link ||
+    link === "Loading..." ||
+    link === "-" ||
+    link === "Referral link unavailable"
+  ){
+
+    status.className =
+      "referral-status error";
+
+    status.textContent =
+      "Referral link is not ready.";
+
+    return;
+  }
+
+
+  try {
+
+    await navigator.clipboard.writeText(
+      link
+    );
+
+    status.className =
+      "referral-status success";
+
+    status.textContent =
+      "✅ Referral link copied.";
+
+  } catch(error){
+
+    status.className =
+      "referral-status error";
+
+    status.textContent =
+      "Copy failed. Press and hold the link to copy it.";
+
+  }
+
 }
 
 
@@ -805,6 +1154,7 @@ async function checkAdmin(){
     );
 
   }
+
 }
 
 
@@ -836,13 +1186,6 @@ async function addTestUSDT(){
     return;
   }
 
-
-  /*
-    The ADMIN_TEST_KEY is never
-    stored in this HTML.
-
-    Ask for it only when needed.
-  */
 
   const testKey =
     prompt(
@@ -963,6 +1306,67 @@ async function addTestUSDT(){
 
 
 /* =========================
+   DAILY REWARD STATUS
+========================= */
+
+function updateDailyReward(lastRewardDate){
+
+  const text =
+    document.getElementById(
+      "dailyRewardText"
+    );
+
+  const status =
+    document.getElementById(
+      "dailyRewardStatus"
+    );
+
+
+  if (
+    lastRewardDate
+  ){
+
+    const today =
+      new Intl.DateTimeFormat(
+        "en-CA",
+        {
+          timeZone:"Asia/Kabul",
+          year:"numeric",
+          month:"2-digit",
+          day:"2-digit"
+        }
+      ).format(
+        new Date()
+      );
+
+
+    if (
+      lastRewardDate === today
+    ){
+
+      text.textContent =
+        "Today's reward has already been received.";
+
+      status.textContent =
+        "✓ CLAIMED";
+
+      return;
+
+    }
+
+  }
+
+
+  text.textContent =
+    "Make a confirmed deposit of at least 10 USDT today to receive 0.50 points.";
+
+  status.textContent =
+    "+0.50 POINT";
+
+}
+
+
+/* =========================
    RENDER
 ========================= */
 
@@ -978,6 +1382,12 @@ function render(){
     "wbalance"
   ).textContent =
     Number(balance).toFixed(4);
+
+
+  document.getElementById(
+    "points"
+  ).textContent =
+    Number(points).toFixed(2);
 
 }
 
@@ -1002,9 +1412,11 @@ function show(id){
     document.getElementById(id);
 
   if (section) {
+
     section.classList.remove(
       "hidden"
     );
+
   }
 
 
@@ -1018,6 +1430,57 @@ function show(id){
           "active"
         )
     );
+
+
+  if (id === "home") {
+
+    document
+      .querySelectorAll(
+        ".nav button"
+      )[0]
+      .classList.add(
+        "active"
+      );
+
+  }
+
+  if (id === "deposit") {
+
+    document
+      .querySelectorAll(
+        ".nav button"
+      )[1]
+      .classList.add(
+        "active"
+      );
+
+  }
+
+  if (id === "withdraw") {
+
+    document
+      .querySelectorAll(
+        ".nav button"
+      )[2]
+      .classList.add(
+        "active"
+      );
+
+  }
+
+  if (id === "profile") {
+
+    document
+      .querySelectorAll(
+        ".nav button"
+      )[3]
+      .classList.add(
+        "active"
+      );
+
+    loadReferral();
+
+  }
 
 
   render();
@@ -1059,20 +1522,6 @@ function copyAddress(){
     alert(address);
 
   }
-
-}
-
-
-/* =========================
-   DAILY REWARD
-========================= */
-
-function claimReward(){
-
-  alert(
-    "Daily reward is connected to confirmed deposits. " +
-    "A confirmed deposit of at least 10 USDT can qualify for the daily reward."
-  );
 
 }
 
@@ -1145,11 +1594,9 @@ async function withdraw(){
               telegramUser.id,
 
             address:
-
               address,
 
             amount:
-
               amount
 
           })

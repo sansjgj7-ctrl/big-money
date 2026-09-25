@@ -399,4 +399,843 @@ function telegramInitData(){
   if(!tg || !tg.initData){
 
     throw new Error(
-      "
+      "Please open Big Money inside Telegram."
+    );
+
+  }
+
+  return tg.initData;
+}
+
+
+/* API */
+
+async function api(path, options = {}){
+
+  const initData =
+    telegramInitData();
+
+  const response =
+    await fetch(API + path, {
+
+      ...options,
+
+      headers:{
+        "Content-Type":"application/json",
+
+        ...(options.headers || {})
+      }
+
+    });
+
+
+  const data =
+    await response
+      .json()
+      .catch(() => ({}));
+
+
+  if(!response.ok){
+
+    throw new Error(
+      data.error ||
+      "Server request failed"
+    );
+
+  }
+
+
+  return data;
+
+}
+
+
+/* CONFIG */
+
+async function loadConfig(){
+
+  try{
+
+    const data =
+      await api("/api/config");
+
+
+    if(data.depositAddress){
+
+      depositAddress =
+        data.depositAddress;
+
+
+      document.getElementById("address")
+        .value =
+        depositAddress;
+
+
+      updateQR();
+
+    }
+
+  }catch(e){
+
+    document.getElementById("address")
+      .value =
+      depositAddress;
+
+    updateQR();
+
+  }
+
+}
+
+
+/* ACCOUNT */
+
+async function loadAccount(){
+
+  try{
+
+    const data =
+      await api("/api/account",{
+
+        method:"POST",
+
+        body:JSON.stringify({
+
+          initData:
+            telegramInitData()
+
+        })
+
+      });
+
+
+    if(data.user){
+
+      state.balance =
+        Number(
+          data.user.balance || 0
+        );
+
+
+      state.refs =
+        Number(
+          data.user.referralCount || 0
+        );
+
+
+      state.points =
+        Number(
+          data.user.points || 0
+        );
+
+
+      const name =
+        data.user.firstName ||
+        data.user.username ||
+        "User";
+
+
+      document.getElementById("username")
+        .textContent =
+        name;
+
+    }
+
+
+    render();
+
+  }catch(e){
+
+    document.getElementById("username")
+      .textContent =
+      "Authentication error";
+
+
+    document.getElementById("balance")
+      .textContent =
+      "Login through Telegram";
+
+
+    console.error(e);
+
+  }
+
+}
+
+
+/* REFERRAL */
+
+async function loadReferral(){
+
+  try{
+
+    const data =
+      await api("/api/referral");
+
+
+    if(data.ok){
+
+      state.referralLink =
+        data.referralLink || "";
+
+
+      state.refs =
+        Number(
+          data.referralCount || 0
+        );
+
+
+      state.points =
+        Number(
+          data.points || 0
+        );
+
+
+      document.getElementById("refLink")
+        .value =
+        state.referralLink;
+
+
+      document.getElementById("refCount")
+        .textContent =
+        state.refs;
+
+
+      document.getElementById("refPoints")
+        .textContent =
+        state.points + " ⭐";
+
+
+      document.getElementById("refs")
+        .textContent =
+        state.refs;
+
+
+      document.getElementById("prefs")
+        .textContent =
+        state.refs;
+
+    }
+
+  }catch(e){
+
+    console.error(
+      "Referral error:",
+      e
+    );
+
+  }
+
+}
+
+
+/* RENDER */
+
+function render(){
+
+  const balance =
+    Number(
+      state.balance || 0
+    );
+
+
+  document.getElementById("balance")
+    .textContent =
+    balance.toFixed(4) +
+    " USDT";
+
+
+  document.getElementById("wbal")
+    .textContent =
+    balance.toFixed(4) +
+    " USDT";
+
+
+  document.getElementById("pbal")
+    .textContent =
+    balance.toFixed(4) +
+    " USDT";
+
+
+  document.getElementById("refs")
+    .textContent =
+    state.refs;
+
+
+  document.getElementById("prefs")
+    .textContent =
+    state.refs;
+
+
+  document.getElementById("refCount")
+    .textContent =
+    state.refs;
+
+
+  document.getElementById("refPoints")
+    .textContent =
+    state.points + " ⭐";
+
+
+  document.getElementById("txcount")
+    .textContent =
+    state.tx.length;
+
+
+  document.getElementById("txcount2")
+    .textContent =
+    state.tx.length;
+
+
+  if(tg?.initDataUnsafe?.user){
+
+    const u =
+      tg.initDataUnsafe.user;
+
+
+    document.getElementById("username")
+      .textContent =
+      u.first_name ||
+      u.username ||
+      "User";
+
+  }
+
+
+  if(state.referralLink){
+
+    document.getElementById("refLink")
+      .value =
+      state.referralLink;
+
+  }
+
+
+  const list =
+    document.getElementById("txlist");
+
+
+  list.innerHTML =
+    state.tx.length
+
+    ? state.tx
+      .slice()
+      .reverse()
+      .map(x =>
+
+        `<div class="item">
+
+          <div class="row">
+
+            <b>${x.type}</b>
+
+            <span class="badge">
+              ${x.status}
+            </span>
+
+          </div>
+
+          <div class="muted">
+            ${x.amount
+              ? x.amount + " USDT"
+              : ""}
+            · ${x.time}
+          </div>
+
+        </div>`
+
+      ).join("")
+
+    : '<p class="muted">No transactions yet.</p>';
+
+}
+
+
+/* PAGE */
+
+function show(id){
+
+  document.querySelectorAll(".section")
+    .forEach(x =>
+      x.classList.remove("active")
+    );
+
+
+  document.getElementById(id)
+    .classList.add("active");
+
+
+  document.querySelectorAll(".nav button")
+    .forEach(x =>
+      x.classList.toggle(
+        "active",
+        x.dataset.nav === id
+      )
+    );
+
+
+  render();
+
+  window.scrollTo(0,0);
+
+}
+
+
+/* DEPOSIT */
+
+function setDep(n){
+
+  document.getElementById("depAmount")
+    .value =
+    n;
+
+}
+
+
+async function copyAddress(){
+
+  try{
+
+    await navigator.clipboard
+      .writeText(
+        depositAddress
+      );
+
+
+    alert(
+      "Deposit address copied"
+    );
+
+  }catch(e){
+
+    alert(
+      depositAddress
+    );
+
+  }
+
+}
+
+
+function updateQR(){
+
+  const a =
+    encodeURIComponent(
+      depositAddress
+    );
+
+
+  document.getElementById("qr")
+    .src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
+    a;
+
+}
+
+
+/* VERIFY DEPOSIT */
+
+async function verifyDeposit(){
+
+  const amount =
+    document.getElementById("depAmount")
+      .value
+      .trim();
+
+
+  const txid =
+    document.getElementById("txid")
+      .value
+      .trim();
+
+
+  const box =
+    document.getElementById("depStatus");
+
+
+  if(!amount ||
+     Number(amount) <= 0){
+
+    box.innerHTML =
+      '<div class="error">Enter the exact USDT amount you sent.</div>';
+
+    return;
+
+  }
+
+
+  if(!/^[a-fA-F0-9]{64}$/.test(txid)){
+
+    box.innerHTML =
+      '<div class="error">Invalid TXID. TRON TXID must contain 64 hexadecimal characters.</div>';
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    '<div class="success">Checking the confirmed TRON transaction...</div>';
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/deposits/verify",
+        {
+
+          method:"POST",
+
+          body:JSON.stringify({
+
+            initData:
+              telegramInitData(),
+
+            txid:
+              txid,
+
+            amount:
+              amount
+
+          })
+
+        }
+      );
+
+
+    if(data.ok){
+
+      state.balance =
+        Number(
+          data.balance || 0
+        );
+
+
+      state.tx.push({
+
+        type:
+          "Deposit",
+
+        amount:
+          Number(
+            data.deposit?.amount ||
+            amount
+          ),
+
+        status:
+          "Confirmed",
+
+        time:
+          new Date()
+            .toLocaleString()
+
+      });
+
+
+      render();
+
+
+      box.innerHTML =
+        `<div class="success">
+          ✅ Deposit confirmed.<br>
+          ${data.deposit.amount} USDT added to your balance.
+        </div>`;
+
+
+      document.getElementById("txid")
+        .value = "";
+
+    }
+
+  }catch(e){
+
+    box.innerHTML =
+      '<div class="error">❌ ' +
+      e.message +
+      '</div>';
+
+  }
+
+}
+
+
+/* CHECK BLOCKCHAIN */
+
+async function checkDeposits(){
+
+  const box =
+    document.getElementById(
+      "depStatus"
+    );
+
+
+  box.innerHTML =
+    '<div class="success">Checking confirmed blockchain transfers...</div>';
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/deposits/check",
+        {
+
+          method:"POST",
+
+          body:JSON.stringify({
+
+            initData:
+              telegramInitData()
+
+          })
+
+        }
+      );
+
+
+    if(!data.transfers ||
+       data.transfers.length === 0){
+
+      box.innerHTML =
+        '<div class="notice">No confirmed USDT transfer has been detected yet.</div>';
+
+      return;
+
+    }
+
+
+    const latest =
+      data.transfers[0];
+
+
+    box.innerHTML =
+      `<div class="success">
+        Confirmed transfer found:<br>
+        ${latest.amount} USDT<br>
+        TXID: ${String(
+          latest.txid
+        ).slice(0,16)}...
+      </div>`;
+
+  }catch(e){
+
+    box.innerHTML =
+      '<div class="error">' +
+      e.message +
+      '</div>';
+
+  }
+
+}
+
+
+/* WITHDRAW */
+
+async function withdraw(){
+
+  const amount =
+    document.getElementById(
+      "wamount"
+    ).value.trim();
+
+
+  const address =
+    document.getElementById(
+      "waddr"
+    ).value.trim();
+
+
+  const box =
+    document.getElementById(
+      "wstatus"
+    );
+
+
+  if(!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)){
+
+    box.innerHTML =
+      '<div class="error">Enter a valid TRON address.</div>';
+
+    return;
+
+  }
+
+
+  if(!amount ||
+     Number(amount) <= 0){
+
+    box.innerHTML =
+      '<div class="error">Enter a valid amount.</div>';
+
+    return;
+
+  }
+
+
+  if(Number(amount) >
+     Number(state.balance)){
+
+    box.innerHTML =
+      '<div class="error">Insufficient balance.</div>';
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    '<div class="success">Creating withdrawal request...</div>';
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/withdrawals/request",
+        {
+
+          method:"POST",
+
+          body:JSON.stringify({
+
+            initData:
+              telegramInitData(),
+
+            address:
+              address,
+
+            amount:
+              amount
+
+          })
+
+        }
+      );
+
+
+    if(data.ok){
+
+      state.balance =
+        Number(
+          data.balance || 0
+        );
+
+
+      state.tx.push({
+
+        type:
+          "Withdrawal",
+
+        amount:
+          Number(amount),
+
+        status:
+          "Pending",
+
+        time:
+          new Date()
+            .toLocaleString()
+
+      });
+
+
+      render();
+
+
+      box.innerHTML =
+        `<div class="success">
+          Withdrawal request created.<br>
+          ID: ${data.withdrawalId}
+        </div>`;
+
+    }
+
+  }catch(e){
+
+    box.innerHTML =
+      '<div class="error">' +
+      e.message +
+      '</div>';
+
+  }
+
+}
+
+
+/* COPY REFERRAL */
+
+async function copyRef(){
+
+  const value =
+    document.getElementById(
+      "refLink"
+    ).value;
+
+
+  const box =
+    document.getElementById(
+      "refStatus"
+    );
+
+
+  if(!value){
+
+    box.innerHTML =
+      '<div class="error">Referral link is not available yet.</div>';
+
+    return;
+
+  }
+
+
+  try{
+
+    await navigator.clipboard
+      .writeText(value);
+
+
+    box.innerHTML =
+      '<div class="success">✅ Referral link copied!</div>';
+
+
+    setTimeout(() => {
+
+      box.innerHTML = "";
+
+    },3000);
+
+
+  }catch(e){
+
+    box.innerHTML =
+      '<div class="notice">' +
+      value +
+      '</div>';
+
+  }
+
+}
+
+
+/* START */
+
+document.getElementById("address")
+  .value =
+  depositAddress;
+
+
+updateQR();
+
+render();
+
+loadConfig();
+
+loadAccount();
+
+loadReferral();
+
+</script>
+
+</body>
+</html>

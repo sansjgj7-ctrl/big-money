@@ -9,40 +9,286 @@
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#07110d;color:#f2fff7;font-family:Arial,sans-serif}
-.app{max-width:520px;margin:auto;min-height:100vh;padding:18px 16px 92px}
+
+body{
+  margin:0;
+  background:#07110d;
+  color:#f2fff7;
+  font-family:Arial,sans-serif
+}
+
+.app{
+  max-width:520px;
+  margin:auto;
+  min-height:100vh;
+  padding:18px 16px 92px
+}
+
 h1,h2,p{margin:0}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-.logo{font-size:25px;font-weight:800}
-.pill{background:#10271c;border:1px solid #214b35;padding:8px 12px;border-radius:20px;color:#8ff0b4}
-.card{background:linear-gradient(145deg,#10251a,#0a1811);border:1px solid #1d4a32;border-radius:20px;padding:20px;margin:12px 0;box-shadow:0 10px 30px #0005}
-.balance{font-size:34px;font-weight:800;margin:10px 0}
-.muted{color:#8fa99b;font-size:13px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button{width:100%;border:0;border-radius:14px;padding:14px;font-size:15px;font-weight:700;background:#22c55e;color:#041009;cursor:pointer}
-button.secondary{background:#10271c;color:#a9f6c4;border:1px solid #245239}
-input{width:100%;padding:14px;border-radius:13px;border:1px solid #28513a;background:#07140d;color:white;outline:none;margin:7px 0 10px}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px
+}
+
+.logo{
+  font-size:25px;
+  font-weight:800
+}
+
+.pill{
+  background:#10271c;
+  border:1px solid #214b35;
+  padding:8px 12px;
+  border-radius:20px;
+  color:#8ff0b4
+}
+
+.card{
+  background:linear-gradient(145deg,#10251a,#0a1811);
+  border:1px solid #1d4a32;
+  border-radius:20px;
+  padding:20px;
+  margin:12px 0;
+  box-shadow:0 10px 30px #0005
+}
+
+.balance{
+  font-size:34px;
+  font-weight:800;
+  margin:10px 0
+}
+
+.muted{
+  color:#8fa99b;
+  font-size:13px
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+
+button{
+  width:100%;
+  border:0;
+  border-radius:14px;
+  padding:14px;
+  font-size:15px;
+  font-weight:700;
+  background:#22c55e;
+  color:#041009;
+  cursor:pointer
+}
+
+button.secondary{
+  background:#10271c;
+  color:#a9f6c4;
+  border:1px solid #245239
+}
+
+button.danger{
+  background:#8f2630;
+  color:white
+}
+
+button.admin{
+  background:#d7a51d;
+  color:#171000
+}
+
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border-radius:13px;
+  border:1px solid #28513a;
+  background:#07140d;
+  color:white;
+  outline:none;
+  margin:7px 0 10px
+}
+
 .section{display:none}
 .section.active{display:block}
-.row{display:flex;justify-content:space-between;gap:10px;align-items:center}
-.stat{font-size:20px;font-weight:800}
-.item{padding:14px 0;border-bottom:1px solid #193524}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center
+}
+
+.stat{
+  font-size:20px;
+  font-weight:800
+}
+
+.item{
+  padding:14px 0;
+  border-bottom:1px solid #193524
+}
+
 .item:last-child{border:0}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#07110df2;border-top:1px solid #183725;display:flex;justify-content:center;z-index:5}
-.navin{max-width:520px;width:100%;display:grid;grid-template-columns:repeat(5,1fr)}
-.nav button{background:transparent;color:#789385;border-radius:0;padding:11px 3px;font-size:11px}
-.nav button.active{color:#5df08d}
-.icon{font-size:20px;display:block;margin-bottom:3px}
-.qr{display:flex;justify-content:center;background:white;border-radius:14px;padding:10px;margin:12px auto;width:190px}
-.qr img{width:170px;height:170px}
-.badge{padding:5px 9px;border-radius:12px;background:#162d21;color:#75efa2;font-size:11px}
-.notice,.success,.error{padding:12px;border-radius:13px;font-size:12px;line-height:1.5;margin-top:10px}
-.notice{background:#241f0c;border:1px solid #5c4b16;color:#eadb86}
-.success{background:#0e2b1b;border:1px solid #24613c;color:#9cf4b8}
-.error{background:#321416;border:1px solid #713238;color:#ffb9be}
-.refbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
-.refstat{background:#07140d;border:1px solid #28513a;border-radius:14px;padding:15px}
-.refnum{font-size:25px;font-weight:800;margin-top:5px}
+
+.nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#07110df2;
+  border-top:1px solid #183725;
+  display:flex;
+  justify-content:center;
+  z-index:5
+}
+
+.navin{
+  max-width:520px;
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(5,1fr)
+}
+
+.nav button{
+  background:transparent;
+  color:#789385;
+  border-radius:0;
+  padding:11px 3px;
+  font-size:11px
+}
+
+.nav button.active{
+  color:#5df08d
+}
+
+.icon{
+  font-size:20px;
+  display:block;
+  margin-bottom:3px
+}
+
+.qr{
+  display:flex;
+  justify-content:center;
+  background:white;
+  border-radius:14px;
+  padding:10px;
+  margin:12px auto;
+  width:190px
+}
+
+.qr img{
+  width:170px;
+  height:170px
+}
+
+.badge{
+  padding:5px 9px;
+  border-radius:12px;
+  background:#162d21;
+  color:#75efa2;
+  font-size:11px
+}
+
+.badge.pending{
+  color:#eadb86;
+  background:#2b260f
+}
+
+.badge.rejected{
+  color:#ffb9be;
+  background:#321416
+}
+
+.badge.sent{
+  color:#9cf4b8;
+  background:#0e2b1b
+}
+
+.notice,.success,.error{
+  padding:12px;
+  border-radius:13px;
+  font-size:12px;
+  line-height:1.5;
+  margin-top:10px
+}
+
+.notice{
+  background:#241f0c;
+  border:1px solid #5c4b16;
+  color:#eadb86
+}
+
+.success{
+  background:#0e2b1b;
+  border:1px solid #24613c;
+  color:#9cf4b8
+}
+
+.error{
+  background:#321416;
+  border:1px solid #713238;
+  color:#ffb9be
+}
+
+.refbox{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:12px 0
+}
+
+.refstat{
+  background:#07140d;
+  border:1px solid #28513a;
+  border-radius:14px;
+  padding:15px
+}
+
+.refnum{
+  font-size:25px;
+  font-weight:800;
+  margin-top:5px
+}
+
+.adminRequest{
+  background:#07140d;
+  border:1px solid #28513a;
+  border-radius:15px;
+  padding:15px;
+  margin:12px 0
+}
+
+.adminAddress{
+  word-break:break-all;
+  font-size:12px;
+  color:#a9f6c4;
+  margin:8px 0
+}
+
+.small{
+  font-size:11px;
+  color:#8fa99b
+}
+
+.adminActions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:12px
+}
+
+.hidden{
+  display:none!important
+}
 </style>
 </head>
 
@@ -60,48 +306,107 @@ input{width:100%;padding:14px;border-radius:13px;border:1px solid #28513a;backgr
 <section id="home" class="section active">
 
 <div class="card">
-  <div class="muted">Total Balance</div>
-  <div class="balance" id="balance">0.0000 USDT</div>
 
-  <div class="grid">
-    <button onclick="show('deposit')">Deposit</button>
-    <button class="secondary" onclick="show('withdraw')">Withdraw</button>
+  <div class="muted">Available Balance</div>
+
+  <div class="balance" id="balance">
+    0.0000 USDT
   </div>
+
+  <div class="muted">
+    Reserved:
+    <span id="reserved">0.0000</span> USDT
+  </div>
+
+  <div class="grid" style="margin-top:15px">
+
+    <button onclick="show('deposit')">
+      Deposit
+    </button>
+
+    <button
+      class="secondary"
+      onclick="show('withdraw')">
+      Withdraw
+    </button>
+
+  </div>
+
 </div>
+
 
 <div class="card">
+
   <h2>🔐 Account</h2>
-  <p class="muted" style="margin-top:8px">
-    Your balance is stored on the secure backend.
+
+  <p
+    class="muted"
+    style="margin-top:8px">
+
+    Your balance is stored securely on
+    the backend.
+
   </p>
+
 </div>
+
 
 <div class="grid">
 
   <div class="card">
-    <div class="muted">Referrals</div>
-    <div class="stat" id="refs">0</div>
+
+    <div class="muted">
+      Referrals
+    </div>
+
+    <div
+      class="stat"
+      id="refs">
+      0
+    </div>
+
   </div>
 
+
   <div class="card">
-    <div class="muted">Transactions</div>
-    <div class="stat" id="txcount">0</div>
+
+    <div class="muted">
+      Transactions
+    </div>
+
+    <div
+      class="stat"
+      id="txcount">
+      0
+    </div>
+
   </div>
 
 </div>
 
+
 <div class="card">
+
   <h2>Quick Actions</h2>
 
-  <div class="grid" style="margin-top:12px">
-    <button class="secondary" onclick="show('send')">
+  <div
+    class="grid"
+    style="margin-top:12px">
+
+    <button
+      class="secondary"
+      onclick="show('send')">
       Send USDT
     </button>
 
-    <button class="secondary" onclick="show('profile')">
+    <button
+      class="secondary"
+      onclick="show('profile')">
       Profile
     </button>
+
   </div>
+
 </div>
 
 </section>
@@ -114,68 +419,126 @@ input{width:100%;padding:14px;border-radius:13px;border:1px solid #28513a;backgr
 
 <h2>💰 Deposit USDT</h2>
 
-<p class="muted" style="margin-top:6px">
-Network: TRON (TRC20)
+<p
+  class="muted"
+  style="margin-top:6px">
+  Network: TRON (TRC20)
 </p>
 
-<label>Amount (USDT)</label>
 
-<input
- id="depAmount"
- type="number"
- min="1"
- step="0.01"
- placeholder="Enter amount">
-
-<div class="grid">
-<button class="secondary" onclick="setDep(10)">10</button>
-<button class="secondary" onclick="setDep(20)">20</button>
-<button class="secondary" onclick="setDep(50)">50</button>
-<button class="secondary" onclick="setDep(100)">100</button>
-</div>
-
-<p class="muted" style="margin-top:15px">
-Deposit address
-</p>
-
-<input id="address" readonly>
-
-<button class="secondary" onclick="copyAddress()">
-Copy Address
-</button>
-
-<div class="qr">
-<img id="qr" alt="TRC20 QR">
-</div>
-
-<div class="notice">
-1. مقدار مورد نظر را به آدرس بالا بفرستید.<br>
-2. بعد از تأیید تراکنش در شبکه TRON، TXID را وارد کنید.<br>
-3. فقط تراکنش واقعی و تأییدشده به موجودی اضافه می‌شود.
-</div>
-
-<label style="display:block;margin-top:15px">
-Transaction ID (TXID)
+<label>
+  Amount (USDT)
 </label>
 
 <input
- id="txid"
- placeholder="64-character TRON TXID">
+  id="depAmount"
+  type="number"
+  min="1"
+  step="0.01"
+  placeholder="Enter amount">
 
-<button onclick="verifyDeposit()">
-Verify Deposit
+
+<div class="grid">
+
+<button
+  class="secondary"
+  onclick="setDep(5)">
+  5
 </button>
 
 <button
- class="secondary"
- style="margin-top:10px"
- onclick="checkDeposits()">
-Check Blockchain
+  class="secondary"
+  onclick="setDep(10)">
+  10
 </button>
 
-<div id="depStatus"></div>
+<button
+  class="secondary"
+  onclick="setDep(20)">
+  20
+</button>
+
+<button
+  class="secondary"
+  onclick="setDep(50)">
+  50
+</button>
 
 </div>
+
+
+<button
+  style="margin-top:12px"
+  onclick="createDeposit()">
+  Create Deposit Request
+</button>
+
+
+<div
+  id="depositPayment"
+  class="hidden">
+
+  <p
+    class="muted"
+    style="margin-top:15px">
+    Send exactly this amount:
+  </p>
+
+  <div
+    class="balance"
+    style="font-size:27px"
+    id="paymentAmount">
+    0 USDT
+  </div>
+
+  <p class="muted">
+    Deposit address
+  </p>
+
+  <input
+    id="address"
+    readonly>
+
+  <button
+    class="secondary"
+    onclick="copyAddress()">
+    Copy Address
+  </button>
+
+  <div class="qr">
+    <img
+      id="qr"
+      alt="TRC20 QR">
+  </div>
+
+  <div class="notice">
+
+    Send the exact amount shown above
+    to the address.
+
+    <br><br>
+
+    You do <b>not</b> need to enter TXID.
+
+    <br><br>
+
+    The system will automatically check
+    the TRON blockchain.
+
+  </div>
+
+  <button
+    style="margin-top:12px"
+    onclick="checkDeposit()">
+    🔄 Check Deposit
+  </button>
+
+  <div id="depStatus"></div>
+
+</div>
+
+</div>
+
 </section>
 
 
@@ -191,34 +554,69 @@ Available:
 <b id="wbal">0.0000 USDT</b>
 </p>
 
-<label>TRC20 wallet address</label>
+
+<label>
+TRC20 wallet address
+</label>
 
 <input
- id="waddr"
- placeholder="T...">
+  id="waddr"
+  placeholder="T...">
 
-<label>Amount</label>
+
+<label>
+Amount
+</label>
 
 <input
- id="wamount"
- type="number"
- min="1"
- step="0.01"
- placeholder="USDT amount">
+  id="wamount"
+  type="number"
+  min="1"
+  step="0.01"
+  placeholder="USDT amount">
+
 
 <div class="notice">
-برداشت فعلاً به صورت درخواست ثبت می‌شود و ارسال خودکار USDT روی بلاکچین فعال نیست.
+
+برداشت شما ابتدا برای مدیر ارسال می‌شود.
+
+<br><br>
+
+پس از تأیید مدیر، USDT به آدرس شما ارسال خواهد شد.
+
+<br><br>
+
+تا زمان تأیید، مبلغ در حالت Pending قرار می‌گیرد.
+
 </div>
 
+
 <button
- style="margin-top:12px"
- onclick="withdraw()">
+  style="margin-top:12px"
+  onclick="withdraw()">
+
 Request Withdrawal
+
 </button>
+
 
 <div id="wstatus"></div>
 
 </div>
+
+
+<div class="card">
+
+<h2>📋 My Withdrawals</h2>
+
+<div id="withdrawalHistory">
+  <p class="muted">
+    Loading...
+  </p>
+</div>
+
+</div>
+
 </section>
 
 
@@ -234,7 +632,8 @@ Send USDT to another TRC20 address.
 </p>
 
 <div class="notice">
-ارسال مستقیم بلاکچینی فعلاً فعال نیست.
+Direct blockchain sending is disabled here.
+Use Withdraw if you want to request a payout.
 </div>
 
 </div>
@@ -249,68 +648,106 @@ Send USDT to another TRC20 address.
 
 <h2>👤 Profile</h2>
 
-<div class="item">
-<span class="muted">Telegram user</span>
-<div id="username">Loading...</div>
-</div>
 
 <div class="item">
-<span class="muted">Balance</span>
-<div id="pbal">0.0000 USDT</div>
+
+<span class="muted">
+Telegram user
+</span>
+
+<div id="username">
+Loading...
 </div>
+
+</div>
+
 
 <div class="item">
-<span class="muted">Referrals</span>
-<div id="prefs">0</div>
+
+<span class="muted">
+Balance
+</span>
+
+<div id="pbal">
+0.0000 USDT
 </div>
+
+</div>
+
 
 <div class="item">
-<span class="muted">Network</span>
-<div>TRON (TRC20)</div>
+
+<span class="muted">
+Referrals
+</span>
+
+<div id="prefs">
+0
 </div>
 
 </div>
 
 
-<!-- REFERRAL -->
+<div class="item">
+
+<span class="muted">
+Network
+</span>
+
+<div>
+TRON (TRC20)
+</div>
+
+</div>
+
+</div>
+
+
 <div class="card">
 
 <h2>👥 Referral</h2>
 
-<p class="muted" style="margin:8px 0 15px">
+<p
+  class="muted"
+  style="margin:8px 0 15px">
+
 Invite friends and earn referral points.
+
 </p>
+
 
 <div class="refbox">
 
 <div class="refstat">
-<div class="muted">Invites</div>
-<div class="refnum" id="refCount">0</div>
+
+<div class="muted">
+Invites
 </div>
+
+<div
+  class="refnum"
+  id="refCount">
+  0
+</div>
+
+</div>
+
 
 <div class="refstat">
-<div class="muted">Points</div>
-<div class="refnum" id="refPoints">0 ⭐</div>
+
+<div class="muted">
+Points
+</div>
+
+<div
+  class="refnum"
+  id="refPoints">
+  0 ⭐
 </div>
 
 </div>
 
-<p class="muted">
-Your personal referral link
-</p>
-
-<input
- id="refLink"
- readonly
- placeholder="Loading referral link...">
-
-<button
- class="secondary"
- onclick="copyRef()">
-📋 Copy Referral Link
-</button>
-
-<div id="refStatus"></div>
+</div>
 
 </div>
 
@@ -323,11 +760,77 @@ Your personal referral link
 <div class="card">
 
 <div class="row">
-<h2>📋 Transactions</h2>
-<span class="badge" id="txcount2">0</span>
+
+<h2>
+📋 Transactions
+</h2>
+
+<span
+  class="badge"
+  id="txcount2">
+  0
+</span>
+
 </div>
 
-<div id="txlist" style="margin-top:8px"></div>
+<div
+  id="txlist"
+  style="margin-top:8px">
+</div>
+
+</div>
+
+</section>
+
+
+<!-- ADMIN -->
+<section
+  id="admin"
+  class="section">
+
+<div class="card">
+
+<div class="row">
+
+<h2>
+👑 Admin
+</h2>
+
+<span class="badge">
+ADMIN
+</span>
+
+</div>
+
+<p
+  class="muted"
+  style="margin-top:8px">
+
+Pending withdrawal requests
+
+</p>
+
+<button
+  class="admin"
+  style="margin-top:12px"
+  onclick="loadAdminWithdrawals()">
+
+🔄 Refresh Requests
+
+</button>
+
+<div id="adminStatus"></div>
+
+</div>
+
+
+<div
+  class="card"
+  id="adminWithdrawals">
+
+<p class="muted">
+Loading requests...
+</p>
 
 </div>
 
@@ -341,58 +844,118 @@ Your personal referral link
 
 <div class="navin">
 
-<button onclick="show('home')" data-nav="home" class="active">
-<span class="icon">⌂</span>
+<button
+  onclick="show('home')"
+  data-nav="home"
+  class="active">
+
+<span class="icon">
+⌂
+</span>
+
 Home
+
 </button>
 
-<button onclick="show('deposit')" data-nav="deposit">
-<span class="icon">＋</span>
+
+<button
+  onclick="show('deposit')"
+  data-nav="deposit">
+
+<span class="icon">
+＋
+</span>
+
 Deposit
+
 </button>
 
-<button onclick="show('send')" data-nav="send">
-<span class="icon">↗</span>
+
+<button
+  onclick="show('send')"
+  data-nav="send">
+
+<span class="icon">
+↗
+</span>
+
 Send
+
 </button>
 
-<button onclick="show('withdraw')" data-nav="withdraw">
-<span class="icon">↘</span>
+
+<button
+  onclick="show('withdraw')"
+  data-nav="withdraw">
+
+<span class="icon">
+↘
+</span>
+
 Withdraw
+
 </button>
 
-<button onclick="show('profile')" data-nav="profile">
-<span class="icon">♙</span>
+
+<button
+  onclick="show('profile')"
+  data-nav="profile">
+
+<span class="icon">
+♙
+</span>
+
 Profile
+
 </button>
 
 </div>
+
 </div>
 
 
 <script>
 
-const tg = window.Telegram?.WebApp;
+const tg =
+  window.Telegram?.WebApp;
 
 tg?.ready();
 tg?.expand();
 
-const API = "https://big-money.onrender.com";
+
+const API =
+  "https://big-money.onrender.com";
+
 
 let depositAddress =
-"TAmkXMpkcqSZmG9oRvtXfBvpLWr53wXEdx";
+  "TAmkXMpkcqSZmG9oRvtXfBvpLWr53wXEdx";
+
+
+let currentDeposit = null;
+
+let isAdmin = false;
 
 
 let state = {
+
   balance: 0,
+
+  reserved: 0,
+
   refs: 0,
+
   points: 0,
-  referralLink: "",
+
+  username: "",
+
   tx: []
+
 };
 
 
-/* TELEGRAM AUTH */
+/* =========================
+   TELEGRAM
+========================= */
 
 function telegramInitData(){
 
@@ -405,28 +968,44 @@ function telegramInitData(){
   }
 
   return tg.initData;
+
 }
 
 
-/* API */
+/* =========================
+   API
+========================= */
 
-async function api(path, options = {}){
+async function api(
+  path,
+  options = {}
+){
 
   const initData =
     telegramInitData();
 
+
+  const headers = {
+
+    "Content-Type":
+      "application/json",
+
+    "X-Telegram-Init-Data":
+      initData,
+
+    ...(options.headers || {})
+
+  };
+
+
   const response =
-    await fetch(API + path, {
-
-      ...options,
-
-      headers:{
-        "Content-Type":"application/json",
-
-        ...(options.headers || {})
+    await fetch(
+      API + path,
+      {
+        ...options,
+        headers
       }
-
-    });
+    );
 
 
   const data =
@@ -450,14 +1029,18 @@ async function api(path, options = {}){
 }
 
 
-/* CONFIG */
+/* =========================
+   CONFIG
+========================= */
 
 async function loadConfig(){
 
   try{
 
     const data =
-      await api("/api/config");
+      await api(
+        "/api/config"
+      );
 
 
     if(data.depositAddress){
@@ -465,11 +1048,10 @@ async function loadConfig(){
       depositAddress =
         data.depositAddress;
 
-
-      document.getElementById("address")
-        .value =
+      document.getElementById(
+        "address"
+      ).value =
         depositAddress;
-
 
       updateQR();
 
@@ -477,150 +1059,8 @@ async function loadConfig(){
 
   }catch(e){
 
-    document.getElementById("address")
-      .value =
-      depositAddress;
-
-    updateQR();
-
-  }
-
-}
-
-
-/* ACCOUNT */
-
-async function loadAccount(){
-
-  try{
-
-    const data =
-      await api("/api/account",{
-
-        method:"POST",
-
-        body:JSON.stringify({
-
-          initData:
-            telegramInitData()
-
-        })
-
-      });
-
-
-    if(data.user){
-
-      state.balance =
-        Number(
-          data.user.balance || 0
-        );
-
-
-      state.refs =
-        Number(
-          data.user.referralCount || 0
-        );
-
-
-      state.points =
-        Number(
-          data.user.points || 0
-        );
-
-
-      const name =
-        data.user.firstName ||
-        data.user.username ||
-        "User";
-
-
-      document.getElementById("username")
-        .textContent =
-        name;
-
-    }
-
-
-    render();
-
-  }catch(e){
-
-    document.getElementById("username")
-      .textContent =
-      "Authentication error";
-
-
-    document.getElementById("balance")
-      .textContent =
-      "Login through Telegram";
-
-
-    console.error(e);
-
-  }
-
-}
-
-
-/* REFERRAL */
-
-async function loadReferral(){
-
-  try{
-
-    const data =
-      await api("/api/referral");
-
-
-    if(data.ok){
-
-      state.referralLink =
-        data.referralLink || "";
-
-
-      state.refs =
-        Number(
-          data.referralCount || 0
-        );
-
-
-      state.points =
-        Number(
-          data.points || 0
-        );
-
-
-      document.getElementById("refLink")
-        .value =
-        state.referralLink;
-
-
-      document.getElementById("refCount")
-        .textContent =
-        state.refs;
-
-
-      document.getElementById("refPoints")
-        .textContent =
-        state.points + " ⭐";
-
-
-      document.getElementById("refs")
-        .textContent =
-        state.refs;
-
-
-      document.getElementById("prefs")
-        .textContent =
-        state.refs;
-
-    }
-
-  }catch(e){
-
     console.error(
-      "Referral error:",
+      "Config:",
       e
     );
 
@@ -629,164 +1069,317 @@ async function loadReferral(){
 }
 
 
-/* RENDER */
+/* =========================
+   ACCOUNT
+========================= */
+
+async function loadAccount(){
+
+  try{
+
+    const data =
+      await api(
+        "/api/account"
+      );
+
+
+    if(
+      data.ok &&
+      data.account
+    ){
+
+      state.balance =
+        Number(
+          data.account.availableBalance ||
+          0
+        );
+
+
+      state.reserved =
+        Number(
+          data.account.reservedBalance ||
+          0
+        );
+
+
+      state.username =
+        data.account.username ||
+        data.account.telegramUserId ||
+        "User";
+
+
+      state.points =
+        Number(
+          data.account.referralPoints ||
+          0
+        );
+
+
+      document.getElementById(
+        "username"
+      ).textContent =
+        state.username;
+
+    }
+
+
+    render();
+
+  }catch(e){
+
+    console.error(
+      "Account:",
+      e
+    );
+
+    document.getElementById(
+      "username"
+    ).textContent =
+      "Telegram authentication error";
+
+  }
+
+}
+
+
+/* =========================
+   RENDER
+========================= */
 
 function render(){
 
-  const balance =
+  document.getElementById(
+    "balance"
+  ).textContent =
     Number(
-      state.balance || 0
-    );
-
-
-  document.getElementById("balance")
-    .textContent =
-    balance.toFixed(4) +
+      state.balance
+    ).toFixed(4) +
     " USDT";
 
 
-  document.getElementById("wbal")
-    .textContent =
-    balance.toFixed(4) +
+  document.getElementById(
+    "reserved"
+  ).textContent =
+    Number(
+      state.reserved
+    ).toFixed(4);
+
+
+  document.getElementById(
+    "wbal"
+  ).textContent =
+    Number(
+      state.balance
+    ).toFixed(4) +
     " USDT";
 
 
-  document.getElementById("pbal")
-    .textContent =
-    balance.toFixed(4) +
+  document.getElementById(
+    "pbal"
+  ).textContent =
+    Number(
+      state.balance
+    ).toFixed(4) +
     " USDT";
 
 
-  document.getElementById("refs")
-    .textContent =
+  document.getElementById(
+    "refs"
+  ).textContent =
     state.refs;
 
 
-  document.getElementById("prefs")
-    .textContent =
+  document.getElementById(
+    "prefs"
+  ).textContent =
     state.refs;
 
 
-  document.getElementById("refCount")
-    .textContent =
+  document.getElementById(
+    "refCount"
+  ).textContent =
     state.refs;
 
 
-  document.getElementById("refPoints")
-    .textContent =
-    state.points + " ⭐";
+  document.getElementById(
+    "refPoints"
+  ).textContent =
+    state.points +
+    " ⭐";
 
 
-  document.getElementById("txcount")
-    .textContent =
+  document.getElementById(
+    "txcount"
+  ).textContent =
     state.tx.length;
 
 
-  document.getElementById("txcount2")
-    .textContent =
+  document.getElementById(
+    "txcount2"
+  ).textContent =
     state.tx.length;
-
-
-  if(tg?.initDataUnsafe?.user){
-
-    const u =
-      tg.initDataUnsafe.user;
-
-
-    document.getElementById("username")
-      .textContent =
-      u.first_name ||
-      u.username ||
-      "User";
-
-  }
-
-
-  if(state.referralLink){
-
-    document.getElementById("refLink")
-      .value =
-      state.referralLink;
-
-  }
 
 
   const list =
-    document.getElementById("txlist");
+    document.getElementById(
+      "txlist"
+    );
+
+
+  if(!state.tx.length){
+
+    list.innerHTML =
+      '<p class="muted">No transactions yet.</p>';
+
+    return;
+
+  }
 
 
   list.innerHTML =
-    state.tx.length
-
-    ? state.tx
+    state.tx
       .slice()
       .reverse()
-      .map(x =>
+      .map(x => {
 
-        `<div class="item">
+        return `
+
+        <div class="item">
 
           <div class="row">
 
-            <b>${x.type}</b>
+            <b>${escapeHtml(
+              x.type
+            )}</b>
 
             <span class="badge">
-              ${x.status}
+              ${escapeHtml(
+                x.status
+              )}
             </span>
 
           </div>
 
           <div class="muted">
-            ${x.amount
-              ? x.amount + " USDT"
-              : ""}
-            · ${x.time}
+
+            ${x.amount || ""}
+            ${x.amount ? " USDT" : ""}
+
+            ·
+
+            ${escapeHtml(
+              x.time || ""
+            )}
+
           </div>
 
-        </div>`
+        </div>
 
-      ).join("")
+        `;
 
-    : '<p class="muted">No transactions yet.</p>';
+      })
+      .join("");
 
 }
 
 
-/* PAGE */
+/* =========================
+   ESCAPE
+========================= */
+
+function escapeHtml(value){
+
+  return String(
+    value ?? ""
+  )
+  .replaceAll("&","&amp;")
+  .replaceAll("<","&lt;")
+  .replaceAll(">","&gt;")
+  .replaceAll('"',"&quot;")
+  .replaceAll("'","&#039;");
+
+}
+
+
+/* =========================
+   PAGE
+========================= */
 
 function show(id){
 
-  document.querySelectorAll(".section")
-    .forEach(x =>
-      x.classList.remove("active")
+  document
+    .querySelectorAll(
+      ".section"
+    )
+    .forEach(
+      x =>
+        x.classList.remove(
+          "active"
+        )
     );
 
 
-  document.getElementById(id)
-    .classList.add("active");
+  const section =
+    document.getElementById(
+      id
+    );
 
 
-  document.querySelectorAll(".nav button")
-    .forEach(x =>
-      x.classList.toggle(
-        "active",
-        x.dataset.nav === id
-      )
+  if(section){
+
+    section.classList.add(
+      "active"
+    );
+
+  }
+
+
+  document
+    .querySelectorAll(
+      ".nav button"
+    )
+    .forEach(
+      x =>
+        x.classList.toggle(
+          "active",
+          x.dataset.nav === id
+        )
     );
 
 
   render();
 
-  window.scrollTo(0,0);
+  window.scrollTo(
+    0,
+    0
+  );
+
+
+  if(id === "withdraw"){
+
+    loadWithdrawalHistory();
+
+  }
+
+
+  if(id === "admin"){
+
+    loadAdminWithdrawals();
+
+  }
 
 }
 
 
-/* DEPOSIT */
+/* =========================
+   DEPOSIT
+========================= */
 
 function setDep(n){
 
-  document.getElementById("depAmount")
-    .value =
+  document.getElementById(
+    "depAmount"
+  ).value =
     n;
 
 }
@@ -800,7 +1393,6 @@ async function copyAddress(){
       .writeText(
         depositAddress
       );
-
 
     alert(
       "Deposit address copied"
@@ -825,144 +1417,26 @@ function updateQR(){
     );
 
 
-  document.getElementById("qr")
-    .src =
+  document.getElementById(
+    "qr"
+  ).src =
     "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
     a;
 
 }
 
 
-/* VERIFY DEPOSIT */
+/* =========================
+   CREATE DEPOSIT
+========================= */
 
-async function verifyDeposit(){
+async function createDeposit(){
 
   const amount =
-    document.getElementById("depAmount")
-      .value
-      .trim();
+    document.getElementById(
+      "depAmount"
+    ).value.trim();
 
-
-  const txid =
-    document.getElementById("txid")
-      .value
-      .trim();
-
-
-  const box =
-    document.getElementById("depStatus");
-
-
-  if(!amount ||
-     Number(amount) <= 0){
-
-    box.innerHTML =
-      '<div class="error">Enter the exact USDT amount you sent.</div>';
-
-    return;
-
-  }
-
-
-  if(!/^[a-fA-F0-9]{64}$/.test(txid)){
-
-    box.innerHTML =
-      '<div class="error">Invalid TXID. TRON TXID must contain 64 hexadecimal characters.</div>';
-
-    return;
-
-  }
-
-
-  box.innerHTML =
-    '<div class="success">Checking the confirmed TRON transaction...</div>';
-
-
-  try{
-
-    const data =
-      await api(
-        "/api/deposits/verify",
-        {
-
-          method:"POST",
-
-          body:JSON.stringify({
-
-            initData:
-              telegramInitData(),
-
-            txid:
-              txid,
-
-            amount:
-              amount
-
-          })
-
-        }
-      );
-
-
-    if(data.ok){
-
-      state.balance =
-        Number(
-          data.balance || 0
-        );
-
-
-      state.tx.push({
-
-        type:
-          "Deposit",
-
-        amount:
-          Number(
-            data.deposit?.amount ||
-            amount
-          ),
-
-        status:
-          "Confirmed",
-
-        time:
-          new Date()
-            .toLocaleString()
-
-      });
-
-
-      render();
-
-
-      box.innerHTML =
-        `<div class="success">
-          ✅ Deposit confirmed.<br>
-          ${data.deposit.amount} USDT added to your balance.
-        </div>`;
-
-
-      document.getElementById("txid")
-        .value = "";
-
-    }
-
-  }catch(e){
-
-    box.innerHTML =
-      '<div class="error">❌ ' +
-      e.message +
-      '</div>';
-
-  }
-
-}
-
-
-/* CHECK BLOCKCHAIN */
-
-async function checkDeposits(){
 
   const box =
     document.getElementById(
@@ -970,8 +1444,146 @@ async function checkDeposits(){
     );
 
 
+  if(
+    !amount ||
+    Number(amount) <= 0
+  ){
+
+    box.innerHTML =
+      '<div class="error">Enter a valid amount.</div>';
+
+    return;
+
+  }
+
+
   box.innerHTML =
-    '<div class="success">Checking confirmed blockchain transfers...</div>';
+    '<div class="success">Creating deposit request...</div>';
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/deposits/request",
+        {
+
+          method:"POST",
+
+          body:
+            JSON.stringify({
+              amount:
+                amount
+            })
+
+        }
+      );
+
+
+    if(
+      !data.ok ||
+      !data.deposit
+    ){
+
+      throw new Error(
+        "Could not create deposit request"
+      );
+
+    }
+
+
+    currentDeposit =
+      data.deposit;
+
+
+    document.getElementById(
+      "paymentAmount"
+    ).textContent =
+      data.deposit.paymentAmount +
+      " USDT";
+
+
+    document.getElementById(
+      "address"
+    ).value =
+      data.deposit.address;
+
+
+    depositAddress =
+      data.deposit.address;
+
+
+    updateQR();
+
+
+    document.getElementById(
+      "depositPayment"
+    ).classList.remove(
+      "hidden"
+    );
+
+
+    box.innerHTML =
+      `<div class="success">
+
+        Deposit request created.
+
+        <br><br>
+
+        Send exactly
+        <b>${data.deposit.paymentAmount} USDT</b>
+
+        to the address above.
+
+        <br><br>
+
+        The system will detect the payment automatically.
+
+      </div>`;
+
+
+    startDepositPolling();
+
+  }catch(e){
+
+    box.innerHTML =
+      '<div class="error">' +
+      escapeHtml(
+        e.message
+      ) +
+      '</div>';
+
+  }
+
+}
+
+
+/* =========================
+   CHECK DEPOSIT
+========================= */
+
+async function checkDeposit(){
+
+  const box =
+    document.getElementById(
+      "depStatus"
+    );
+
+
+  if(
+    !currentDeposit
+  ){
+
+    box.innerHTML =
+      '<div class="notice">Create a deposit request first.</div>';
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    '<div class="success">🔍 Checking TRON blockchain...</div>';
 
 
   try{
@@ -983,46 +1595,68 @@ async function checkDeposits(){
 
           method:"POST",
 
-          body:JSON.stringify({
+          body:
+            JSON.stringify({
 
-            initData:
-              telegramInitData()
+              depositId:
+                currentDeposit.id
 
-          })
+            })
 
         }
       );
 
 
-    if(!data.transfers ||
-       data.transfers.length === 0){
+    if(
+      data.status ===
+      "confirmed"
+    ){
 
       box.innerHTML =
-        '<div class="notice">No confirmed USDT transfer has been detected yet.</div>';
+        `<div class="success">
+
+          ✅ Deposit confirmed!
+
+          <br>
+
+          Your balance has been updated.
+
+        </div>`;
+
+
+      currentDeposit = null;
+
+
+      await loadAccount();
+
+      stopDepositPolling();
 
       return;
 
     }
 
 
-    const latest =
-      data.transfers[0];
-
-
     box.innerHTML =
-      `<div class="success">
-        Confirmed transfer found:<br>
-        ${latest.amount} USDT<br>
-        TXID: ${String(
-          latest.txid
-        ).slice(0,16)}...
+      `<div class="notice">
+
+        ⏳ Payment not detected yet.
+
+        <br><br>
+
+        Send exactly
+        <b>${escapeHtml(
+          currentDeposit.paymentAmount
+        )} USDT</b>.
+
       </div>`;
 
   }catch(e){
 
     box.innerHTML =
       '<div class="error">' +
-      e.message +
+      escapeHtml(
+        e.message
+      ) +
       '</div>';
 
   }
@@ -1030,7 +1664,104 @@ async function checkDeposits(){
 }
 
 
-/* WITHDRAW */
+/* =========================
+   DEPOSIT POLLING
+========================= */
+
+let depositTimer = null;
+
+
+function startDepositPolling(){
+
+  stopDepositPolling();
+
+
+  depositTimer =
+    setInterval(
+      async () => {
+
+        if(
+          currentDeposit
+        ){
+
+          try{
+
+            const data =
+              await api(
+                "/api/deposits/check",
+                {
+
+                  method:"POST",
+
+                  body:
+                    JSON.stringify({
+
+                      depositId:
+                        currentDeposit.id
+
+                    })
+
+                }
+              );
+
+
+            if(
+              data.status ===
+              "confirmed"
+            ){
+
+              document.getElementById(
+                "depStatus"
+              ).innerHTML =
+                '<div class="success">✅ Deposit confirmed automatically!</div>';
+
+
+              currentDeposit =
+                null;
+
+
+              await loadAccount();
+
+              stopDepositPolling();
+
+            }
+
+          }catch(e){
+
+            console.log(
+              "Deposit polling:",
+              e.message
+            );
+
+          }
+
+        }
+
+      },
+      15000
+    );
+
+}
+
+
+function stopDepositPolling(){
+
+  if(depositTimer){
+
+    clearInterval(
+      depositTimer
+    );
+
+    depositTimer = null;
+
+  }
+
+}
+
+
+/* =========================
+   WITHDRAW
+========================= */
 
 async function withdraw(){
 
@@ -1048,194 +1779,4 @@ async function withdraw(){
 
   const box =
     document.getElementById(
-      "wstatus"
-    );
-
-
-  if(!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)){
-
-    box.innerHTML =
-      '<div class="error">Enter a valid TRON address.</div>';
-
-    return;
-
-  }
-
-
-  if(!amount ||
-     Number(amount) <= 0){
-
-    box.innerHTML =
-      '<div class="error">Enter a valid amount.</div>';
-
-    return;
-
-  }
-
-
-  if(Number(amount) >
-     Number(state.balance)){
-
-    box.innerHTML =
-      '<div class="error">Insufficient balance.</div>';
-
-    return;
-
-  }
-
-
-  box.innerHTML =
-    '<div class="success">Creating withdrawal request...</div>';
-
-
-  try{
-
-    const data =
-      await api(
-        "/api/withdrawals/request",
-        {
-
-          method:"POST",
-
-          body:JSON.stringify({
-
-            initData:
-              telegramInitData(),
-
-            address:
-              address,
-
-            amount:
-              amount
-
-          })
-
-        }
-      );
-
-
-    if(data.ok){
-
-      state.balance =
-        Number(
-          data.balance || 0
-        );
-
-
-      state.tx.push({
-
-        type:
-          "Withdrawal",
-
-        amount:
-          Number(amount),
-
-        status:
-          "Pending",
-
-        time:
-          new Date()
-            .toLocaleString()
-
-      });
-
-
-      render();
-
-
-      box.innerHTML =
-        `<div class="success">
-          Withdrawal request created.<br>
-          ID: ${data.withdrawalId}
-        </div>`;
-
-    }
-
-  }catch(e){
-
-    box.innerHTML =
-      '<div class="error">' +
-      e.message +
-      '</div>';
-
-  }
-
-}
-
-
-/* COPY REFERRAL */
-
-async function copyRef(){
-
-  const value =
-    document.getElementById(
-      "refLink"
-    ).value;
-
-
-  const box =
-    document.getElementById(
-      "refStatus"
-    );
-
-
-  if(!value){
-
-    box.innerHTML =
-      '<div class="error">Referral link is not available yet.</div>';
-
-    return;
-
-  }
-
-
-  try{
-
-    await navigator.clipboard
-      .writeText(value);
-
-
-    box.innerHTML =
-      '<div class="success">✅ Referral link copied!</div>';
-
-
-    setTimeout(() => {
-
-      box.innerHTML = "";
-
-    },3000);
-
-
-  }catch(e){
-
-    box.innerHTML =
-      '<div class="notice">' +
-      value +
-      '</div>';
-
-  }
-
-}
-
-
-/* START */
-
-document.getElementById("address")
-  .value =
-  depositAddress;
-
-
-updateQR();
-
-render();
-
-loadConfig();
-
-loadAccount();
-
-loadReferral();
-
-</script>
-
-</body>
-</html>
+      "

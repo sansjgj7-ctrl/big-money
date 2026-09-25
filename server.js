@@ -35,16 +35,7 @@ const ALLOWED_ORIGIN =
   "https://sansjgj7-ctrl.github.io";
 
 const TELEGRAM_AUTH_MAX_AGE =
-  Number(
-    process.env.TELEGRAM_AUTH_MAX_AGE || 3600
-  );
-
-/*
-  Telegram IDs of administrators.
-
-  Example:
-  ADMIN_TELEGRAM_IDS=123456789,987654321
-*/
+  Number(process.env.TELEGRAM_AUTH_MAX_AGE || 3600);
 
 const ADMIN_TELEGRAM_IDS = String(
   process.env.ADMIN_TELEGRAM_IDS || ""
@@ -53,18 +44,11 @@ const ADMIN_TELEGRAM_IDS = String(
   .map((id) => id.trim())
   .filter(Boolean);
 
-/*
-  Wallet from which administrator sends
-  withdrawal USDT.
-
-  IMPORTANT:
-  NEVER put a private key here.
-*/
-
 const WITHDRAWAL_SOURCE_ADDRESS =
   process.env.WITHDRAWAL_SOURCE_ADDRESS || "";
 
 const USDT_DECIMALS = 6;
+const MIN_WITHDRAWAL = 1;
 
 
 /* =========================================================
@@ -95,19 +79,11 @@ app.use(
 
 const rateMap = new Map();
 
-function rateLimit(
-  key,
-  maxRequests,
-  windowMs
-) {
+function rateLimit(key, maxRequests, windowMs) {
   const now = Date.now();
-
   const item = rateMap.get(key);
 
-  if (
-    !item ||
-    now - item.start > windowMs
-  ) {
+  if (!item || now - item.start > windowMs) {
     rateMap.set(key, {
       start: now,
       count: 1,
@@ -148,20 +124,13 @@ function defaultStore() {
 }
 
 function ensureStore() {
-  if (
-    !fs.existsSync(DATA_DIR)
-  ) {
-    fs.mkdirSync(
-      DATA_DIR,
-      {
-        recursive: true,
-      }
-    );
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, {
+      recursive: true,
+    });
   }
 
-  if (
-    !fs.existsSync(DATA_FILE)
-  ) {
+  if (!fs.existsSync(DATA_FILE)) {
     fs.writeFileSync(
       DATA_FILE,
       JSON.stringify(
@@ -189,8 +158,7 @@ function readStore() {
 
     return {
       users: data.users || {},
-      deposits:
-        data.deposits || {},
+      deposits: data.deposits || {},
       withdrawals:
         data.withdrawals || {},
     };
@@ -251,41 +219,94 @@ function withStoreLock(fn) {
 
 
 /* =========================================================
+   HELPERS
+========================================================= */
+
+function nowISO() {
+  return new Date().toISOString();
+}
+
+function generateId(prefix) {
+  return (
+    prefix +
+    "_" +
+    crypto.randomBytes(12).toString("hex")
+  );
+}
+
+function isValidAmount(amount) {
+  return (
+    typeof amount === "number" &&
+    Number.isFinite(amount) &&
+    amount > 0
+  );
+}
+
+function toBaseUnits(amount) {
+  const value = Number(amount);
+
+  if (!isValidAmount(value)) {
+    throw new Error("Invalid amount");
+  }
+
+  const scaled =
+    Math.round(
+      value * 10 ** USDT_DECIMALS
+    );
+
+  if (!Number.isSafeInteger(scaled)) {
+    throw new Error("Amount is too large");
+  }
+
+  return scaled;
+}
+
+function fromBaseUnits(amountBase) {
+  return (
+    Number(amountBase) /
+    10 ** USDT_DECIMALS
+  );
+}
+
+function isValidTronAddress(address) {
+  return (
+    typeof address === "string" &&
+    /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(
+      address.trim()
+    )
+  );
+}
+
+function normalizeAddress(address) {
+  return String(address || "").trim();
+}
+
+
+/* =========================================================
    USER
 ========================================================= */
 
-function getUser(
-  store,
-  telegramUser
-) {
+function getUser(store, telegramUser) {
   const id =
-    String(
-      telegramUser.id
-    );
+    String(telegramUser.id);
 
   if (!store.users[id]) {
     store.users[id] = {
       telegramUserId: id,
 
       username:
-        telegramUser.username ||
-        "",
+        telegramUser.username || "",
 
       firstName:
-        telegramUser.first_name ||
-        "",
+        telegramUser.first_name || "",
 
       lastName:
-        telegramUser.last_name ||
-        "",
+        telegramUser.last_name || "",
 
       balance: 0,
 
-      createdAt:
-        new Date().toISOString(),
-
-      updatedAt:
-        new Date().toISOString(),
+      createdAt: nowISO(),
+      updatedAt: nowISO(),
     };
   } else {
     store.users[id].username =
@@ -304,7 +325,7 @@ function getUser(
       "";
 
     store.users[id].updatedAt =
-      new Date().toISOString();
+      nowISO();
   }
 
   return store.users[id];
@@ -315,9 +336,7 @@ function getUser(
    TELEGRAM INIT DATA VALIDATION
 ========================================================= */
 
-function validateTelegramInitData(
-  initData
-) {
+function validateTelegramInitData(initData) {
   if (!TELEGRAM_BOT_TOKEN) {
     throw new Error(
       "TELEGRAM_BOT_TOKEN is not configured on the server"
@@ -334,9 +353,7 @@ function validateTelegramInitData(
   }
 
   const params =
-    new URLSearchParams(
-      initData
-    );
+    new URLSearchParams(initData);
 
   const receivedHash =
     params.get("hash");
@@ -350,9 +367,7 @@ function validateTelegramInitData(
   params.delete("hash");
 
   const dataCheckString =
-    Array.from(
-      params.entries()
-    )
+    Array.from(params.entries())
       .sort(
         ([a], [b]) =>
           a.localeCompare(b)
@@ -415,11 +430,7 @@ function validateTelegramInitData(
       params.get("auth_date")
     );
 
-  if (
-    !Number.isFinite(
-      authDate
-    )
-  ) {
+  if (!Number.isFinite(authDate)) {
     throw new Error(
       "Invalid Telegram auth_date"
     );
@@ -459,10 +470,7 @@ function validateTelegramInitData(
     );
   }
 
-  if (
-    !user ||
-    !user.id
-  ) {
+  if (!user || !user.id) {
     throw new Error(
       "Invalid Telegram user"
     );
@@ -473,4 +481,222 @@ function validateTelegramInitData(
 
 
 /* =========================================================
-  
+   AUTH MIDDLEWARE
+========================================================= */
+
+function getInitDataFromRequest(req) {
+  return (
+    req.headers["x-telegram-init-data"] ||
+    req.body?.initData ||
+    ""
+  );
+}
+
+function requireTelegram(req, res, next) {
+  try {
+    const initData =
+      getInitDataFromRequest(req);
+
+    const telegramUser =
+      validateTelegramInitData(
+        initData
+      );
+
+    req.telegramUser =
+      telegramUser;
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      ok: false,
+      error: error.message,
+    });
+  }
+}
+
+function requireAdmin(req, res, next) {
+  try {
+    const initData =
+      getInitDataFromRequest(req);
+
+    const telegramUser =
+      validateTelegramInitData(
+        initData
+      );
+
+    const telegramId =
+      String(telegramUser.id);
+
+    if (
+      !ADMIN_TELEGRAM_IDS.includes(
+        telegramId
+      )
+    ) {
+      return res.status(403).json({
+        ok: false,
+        error: "Admin access required",
+      });
+    }
+
+    req.telegramUser =
+      telegramUser;
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      ok: false,
+      error: error.message,
+    });
+  }
+}
+
+
+/* =========================================================
+   TRONGRID
+========================================================= */
+
+async function tronRequest(
+  endpoint,
+  options = {}
+) {
+  const headers = {
+    Accept: "application/json",
+    ...(options.headers || {}),
+  };
+
+  if (TRONGRID_API_KEY) {
+    headers[
+      "TRON-PRO-API-KEY"
+    ] = TRONGRID_API_KEY;
+  }
+
+  const response =
+    await fetch(
+      TRONGRID_URL +
+        endpoint,
+      {
+        ...options,
+        headers,
+      }
+    );
+
+  const text =
+    await response.text();
+
+  let data;
+
+  try {
+    data =
+      JSON.parse(text);
+  } catch {
+    data = {
+      raw: text,
+    };
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `TRON API error ${response.status}`
+    );
+  }
+
+  return data;
+}
+
+
+/* =========================================================
+   TRON TX HELPERS
+========================================================= */
+
+async function getSolidifiedTransaction(txid) {
+  return tronRequest(
+    `/walletsolidity/gettransactionbyid?value=${encodeURIComponent(
+      txid
+    )}`
+  );
+}
+
+async function getSolidifiedTransactionInfo(txid) {
+  return tronRequest(
+    `/walletsolidity/gettransactioninfobyid?value=${encodeURIComponent(
+      txid
+    )}`
+  );
+}
+
+async function getTransferEvents(txid) {
+  const data =
+    await tronRequest(
+      `/v1/transactions/${encodeURIComponent(
+        txid
+      )}/events?only_confirmed=true&limit=200`
+    );
+
+  return Array.isArray(data.data)
+    ? data.data
+    : [];
+}
+
+
+/* =========================================================
+   VERIFY DEPOSIT
+========================================================= */
+
+async function verifyDepositTransaction(
+  txid,
+  expectedAmount
+) {
+  const transaction =
+    await getSolidifiedTransaction(
+      txid
+    );
+
+  if (
+    !transaction ||
+    !transaction.txID
+  ) {
+    throw new Error(
+      "Transaction not found"
+    );
+  }
+
+  if (
+    transaction.txID.toLowerCase() !==
+    txid.toLowerCase()
+  ) {
+    throw new Error(
+      "Invalid transaction"
+    );
+  }
+
+  const info =
+    await getSolidifiedTransactionInfo(
+      txid
+    );
+
+  if (
+    info.receipt &&
+    info.receipt.result &&
+    info.receipt.result !==
+      "SUCCESS"
+  ) {
+    throw new Error(
+      "Transaction failed"
+    );
+  }
+
+  const events =
+    await getTransferEvents(
+      txid
+    );
+
+  const expectedBase =
+    expectedAmount != null
+      ? toBaseUnits(
+          Number(expectedAmount)
+        )
+      : null;
+
+  for (const event of events) {
+    if (
+      event

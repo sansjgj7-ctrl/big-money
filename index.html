@@ -40,6 +40,9 @@ input{width:100%;padding:14px;border-radius:13px;border:1px solid #28513a;backgr
 .notice{background:#241f0c;border:1px solid #5c4b16;color:#eadb86}
 .success{background:#0e2b1b;border:1px solid #24613c;color:#9cf4b8}
 .error{background:#321416;border:1px solid #713238;color:#ffb9be}
+.refbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.refstat{background:#07140d;border:1px solid #28513a;border-radius:14px;padding:15px}
+.refnum{font-size:25px;font-weight:800;margin-top:5px}
 </style>
 </head>
 
@@ -52,6 +55,8 @@ input{width:100%;padding:14px;border-radius:13px;border:1px solid #28513a;backgr
   <div class="pill">USDT · TRC20</div>
 </div>
 
+
+<!-- HOME -->
 <section id="home" class="section active">
 
 <div class="card">
@@ -72,6 +77,7 @@ input{width:100%;padding:14px;border-radius:13px;border:1px solid #28513a;backgr
 </div>
 
 <div class="grid">
+
   <div class="card">
     <div class="muted">Referrals</div>
     <div class="stat" id="refs">0</div>
@@ -81,20 +87,27 @@ input{width:100%;padding:14px;border-radius:13px;border:1px solid #28513a;backgr
     <div class="muted">Transactions</div>
     <div class="stat" id="txcount">0</div>
   </div>
+
 </div>
 
 <div class="card">
   <h2>Quick Actions</h2>
 
   <div class="grid" style="margin-top:12px">
-    <button class="secondary" onclick="show('send')">Send USDT</button>
-    <button class="secondary" onclick="show('profile')">Profile</button>
+    <button class="secondary" onclick="show('send')">
+      Send USDT
+    </button>
+
+    <button class="secondary" onclick="show('profile')">
+      Profile
+    </button>
   </div>
 </div>
 
 </section>
 
 
+<!-- DEPOSIT -->
 <section id="deposit" class="section">
 
 <div class="card">
@@ -166,6 +179,7 @@ Check Blockchain
 </section>
 
 
+<!-- WITHDRAW -->
 <section id="withdraw" class="section">
 
 <div class="card">
@@ -208,6 +222,7 @@ Request Withdrawal
 </section>
 
 
+<!-- SEND -->
 <section id="send" class="section">
 
 <div class="card">
@@ -227,6 +242,7 @@ Send USDT to another TRC20 address.
 </section>
 
 
+<!-- PROFILE -->
 <section id="profile" class="section">
 
 <div class="card">
@@ -255,27 +271,53 @@ Send USDT to another TRC20 address.
 
 </div>
 
+
+<!-- REFERRAL -->
 <div class="card">
 
-<h2>👥 Invite Friends</h2>
+<h2>👥 Referral</h2>
 
-<p class="muted" style="margin:8px 0 12px">
-Share your Big Money referral link.
+<p class="muted" style="margin:8px 0 15px">
+Invite friends and earn referral points.
 </p>
 
-<input id="refLink" readonly>
+<div class="refbox">
+
+<div class="refstat">
+<div class="muted">Invites</div>
+<div class="refnum" id="refCount">0</div>
+</div>
+
+<div class="refstat">
+<div class="muted">Points</div>
+<div class="refnum" id="refPoints">0 ⭐</div>
+</div>
+
+</div>
+
+<p class="muted">
+Your personal referral link
+</p>
+
+<input
+ id="refLink"
+ readonly
+ placeholder="Loading referral link...">
 
 <button
  class="secondary"
  onclick="copyRef()">
-Copy Referral Link
+📋 Copy Referral Link
 </button>
+
+<div id="refStatus"></div>
 
 </div>
 
 </section>
 
 
+<!-- TRANSACTIONS -->
 <section id="transactions" class="section">
 
 <div class="card">
@@ -294,6 +336,7 @@ Copy Referral Link
 </div>
 
 
+<!-- NAVIGATION -->
 <div class="nav">
 
 <div class="navin">
@@ -339,590 +382,21 @@ const API = "https://big-money.onrender.com";
 let depositAddress =
 "TAmkXMpkcqSZmG9oRvtXfBvpLWr53wXEdx";
 
+
 let state = {
   balance: 0,
   refs: 0,
+  points: 0,
+  referralLink: "",
   tx: []
 };
 
 
+/* TELEGRAM AUTH */
+
 function telegramInitData(){
 
   if(!tg || !tg.initData){
-    throw new Error(
-      "Please open Big Money inside Telegram."
-    );
-  }
-
-  return tg.initData;
-}
-
-
-async function api(path, options = {}){
-
-  const initData = telegramInitData();
-
-  const response = await fetch(API + path, {
-
-    ...options,
-
-    headers:{
-      "Content-Type":"application/json",
-
-      ...(options.headers || {})
-    }
-
-  });
-
-  const data =
-    await response.json().catch(() => ({}));
-
-  if(!response.ok){
 
     throw new Error(
-      data.error || "Server request failed"
-    );
-
-  }
-
-  return data;
-}
-
-
-async function loadConfig(){
-
-  try{
-
-    const data =
-      await api("/api/config");
-
-    if(data.depositAddress){
-
-      depositAddress =
-        data.depositAddress;
-
-      document.getElementById("address").value =
-        depositAddress;
-
-      updateQR();
-
-    }
-
-  }catch(e){
-
-    document.getElementById("address").value =
-      depositAddress;
-
-    updateQR();
-
-  }
-
-}
-
-
-async function loadAccount(){
-
-  try{
-
-    const data =
-      await api("/api/account",{
-
-        method:"POST",
-
-        body:JSON.stringify({
-
-          initData:
-            telegramInitData()
-
-        })
-
-      });
-
-    if(data.user){
-
-      state.balance =
-        Number(data.user.balance || 0);
-
-      const name =
-        data.user.firstName ||
-        data.user.username ||
-        "User";
-
-      document.getElementById("username")
-        .textContent = name;
-
-    }
-
-    render();
-
-  }catch(e){
-
-    document.getElementById("username")
-      .textContent = "Authentication error";
-
-    document.getElementById("balance")
-      .textContent = "Login through Telegram";
-
-    console.error(e);
-
-  }
-
-}
-
-
-function render(){
-
-  const balance =
-    Number(state.balance || 0);
-
-  document.getElementById("balance")
-    .textContent =
-    balance.toFixed(4) + " USDT";
-
-  document.getElementById("wbal")
-    .textContent =
-    balance.toFixed(4) + " USDT";
-
-  document.getElementById("pbal")
-    .textContent =
-    balance.toFixed(4) + " USDT";
-
-  document.getElementById("refs")
-    .textContent =
-    state.refs;
-
-  document.getElementById("prefs")
-    .textContent =
-    state.refs;
-
-  document.getElementById("txcount")
-    .textContent =
-    state.tx.length;
-
-  document.getElementById("txcount2")
-    .textContent =
-    state.tx.length;
-
-  if(tg?.initDataUnsafe?.user){
-
-    const u =
-      tg.initDataUnsafe.user;
-
-    document.getElementById("username")
-      .textContent =
-      u.first_name ||
-      u.username ||
-      "User";
-
-  }
-
-  document.getElementById("refLink").value =
-    "https://t.me/BigMoneyBot?start=ref_demo";
-
-  const list =
-    document.getElementById("txlist");
-
-  list.innerHTML =
-    state.tx.length
-
-    ? state.tx
-      .slice()
-      .reverse()
-      .map(x =>
-
-        `<div class="item">
-          <div class="row">
-            <b>${x.type}</b>
-            <span class="badge">${x.status}</span>
-          </div>
-
-          <div class="muted">
-            ${x.amount ? x.amount + " USDT" : ""}
-            · ${x.time}
-          </div>
-        </div>`
-
-      ).join("")
-
-    : '<p class="muted">No transactions yet.</p>';
-
-}
-
-
-function show(id){
-
-  document.querySelectorAll(".section")
-    .forEach(x =>
-      x.classList.remove("active")
-    );
-
-  document.getElementById(id)
-    .classList.add("active");
-
-  document.querySelectorAll(".nav button")
-    .forEach(x =>
-      x.classList.toggle(
-        "active",
-        x.dataset.nav === id
-      )
-    );
-
-  render();
-
-  window.scrollTo(0,0);
-
-}
-
-
-function setDep(n){
-
-  document.getElementById("depAmount")
-    .value = n;
-
-}
-
-
-async function copyAddress(){
-
-  try{
-
-    await navigator.clipboard
-      .writeText(depositAddress);
-
-    alert("Address copied");
-
-  }catch(e){
-
-    alert(depositAddress);
-
-  }
-
-}
-
-
-function updateQR(){
-
-  const a =
-    encodeURIComponent(depositAddress);
-
-  document.getElementById("qr").src =
-    "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
-    a;
-
-}
-
-
-async function verifyDeposit(){
-
-  const amount =
-    document.getElementById("depAmount")
-      .value.trim();
-
-  const txid =
-    document.getElementById("txid")
-      .value.trim();
-
-  const box =
-    document.getElementById("depStatus");
-
-
-  if(!amount || Number(amount) <= 0){
-
-    box.innerHTML =
-      '<div class="error">Enter the exact USDT amount you sent.</div>';
-
-    return;
-
-  }
-
-
-  if(!/^[a-fA-F0-9]{64}$/.test(txid)){
-
-    box.innerHTML =
-      '<div class="error">Invalid TXID. TRON TXID must contain 64 hexadecimal characters.</div>';
-
-    return;
-
-  }
-
-
-  box.innerHTML =
-    '<div class="success">Checking the confirmed TRON transaction...</div>';
-
-
-  try{
-
-    const data =
-      await api("/api/deposits/verify",{
-
-        method:"POST",
-
-        body:JSON.stringify({
-
-          initData:
-            telegramInitData(),
-
-          txid:txid,
-
-          amount:amount
-
-        })
-
-      });
-
-
-    if(data.ok){
-
-      state.balance =
-        Number(data.balance || 0);
-
-      state.tx.push({
-
-        type:"Deposit",
-
-        amount:
-          Number(data.deposit?.amount || amount),
-
-        status:"Confirmed",
-
-        time:
-          new Date().toLocaleString()
-
-      });
-
-      render();
-
-
-      box.innerHTML =
-        `<div class="success">
-          ✅ Deposit confirmed.<br>
-          ${data.deposit.amount} USDT added to your balance.
-        </div>`;
-
-      document.getElementById("txid")
-        .value = "";
-
-    }
-
-
-  }catch(e){
-
-    box.innerHTML =
-      '<div class="error">❌ ' +
-      e.message +
-      '</div>';
-
-  }
-
-}
-
-
-async function checkDeposits(){
-
-  const box =
-    document.getElementById("depStatus");
-
-  box.innerHTML =
-    '<div class="success">Checking confirmed blockchain transfers...</div>';
-
-
-  try{
-
-    const data =
-      await api("/api/deposits/check",{
-
-        method:"POST",
-
-        body:JSON.stringify({
-
-          initData:
-            telegramInitData()
-
-        })
-
-      });
-
-
-    if(!data.transfers ||
-       data.transfers.length === 0){
-
-      box.innerHTML =
-        '<div class="notice">No confirmed USDT transfer has been detected yet.</div>';
-
-      return;
-
-    }
-
-
-    const latest =
-      data.transfers[0];
-
-
-    box.innerHTML =
-      `<div class="success">
-        Confirmed transfer found:<br>
-        ${latest.amount} USDT<br>
-        TXID: ${String(latest.txid).slice(0,16)}...
-      </div>`;
-
-
-  }catch(e){
-
-    box.innerHTML =
-      '<div class="error">' +
-      e.message +
-      '</div>';
-
-  }
-
-}
-
-
-async function withdraw(){
-
-  const amount =
-    document.getElementById("wamount")
-      .value.trim();
-
-  const address =
-    document.getElementById("waddr")
-      .value.trim();
-
-  const box =
-    document.getElementById("wstatus");
-
-
-  if(!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)){
-
-    box.innerHTML =
-      '<div class="error">Enter a valid TRON address.</div>';
-
-    return;
-
-  }
-
-
-  if(!amount || Number(amount) <= 0){
-
-    box.innerHTML =
-      '<div class="error">Enter a valid amount.</div>';
-
-    return;
-
-  }
-
-
-  if(Number(amount) > Number(state.balance)){
-
-    box.innerHTML =
-      '<div class="error">Insufficient balance.</div>';
-
-    return;
-
-  }
-
-
-  box.innerHTML =
-    '<div class="success">Creating withdrawal request...</div>';
-
-
-  try{
-
-    const data =
-      await api("/api/withdrawals/request",{
-
-        method:"POST",
-
-        body:JSON.stringify({
-
-          initData:
-            telegramInitData(),
-
-          address:address,
-
-          amount:amount
-
-        })
-
-      });
-
-
-    if(data.ok){
-
-      state.balance =
-        Number(data.balance || 0);
-
-      state.tx.push({
-
-        type:"Withdrawal",
-
-        amount:
-          Number(amount),
-
-        status:"Pending",
-
-        time:
-          new Date().toLocaleString()
-
-      });
-
-      render();
-
-
-      box.innerHTML =
-        `<div class="success">
-          Withdrawal request created.<br>
-          ID: ${data.withdrawalId}
-        </div>`;
-
-    }
-
-
-  }catch(e){
-
-    box.innerHTML =
-      '<div class="error">' +
-      e.message +
-      '</div>';
-
-  }
-
-}
-
-
-async function copyRef(){
-
-  const value =
-    document.getElementById("refLink").value;
-
-  try{
-
-    await navigator.clipboard
-      .writeText(value);
-
-    alert("Referral link copied");
-
-  }catch(e){
-
-    alert(value);
-
-  }
-
-}
-
-
-document.getElementById("address")
-  .value = depositAddress;
-
-updateQR();
-
-render();
-
-loadConfig();
-
-loadAccount();
-
-</script>
-
-</body>
-</html>
+      "

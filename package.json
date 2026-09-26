@@ -12,6 +12,6 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "tronweb": "^6.0.0"
+    "tronweb": "^6.0.4"
   }
 }

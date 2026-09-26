@@ -1,4 +1,7 @@
-
+// ============================================================
+// 💚 BIG MONEY - BACKEND
+// Telegram Mini App + USDT TRC20
+// ============================================================
 
 const express = require("express");
 const cors = require("cors");
@@ -8,7 +11,28 @@ const path = require("path");
 
 const app = express();
 
+// ============================================================
+// CONFIG
+// ============================================================
+
 const PORT = process.env.PORT || 10000;
+
+const TELEGRAM_BOT_TOKEN =
+  process.env.TELEGRAM_BOT_TOKEN || "";
+
+const TELEGRAM_BOT_USERNAME =
+  process.env.TELEGRAM_BOT_USERNAME ||
+  "bigmoney2026bot";
+
+const ADMIN_KEY =
+  process.env.ADMIN_KEY ||
+  process.env.ADMIN_SECRET ||
+  "";
+
+const TRONGRID_API_KEY =
+  process.env.TRON_PRO_API_KEY ||
+  process.env.TRONGRID_API_KEY ||
+  "";
 
 const DEPOSIT_ADDRESS =
   process.env.DEPOSIT_ADDRESS ||
@@ -22,74 +46,36 @@ const TRONGRID_URL =
   process.env.TRONGRID_URL ||
   "https://api.trongrid.io";
 
-const TRONGRID_API_KEY =
-  process.env.TRONGRID_API_KEY || "";
-
-const TELEGRAM_BOT_TOKEN =
-  process.env.TELEGRAM_BOT_TOKEN || "";
-
-const TELEGRAM_BOT_USERNAME =
-  process.env.TELEGRAM_BOT_USERNAME ||
-  "bigmoney2026bot";
-
 const ALLOWED_ORIGIN =
   process.env.ALLOWED_ORIGIN ||
   "https://sansjgj7-ctrl.github.io";
 
-const ADMIN_TEST_KEY =
-  process.env.ADMIN_TEST_KEY || "";
+const USDT_DECIMALS = 6;
 
-const ADMIN_TELEGRAM_IDS =
-  String(process.env.ADMIN_TELEGRAM_IDS || "8381232361")
-    .split(",")
-    .map((x) => String(x).trim())
-    .filter(Boolean);
-
-// --------------------------------------------------
-// Rewards
-// --------------------------------------------------
-
+// Referral reward
 const REFERRAL_REWARD_POINTS = 3;
-const REFERRAL_MIN_DEPOSIT = 10;
 
+// Daily reward
 const DAILY_REWARD_POINTS = 0.5;
-const DAILY_REWARD_MIN_DEPOSIT = 10;
 
-const KABUL_TIMEZONE = "Asia/Kabul";
+// Minimum deposit for rewards/referral qualification
+const QUALIFYING_DEPOSIT = 10;
 
-// --------------------------------------------------
-// App
-// --------------------------------------------------
+// Withdrawal requires successful referrals
+const REQUIRED_REFERRALS = 5;
 
-app.use(express.json({ limit: "100kb" }));
+// Telegram auth validity
+const TELEGRAM_AUTH_MAX_AGE =
+  24 * 60 * 60;
 
-// --------------------------------------------------
+// ============================================================
 // CORS
-// --------------------------------------------------
+// ============================================================
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      if (
-        origin === ALLOWED_ORIGIN ||
-        origin === "https://web.telegram.org" ||
-        origin === "https://web.telegram.org/"
-      ) {
-        return callback(null, true);
-      }
-
-      // Allow Telegram / browser requests.
-      return callback(null, true);
-    },
-
+    origin: ALLOWED_ORIGIN,
     methods: ["GET", "POST", "OPTIONS"],
-
-    // IMPORTANT:
-    // X-Telegram-Init-Data must be here.
     allowedHeaders: [
       "Content-Type",
       "Authorization",
@@ -99,79 +85,112 @@ app.use(
   })
 );
 
-// --------------------------------------------------
-// Database
-// --------------------------------------------------
+app.use(
+  express.json({
+    limit: "100kb"
+  })
+);
+
+// ============================================================
+// DATABASE
+// ============================================================
 
 const DATA_DIR = path.join(__dirname, "data");
-const DATA_FILE = path.join(DATA_DIR, "big-money-data.json");
+const DB_FILE = path.join(
+  DATA_DIR,
+  "big-money-data.json"
+);
 
 if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.mkdirSync(DATA_DIR, {
+    recursive: true
+  });
 }
 
-const EMPTY_DB = {
-  users: {},
-  deposits: {},
-  withdrawals: {},
-  usedTransactions: {},
-  testCredits: {}
-};
+function defaultDB() {
+  return {
+    users: [],
+    deposits: [],
+    withdrawals: [],
+    usedTransactions: [],
+    testCredits: []
+  };
+}
 
 function loadDB() {
   try {
-    if (!fs.existsSync(DATA_FILE)) {
+    if (!fs.existsSync(DB_FILE)) {
+      const db = defaultDB();
       fs.writeFileSync(
-        DATA_FILE,
-        JSON.stringify(EMPTY_DB, null, 2)
+        DB_FILE,
+        JSON.stringify(db, null, 2)
       );
-
-      return JSON.parse(JSON.stringify(EMPTY_DB));
+      return db;
     }
 
-    const raw = fs.readFileSync(DATA_FILE, "utf8");
+    const raw = fs.readFileSync(
+      DB_FILE,
+      "utf8"
+    );
 
-    if (!raw.trim()) {
-      return JSON.parse(JSON.stringify(EMPTY_DB));
-    }
-
-    const parsed = JSON.parse(raw);
+    const db = JSON.parse(raw);
 
     return {
-      ...EMPTY_DB,
-      ...parsed,
-      users: parsed.users || {},
-      deposits: parsed.deposits || {},
-      withdrawals: parsed.withdrawals || {},
-      usedTransactions: parsed.usedTransactions || {},
-      testCredits: parsed.testCredits || {}
+      users: Array.isArray(db.users)
+        ? db.users
+        : [],
+      deposits: Array.isArray(db.deposits)
+        ? db.deposits
+        : [],
+      withdrawals: Array.isArray(db.withdrawals)
+        ? db.withdrawals
+        : [],
+      usedTransactions: Array.isArray(
+        db.usedTransactions
+      )
+        ? db.usedTransactions
+        : [],
+      testCredits: Array.isArray(db.testCredits)
+        ? db.testCredits
+        : []
     };
-  } catch (error) {
-    console.error("Database load error:", error);
+  } catch (err) {
+    console.error(
+      "Database load error:",
+      err
+    );
 
-    return JSON.parse(JSON.stringify(EMPTY_DB));
+    return defaultDB();
   }
 }
 
 let db = loadDB();
 
 function saveDB() {
-  const tempFile = DATA_FILE + ".tmp";
-
   fs.writeFileSync(
-    tempFile,
+    DB_FILE,
     JSON.stringify(db, null, 2)
   );
-
-  fs.renameSync(tempFile, DATA_FILE);
 }
 
-// --------------------------------------------------
-// Helpers
-// --------------------------------------------------
+// ============================================================
+// HELPERS
+// ============================================================
 
-function nowIso() {
+function nowISO() {
   return new Date().toISOString();
+}
+
+function randomId(prefix) {
+  return (
+    prefix +
+    "_" +
+    Date.now() +
+    "_" +
+    crypto
+      .randomBytes(5)
+      .toString("hex")
+  );
 }
 
 function roundNumber(value, decimals = 6) {
@@ -183,864 +202,1583 @@ function roundNumber(value, decimals = 6) {
 
   const factor = Math.pow(10, decimals);
 
-  return Math.round((n + Number.EPSILON) * factor) / factor;
-}
-
-function normalizeAmount(value) {
-  const n = Number(value);
-
-  if (!Number.isFinite(n) || n <= 0) {
-    return 0;
-  }
-
-  return roundNumber(n, 6);
-}
-
-function cleanTxid(value) {
-  return String(value || "")
-    .trim()
-    .replace(/\s+/g, "");
-}
-
-function isValidTxid(txid) {
-  return /^[a-fA-F0-9]{64}$/.test(txid);
-}
-
-function isValidTronAddress(address) {
-  return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(
-    String(address || "")
+  return (
+    Math.round((n + Number.EPSILON) * factor) /
+    factor
   );
 }
 
-function getTodayKabul() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: KABUL_TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).format(new Date());
+function normalizeAddress(address) {
+  return String(address || "").trim();
 }
 
-function getUser(telegramUserId) {
-  return db.users[String(telegramUserId)] || null;
+function sameAddress(a, b) {
+  return (
+    normalizeAddress(a).toLowerCase() ===
+    normalizeAddress(b).toLowerCase()
+  );
 }
+
+// ============================================================
+// KABUL DAY
+// ============================================================
+
+function kabulDateString(date = new Date()) {
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone: "Asia/Kabul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }
+  ).format(date);
+}
+
+// ============================================================
+// USER
+// ============================================================
 
 function ensureUser(telegramUser) {
-  const id = String(telegramUser.id);
+  const id = String(
+    telegramUser.id
+  );
 
-  let user = db.users[id];
+  let user = db.users.find(
+    u => String(u.id) === id
+  );
 
   if (!user) {
     user = {
       id,
       telegramId: id,
-      username: telegramUser.username || "",
-      firstName: telegramUser.first_name || "",
-      lastName: telegramUser.last_name || "",
+      username:
+        telegramUser.username ||
+        "",
+      firstName:
+        telegramUser.first_name ||
+        "",
+      lastName:
+        telegramUser.last_name ||
+        "",
       balance: 0,
       points: 0,
       referrals: 0,
-      referralEarnings: 0,
+      successfulReferrals: 0,
       referredBy: null,
-      referralRewardPaid: false,
-      referralRewardPaidAt: null,
-      dailyRewards: {},
-      deposits: [],
-      withdrawals: [],
-      createdAt: nowIso(),
-      updatedAt: nowIso()
+      referralRewardGiven: false,
+      dailyRewards: [],
+      createdAt: nowISO(),
+      updatedAt: nowISO()
     };
 
-    db.users[id] = user;
+    db.users.push(user);
     saveDB();
+  } else {
+    user.username =
+      telegramUser.username ||
+      user.username ||
+      "";
 
-    return user;
-  }
+    user.firstName =
+      telegramUser.first_name ||
+      user.firstName ||
+      "";
 
-  let changed = false;
+    user.lastName =
+      telegramUser.last_name ||
+      user.lastName ||
+      "";
 
-  if (telegramUser.username !== undefined) {
-    const username = telegramUser.username || "";
-
-    if (user.username !== username) {
-      user.username = username;
-      changed = true;
-    }
-  }
-
-  if (telegramUser.first_name !== undefined) {
-    const firstName = telegramUser.first_name || "";
-
-    if (user.firstName !== firstName) {
-      user.firstName = firstName;
-      changed = true;
-    }
-  }
-
-  if (telegramUser.last_name !== undefined) {
-    const lastName = telegramUser.last_name || "";
-
-    if (user.lastName !== lastName) {
-      user.lastName = lastName;
-      changed = true;
-    }
-  }
-
-  if (changed) {
-    user.updatedAt = nowIso();
-    saveDB();
+    user.updatedAt = nowISO();
   }
 
   return user;
 }
 
-// --------------------------------------------------
-// Telegram WebApp authentication
-// --------------------------------------------------
+// ============================================================
+// TELEGRAM WEBAPP AUTH
+// ============================================================
 
-function validateTelegramInitData(initData) {
-  if (!TELEGRAM_BOT_TOKEN) {
-    throw new Error("TELEGRAM_BOT_TOKEN is not configured.");
+function parseTelegramInitData(initData) {
+  if (
+    !initData ||
+    typeof initData !== "string"
+  ) {
+    throw new Error(
+      "Telegram authentication data is missing."
+    );
   }
 
-  if (!initData || typeof initData !== "string") {
-    throw new Error("Telegram authentication data is missing.");
+  const params = new URLSearchParams(
+    initData
+  );
+
+  const hash = params.get("hash");
+
+  if (!hash) {
+    throw new Error(
+      "Telegram authentication hash is missing."
+    );
   }
 
-  const params = new URLSearchParams(initData);
+  const data = [];
 
-  const receivedHash = params.get("hash");
+  for (const [key, value] of params.entries()) {
+    if (key === "hash") {
+      continue;
+    }
 
-  if (!receivedHash) {
-    throw new Error("Telegram authentication hash is missing.");
+    data.push(`${key}=${value}`);
   }
 
-  params.delete("hash");
+  data.sort();
 
-  const dataCheckString = [...params.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}=${value}`)
-    .join("\n");
+  const dataCheckString =
+    data.join("\n");
 
   const secretKey = crypto
-    .createHmac("sha256", "WebAppData")
+    .createHmac(
+      "sha256",
+      "WebAppData"
+    )
     .update(TELEGRAM_BOT_TOKEN)
     .digest();
 
-  const calculatedHash = crypto
-    .createHmac("sha256", secretKey)
-    .update(dataCheckString)
-    .digest("hex");
+  const calculatedHash =
+    crypto
+      .createHmac(
+        "sha256",
+        secretKey
+      )
+      .update(dataCheckString)
+      .digest("hex");
 
-  const receivedBuffer = Buffer.from(receivedHash, "hex");
-  const calculatedBuffer = Buffer.from(calculatedHash, "hex");
+  const provided =
+    Buffer.from(hash, "hex");
+
+  const calculated =
+    Buffer.from(
+      calculatedHash,
+      "hex"
+    );
 
   if (
-    receivedBuffer.length !== calculatedBuffer.length ||
+    provided.length !==
+    calculated.length ||
     !crypto.timingSafeEqual(
-      receivedBuffer,
-      calculatedBuffer
+      provided,
+      calculated
     )
   ) {
-    throw new Error("Invalid Telegram authentication.");
+    throw new Error(
+      "Invalid Telegram authentication."
+    );
   }
 
-  const authDate = Number(params.get("auth_date"));
-
-  if (!Number.isFinite(authDate)) {
-    throw new Error("Invalid Telegram auth_date.");
-  }
-
-  const maxAge = 24 * 60 * 60;
+  const authDate =
+    Number(params.get("auth_date"));
 
   if (
-    Math.floor(Date.now() / 1000) - authDate >
-    maxAge
+    !Number.isFinite(authDate)
   ) {
-    throw new Error("Telegram authentication expired.");
+    throw new Error(
+      "Telegram auth_date is missing."
+    );
   }
 
-  const userRaw = params.get("user");
+  const age =
+    Math.floor(Date.now() / 1000) -
+    authDate;
 
-  if (!userRaw) {
-    throw new Error("Telegram user data is missing.");
+  if (
+    age < 0 ||
+    age > TELEGRAM_AUTH_MAX_AGE
+  ) {
+    throw new Error(
+      "Telegram authentication has expired."
+    );
+  }
+
+  const userJSON =
+    params.get("user");
+
+  if (!userJSON) {
+    throw new Error(
+      "Telegram user information is missing."
+    );
   }
 
   let telegramUser;
 
   try {
-    telegramUser = JSON.parse(userRaw);
+    telegramUser =
+      JSON.parse(userJSON);
   } catch {
-    throw new Error("Invalid Telegram user data.");
+    throw new Error(
+      "Invalid Telegram user data."
+    );
   }
 
-  if (!telegramUser || !telegramUser.id) {
-    throw new Error("Invalid Telegram user.");
+  if (
+    !telegramUser ||
+    !telegramUser.id
+  ) {
+    throw new Error(
+      "Invalid Telegram user."
+    );
   }
 
   return {
-    telegramUser,
-    params
+    user: telegramUser,
+    startParam:
+      params.get("start_param") ||
+      ""
   };
 }
 
-function getInitDataFromRequest(req) {
-  return (
-    req.headers["x-telegram-init-data"] ||
-    req.body?.initData ||
-    req.query?.initData ||
-    ""
-  );
-}
+// ============================================================
+// AUTH MIDDLEWARE
+// ============================================================
 
-function requireTelegram(req, res) {
+function telegramAuth(
+  req,
+  res,
+  next
+) {
   try {
-    const initData = getInitDataFromRequest(req);
+    if (!TELEGRAM_BOT_TOKEN) {
+      return res.status(500).json({
+        ok: false,
+        message:
+          "TELEGRAM_BOT_TOKEN is not configured."
+      });
+    }
 
-    const auth = validateTelegramInitData(initData);
+    const initData =
+      req.headers[
+        "x-telegram-init-data"
+      ];
 
-    const telegramUser = auth.telegramUser;
+    const auth =
+      parseTelegramInitData(
+        initData
+      );
 
-    const user = ensureUser(telegramUser);
+    req.telegramUser =
+      auth.user;
 
-    return {
-      telegramUser,
-      user,
-      params: auth.params
-    };
-  } catch (error) {
-    res.status(401).json({
+    req.startParam =
+      auth.startParam;
+
+    req.appUser =
+      ensureUser(auth.user);
+
+    next();
+  } catch (err) {
+    return res.status(401).json({
       ok: false,
-      message: error.message || "Telegram authentication failed."
+      message:
+        err.message ||
+        "Telegram authentication failed."
     });
-
-    return null;
   }
 }
 
-function requireAdmin(req, res) {
-  const adminId =
-    req.headers["x-admin-telegram-id"] ||
-    req.body?.adminTelegramId ||
-    req.query?.adminTelegramId;
+// ============================================================
+// REFERRAL REGISTRATION
+// ============================================================
 
-  if (!adminId) {
-    res.status(401).json({
-      ok: false,
-      message: "Admin Telegram ID is required."
-    });
-
-    return null;
-  }
-
-  if (!ADMIN_TELEGRAM_IDS.includes(String(adminId))) {
-    res.status(403).json({
-      ok: false,
-      message: "Admin access denied."
-    });
-
-    return null;
-  }
-
-  return String(adminId);
-}
-
-// --------------------------------------------------
-// Referral
-// --------------------------------------------------
-
-function extractReferral(params) {
-  const startParam =
-    params.get("start_param") ||
-    params.get("startapp") ||
-    "";
-
+function registerReferral(
+  user,
+  startParam
+) {
   if (!startParam) {
-    return null;
+    return false;
   }
 
-  if (!startParam.startsWith("ref_")) {
-    return null;
+  const match =
+    String(startParam).match(
+      /^ref_(\d+)$/
+    );
+
+  if (!match) {
+    return false;
   }
 
-  const referrerId = startParam.substring(4).trim();
+  const referrerId =
+    String(match[1]);
 
-  if (!/^\d+$/.test(referrerId)) {
-    return null;
-  }
+  const userId =
+    String(user.id);
 
-  return referrerId;
-}
-
-function registerReferral(user, params) {
-  if (!user) {
-    return;
+  if (
+    referrerId === userId
+  ) {
+    return false;
   }
 
   if (user.referredBy) {
-    return;
+    return false;
   }
 
-  const referrerId = extractReferral(params);
-
-  if (!referrerId) {
-    return;
-  }
-
-  if (String(referrerId) === String(user.id)) {
-    return;
-  }
-
-  const referrer = getUser(referrerId);
+  const referrer =
+    db.users.find(
+      u =>
+        String(u.id) ===
+        referrerId
+    );
 
   if (!referrer) {
-    return;
+    return false;
   }
 
-  user.referredBy = String(referrerId);
-  user.updatedAt = nowIso();
+  user.referredBy =
+    referrerId;
+
+  referrer.referrals =
+    Number(referrer.referrals || 0) +
+    1;
 
   saveDB();
+
+  return true;
 }
 
-// --------------------------------------------------
-// Rewards
-// --------------------------------------------------
+// ============================================================
+// REFERRAL REWARD
+// ============================================================
 
-function processRewardsForDeposit(user, amount, depositId) {
-  if (!user) {
-    return {
-      referralReward: 0,
-      dailyReward: 0
-    };
+function applyReferralReward(
+  referredUser
+) {
+  if (
+    !referredUser.referredBy
+  ) {
+    return false;
   }
-
-  let referralReward = 0;
-  let dailyReward = 0;
-
-  // -----------------------------------------------
-  // Referral reward
-  // -----------------------------------------------
 
   if (
-    amount >= REFERRAL_MIN_DEPOSIT &&
-    user.referredBy &&
-    !user.referralRewardPaid
+    referredUser.referralRewardGiven
   ) {
-    const referrer = getUser(user.referredBy);
-
-    if (referrer && referrer.id !== user.id) {
-      referrer.points = roundNumber(
-        Number(referrer.points || 0) +
-          REFERRAL_REWARD_POINTS,
-        2
-      );
-
-      referrer.referrals =
-        Number(referrer.referrals || 0) + 1;
-
-      referrer.referralEarnings =
-        roundNumber(
-          Number(referrer.referralEarnings || 0) +
-            REFERRAL_REWARD_POINTS,
-          2
-        );
-
-      user.referralRewardPaid = true;
-      user.referralRewardPaidAt = nowIso();
-
-      referralReward = REFERRAL_REWARD_POINTS;
-    }
+    return false;
   }
 
-  // -----------------------------------------------
-  // Daily reward
-  // -----------------------------------------------
+  const referrer =
+    db.users.find(
+      u =>
+        String(u.id) ===
+        String(referredUser.referredBy)
+    );
 
-  if (amount >= DAILY_REWARD_MIN_DEPOSIT) {
-    const today = getTodayKabul();
-
-    if (!user.dailyRewards) {
-      user.dailyRewards = {};
-    }
-
-    if (!user.dailyRewards[today]) {
-      user.points = roundNumber(
-        Number(user.points || 0) +
-          DAILY_REWARD_POINTS,
-        2
-      );
-
-      user.dailyRewards[today] = {
-        points: DAILY_REWARD_POINTS,
-        depositId,
-        createdAt: nowIso()
-      };
-
-      dailyReward = DAILY_REWARD_POINTS;
-    }
+  if (!referrer) {
+    return false;
   }
 
-  user.updatedAt = nowIso();
+  referrer.points =
+    roundNumber(
+      Number(referrer.points || 0) +
+        REFERRAL_REWARD_POINTS,
+      2
+    );
+
+  referrer.successfulReferrals =
+    Number(
+      referrer.successfulReferrals || 0
+    ) + 1;
+
+  referredUser.referralRewardGiven =
+    true;
 
   saveDB();
 
-  return {
-    referralReward,
-    dailyReward
-  };
+  return true;
 }
 
-// --------------------------------------------------
-// TronGrid
-// --------------------------------------------------
+// ============================================================
+// DAILY REWARD
+// ============================================================
 
-async function tronFetch(url, options = {}) {
+function applyDailyReward(
+  user
+) {
+  if (!Array.isArray(user.dailyRewards)) {
+    user.dailyRewards = [];
+  }
+
+  const today =
+    kabulDateString();
+
+  if (
+    user.dailyRewards.includes(today)
+  ) {
+    return false;
+  }
+
+  user.points =
+    roundNumber(
+      Number(user.points || 0) +
+        DAILY_REWARD_POINTS,
+      2
+    );
+
+  user.dailyRewards.push(
+    today
+  );
+
+  saveDB();
+
+  return true;
+}
+
+// ============================================================
+// TRON / TRONGRID
+// ============================================================
+
+function tronHeaders() {
   const headers = {
-    Accept: "application/json",
-    ...(options.headers || {})
+    "Content-Type":
+      "application/json"
   };
 
   if (TRONGRID_API_KEY) {
-    headers["TRON-PRO-API-KEY"] = TRONGRID_API_KEY;
+    headers[
+      "TRON-PRO-API-KEY"
+    ] = TRONGRID_API_KEY;
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers
-  });
+  return headers;
+}
 
-  const text = await response.text();
+async function tronFetch(
+  url,
+  options = {},
+  retries = 2
+) {
+  let lastError;
 
-  let data = null;
+  for (
+    let attempt = 0;
+    attempt <= retries;
+    attempt++
+  ) {
+    try {
+      const response =
+        await fetch(url, {
+          ...options,
+          headers: {
+            ...tronHeaders(),
+            ...(options.headers || {})
+          }
+        });
 
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = null;
+      const text =
+        await response.text();
+
+      if (
+        response.status === 429 &&
+        attempt < retries
+      ) {
+        await new Promise(
+          resolve =>
+            setTimeout(
+              resolve,
+              1000 *
+                (attempt + 1)
+            )
+        );
+
+        continue;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          `TronGrid error ${response.status}: ${text}`
+        );
+      }
+
+      try {
+        return JSON.parse(text);
+      } catch {
+        throw new Error(
+          "Invalid TronGrid response."
+        );
+      }
+    } catch (err) {
+      lastError = err;
+
+      if (attempt < retries) {
+        await new Promise(
+          resolve =>
+            setTimeout(
+              resolve,
+              800 *
+                (attempt + 1)
+            )
+        );
+      }
+    }
   }
 
-  if (!response.ok) {
+  throw lastError;
+}
+
+// ============================================================
+// BASE58 / TRON ADDRESS HELPERS
+// ============================================================
+
+const BASE58 =
+  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+function base58Decode(str) {
+  let num = 0n;
+
+  for (const char of str) {
+    const index =
+      BASE58.indexOf(char);
+
+    if (index < 0) {
+      throw new Error(
+        "Invalid Base58 character."
+      );
+    }
+
+    num =
+      num * 58n +
+      BigInt(index);
+  }
+
+  let hex =
+    num.toString(16);
+
+  if (hex.length % 2) {
+    hex = "0" + hex;
+  }
+
+  let leadingZeroes = 0;
+
+  for (
+    let i = 0;
+    i < str.length &&
+    str[i] === "1";
+    i++
+  ) {
+    leadingZeroes++;
+  }
+
+  return (
+    "00".repeat(
+      leadingZeroes
+    ) + hex
+  );
+}
+
+function sha256(buffer) {
+  return crypto
+    .createHash("sha256")
+    .update(buffer)
+    .digest();
+}
+
+function tronAddressToHex(address) {
+  const decoded =
+    Buffer.from(
+      base58Decode(address),
+      "hex"
+    );
+
+  if (decoded.length !== 25) {
     throw new Error(
-      `TronGrid error: ${response.status}`
+      "Invalid TRON address."
     );
   }
+
+  const payload =
+    decoded.subarray(0, 21);
+
+  const checksum =
+    decoded.subarray(21);
+
+  const calculated =
+    sha256(
+      sha256(payload)
+    ).subarray(0, 4);
+
+  if (
+    !calculated.equals(checksum)
+  ) {
+    throw new Error(
+      "Invalid TRON address checksum."
+    );
+  }
+
+  return payload.toString(
+    "hex"
+  );
+}
+
+function tronHexToBase58(hex) {
+  let clean =
+    String(hex || "")
+      .replace(/^0x/, "")
+      .toLowerCase();
+
+  if (
+    clean.length % 2 !== 0
+  ) {
+    clean = "0" + clean;
+  }
+
+  const payload =
+    Buffer.from(
+      clean,
+      "hex"
+    );
+
+  const checksum =
+    sha256(
+      sha256(payload)
+    ).subarray(0, 4);
+
+  const full =
+    Buffer.concat([
+      payload,
+      checksum
+    ]);
+
+  let num = 0n;
+
+  for (const byte of full) {
+    num =
+      num * 256n +
+      BigInt(byte);
+  }
+
+  let result = "";
+
+  while (num > 0n) {
+    const remainder =
+      Number(num % 58n);
+
+    result =
+      BASE58[remainder] +
+      result;
+
+    num /= 58n;
+  }
+
+  for (
+    let i = 0;
+    i < full.length &&
+    full[i] === 0;
+    i++
+  ) {
+    result =
+      "1" + result;
+  }
+
+  return result;
+}
+
+// ============================================================
+// TRON TRANSACTION
+// ============================================================
+
+async function getSolidTransaction(
+  txid
+) {
+  const data =
+    await tronFetch(
+      `${TRONGRID_URL}/walletsolidity/gettransactionbyid`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          value: txid
+        })
+      }
+    );
 
   return data;
 }
 
-function normalizeTransfer(item) {
-  if (!item) {
-    return null;
-  }
-
-  const value = Number(item.value);
-
-  if (!Number.isFinite(value)) {
-    return null;
-  }
-
-  return {
-    txid:
-      item.transaction_id ||
-      item.transactionId ||
-      item.txID ||
-      "",
-
-    from:
-      item.from ||
-      item.from_address ||
-      "",
-
-    to:
-      item.to ||
-      item.to_address ||
-      "",
-
-    amount: value / 1e6,
-
-    confirmed:
-      item.is_confirmed === true ||
-      item.confirmed === true ||
-      false,
-
-    blockTimestamp:
-      item.block_timestamp ||
-      item.blockTimestamp ||
-      null
-  };
-}
-
-async function getUsdtTransfers(address) {
-  const url =
-    `${TRONGRID_URL}/v1/accounts/` +
-    `${encodeURIComponent(address)}/transactions/trc20` +
-    `?limit=50&contract_address=${encodeURIComponent(
-      USDT_CONTRACT
-    )}`;
-
-  const data = await tronFetch(url);
-
-  const list = Array.isArray(data?.data)
-    ? data.data
-    : [];
-
-  return list
-    .map(normalizeTransfer)
-    .filter(Boolean);
-}
-
-async function getTransactionById(txid) {
-  return tronFetch(
-    `${TRONGRID_URL}/walletsolidity/gettransactionbyid`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        value: txid
-      })
-    }
-  );
-}
-
-async function getTransactionInfoById(txid) {
-  return tronFetch(
-    `${TRONGRID_URL}/walletsolidity/gettransactioninfobyid`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        value: txid
-      })
-    }
-  );
-}
-
-async function getConfirmedTransferEvents(txid) {
-  const url =
-    `${TRONGRID_URL}/v1/transactions/` +
-    `${encodeURIComponent(txid)}/events` +
-    `?only_confirmed=true&event_name=Transfer`;
-
-  const data = await tronFetch(url);
-
-  return Array.isArray(data?.data)
-    ? data.data
-    : [];
-}
-
-// --------------------------------------------------
-// Telegram messages
-// --------------------------------------------------
-
-async function sendTelegramMessage(chatId, text) {
-  if (!TELEGRAM_BOT_TOKEN) {
-    return;
-  }
-
-  try {
-    await fetch(
-      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+async function getSolidTransactionInfo(
+  txid
+) {
+  const data =
+    await tronFetch(
+      `${TRONGRID_URL}/walletsolidity/gettransactioninfobyid`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({
-          chat_id: String(chatId),
-          text,
-          parse_mode: "HTML"
+          value: txid
         })
       }
     );
-  } catch (error) {
+
+  return data;
+}
+
+// ============================================================
+// DECODE TRC20 TRANSFER
+// ============================================================
+
+function decodeTRC20Transfer(
+  transaction
+) {
+  try {
+    const contracts =
+      transaction?.raw_data
+        ?.contract;
+
+    if (
+      !Array.isArray(contracts) ||
+      contracts.length === 0
+    ) {
+      return null;
+    }
+
+    const contract =
+      contracts[0];
+
+    if (
+      contract.type !==
+      "TriggerSmartContract"
+    ) {
+      return null;
+    }
+
+    const value =
+      contract.parameter?.value;
+
+    if (!value) {
+      return null;
+    }
+
+    const contractAddressHex =
+      value.contract_address;
+
+    const ownerAddressHex =
+      value.owner_address;
+
+    const data =
+      String(value.data || "")
+        .toLowerCase();
+
+    // transfer(address,uint256)
+    if (
+      !data.startsWith(
+        "a9059cbb"
+      )
+    ) {
+      return null;
+    }
+
+    if (data.length < 136) {
+      return null;
+    }
+
+    const toWord =
+      data.slice(
+        8,
+        72
+      );
+
+    const amountWord =
+      data.slice(
+        72,
+        136
+      );
+
+    const toHex =
+      "41" +
+      toWord.slice(-40);
+
+    const to =
+      tronHexToBase58(
+        toHex
+      );
+
+    const from =
+      tronHexToBase58(
+        ownerAddressHex
+      );
+
+    const amountRaw =
+      BigInt(
+        "0x" +
+          amountWord
+      );
+
+    return {
+      from,
+      to,
+      amountRaw,
+      amount:
+        Number(amountRaw) /
+        Math.pow(
+          10,
+          USDT_DECIMALS
+        ),
+      contractHex:
+        contractAddressHex
+          .toLowerCase()
+          .replace(/^41/, "")
+    };
+  } catch (err) {
     console.error(
-      "Telegram message error:",
-      error.message
+      "TRC20 decode error:",
+      err.message
+    );
+
+    return null;
+  }
+}
+
+// ============================================================
+// CONFIRMED EVENT LOOKUP
+// ============================================================
+
+async function getConfirmedTransferEvents(
+  txid
+) {
+  const url =
+    `${TRONGRID_URL}/v1/transactions/${txid}/events` +
+    `?only_confirmed=true&event_name=Transfer`;
+
+  const data =
+    await tronFetch(url);
+
+  return Array.isArray(data.data)
+    ? data.data
+    : [];
+}
+
+// ============================================================
+// FIND EXACT CONFIRMED USDT TRANSFER
+// ============================================================
+
+async function findConfirmedUSDTTransfer(
+  txid
+) {
+  // ----------------------------------------------------------
+  // STEP 1: solid transaction
+  // ----------------------------------------------------------
+
+  const tx =
+    await getSolidTransaction(
+      txid
+    );
+
+  if (
+    !tx ||
+    tx.txID !== txid
+  ) {
+    return null;
+  }
+
+  // ----------------------------------------------------------
+  // STEP 2: solid receipt
+  // ----------------------------------------------------------
+
+  const info =
+    await getSolidTransactionInfo(
+      txid
+    );
+
+  if (!info) {
+    return null;
+  }
+
+  if (
+    info.receipt &&
+    info.receipt.result &&
+    info.receipt.result !==
+      "SUCCESS"
+  ) {
+    return null;
+  }
+
+  // ----------------------------------------------------------
+  // STEP 3: decode transaction directly
+  // ----------------------------------------------------------
+
+  const decoded =
+    decodeTRC20Transfer(tx);
+
+  if (
+    decoded &&
+    sameAddress(
+      decoded.to,
+      DEPOSIT_ADDRESS
+    )
+  ) {
+    let usdtContractHex;
+
+    try {
+      usdtContractHex =
+        tronAddressToHex(
+          USDT_CONTRACT
+        )
+          .replace(/^41/, "")
+          .toLowerCase();
+    } catch {
+      usdtContractHex =
+        "";
+    }
+
+    if (
+      decoded.contractHex ===
+      usdtContractHex
+    ) {
+      return {
+        txid,
+        from: decoded.from,
+        to: decoded.to,
+        amount:
+          decoded.amount,
+        amountRaw:
+          decoded.amountRaw.toString(),
+        source:
+          "solid_transaction"
+      };
+    }
+  }
+
+  // ----------------------------------------------------------
+  // STEP 4: fallback to Transfer event
+  // ----------------------------------------------------------
+
+  try {
+    const events =
+      await getConfirmedTransferEvents(
+        txid
+      );
+
+    const matches =
+      events.filter(
+        event => {
+          const result =
+            event.result || {};
+
+          const to =
+            result.to ||
+            event.to ||
+            "";
+
+          const value =
+            result.value ??
+            event.value ??
+            null;
+
+          const contract =
+            event.contract_address ||
+            event.contractAddress ||
+            "";
+
+          return (
+            sameAddress(
+              to,
+              DEPOSIT_ADDRESS
+            ) &&
+            (
+              contract ===
+              USDT_CONTRACT ||
+              contract.toLowerCase() ===
+              USDT_CONTRACT.toLowerCase()
+            ) &&
+            value !== null
+          );
+        }
+      );
+
+    if (
+      matches.length === 1
+    ) {
+      const event =
+        matches[0];
+
+      const result =
+        event.result || {};
+
+      const rawValue =
+        result.value ??
+        event.value;
+
+      const amount =
+        Number(rawValue) /
+        Math.pow(
+          10,
+          USDT_DECIMALS
+        );
+
+      return {
+        txid,
+        from:
+          result.from ||
+          event.from ||
+          "",
+        to:
+          result.to ||
+          event.to ||
+          DEPOSIT_ADDRESS,
+        amount,
+        amountRaw:
+          String(rawValue),
+        source:
+          "confirmed_event"
+      };
+    }
+
+    if (
+      matches.length > 1
+    ) {
+      throw new Error(
+        "Multiple matching USDT transfers found."
+      );
+    }
+  } catch (err) {
+    console.error(
+      "Event fallback error:",
+      err.message
     );
   }
+
+  return null;
 }
 
-async function notifyAdmins(text) {
-  for (const adminId of ADMIN_TELEGRAM_IDS) {
-    await sendTelegramMessage(adminId, text);
+// ============================================================
+// RATE LIMIT
+// ============================================================
+
+const rateMap =
+  new Map();
+
+function rateLimit(
+  req,
+  res,
+  next
+) {
+  const ip =
+    req.ip ||
+    req.headers["x-forwarded-for"] ||
+    "unknown";
+
+  const now =
+    Date.now();
+
+  const current =
+    rateMap.get(ip);
+
+  if (!current) {
+    rateMap.set(ip, {
+      count: 1,
+      time: now
+    });
+
+    return next();
   }
+
+  if (
+    now - current.time >
+    60 * 1000
+  ) {
+    rateMap.set(ip, {
+      count: 1,
+      time: now
+    });
+
+    return next();
+  }
+
+  current.count++;
+
+  if (current.count > 60) {
+    return res.status(429).json({
+      ok: false,
+      message:
+        "Too many requests. Please try again later."
+    });
+  }
+
+  next();
 }
 
-// --------------------------------------------------
-// Routes
-// --------------------------------------------------
+app.use(rateLimit);
 
-app.get("/", (req, res) => {
-  res.json({
-    ok: true,
-    name: "Big Money",
-    network: "TRON TRC20",
-    token: "USDT",
-    status: "online"
-  });
-});
-
-// --------------------------------------------------
-// Config
-// --------------------------------------------------
-
-app.get("/api/config", (req, res) => {
-  res.json({
-    ok: true,
-    network: "TRON",
-    standard: "TRC20",
-    token: "USDT",
-    depositAddress: DEPOSIT_ADDRESS,
-    botUsername: TELEGRAM_BOT_USERNAME,
-    referralRewardPoints: REFERRAL_REWARD_POINTS,
-    referralMinDeposit: REFERRAL_MIN_DEPOSIT,
-    dailyRewardPoints: DAILY_REWARD_POINTS,
-    dailyRewardMinDeposit: DAILY_REWARD_MIN_DEPOSIT
-  });
-});
-
-// --------------------------------------------------
-// Account
-// --------------------------------------------------
+// ============================================================
+// HOME
+// ============================================================
 
 app.get(
-  "/api/account/:telegramUserId",
+  "/",
   (req, res) => {
-    const auth = requireTelegram(req, res);
-
-    if (!auth) {
-      return;
-    }
-
-    const requestedId =
-      String(req.params.telegramUserId);
-
-    const authenticatedId =
-      String(auth.telegramUser.id);
-
-    if (requestedId !== authenticatedId) {
-      return res.status(403).json({
-        ok: false,
-        message: "Telegram account mismatch."
-      });
-    }
-
-    const user = auth.user;
-
-    registerReferral(user, auth.params);
-
     res.json({
       ok: true,
-      user: {
-        id: user.id,
-        telegramId: user.telegramId,
-        username: user.username || "",
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        balance: roundNumber(user.balance || 0, 6),
-        points: roundNumber(user.points || 0, 2),
-        referrals: Number(user.referrals || 0),
-        referralEarnings: roundNumber(
-          user.referralEarnings || 0,
-          2
-        ),
-        referredBy: user.referredBy || null
-      }
+      name: "Big Money",
+      network: "TRON TRC20",
+      token: "USDT",
+      standard: "TRC20",
+      depositAddress:
+        DEPOSIT_ADDRESS
     });
   }
 );
 
-// --------------------------------------------------
-// Referral
-// --------------------------------------------------
+// ============================================================
+// HEALTH
+// ============================================================
+
+app.get(
+  "/health",
+  (req, res) => {
+    res.json({
+      ok: true,
+      service: "Big Money",
+      time: nowISO()
+    });
+  }
+);
+
+// ============================================================
+// CONFIG
+// ============================================================
+
+app.get(
+  "/api/config",
+  (req, res) => {
+    res.json({
+      ok: true,
+      network: "TRON",
+      token: "USDT",
+      standard: "TRC20",
+      depositAddress:
+        DEPOSIT_ADDRESS,
+      botUsername:
+        TELEGRAM_BOT_USERNAME,
+      referralRewardPoints:
+        REFERRAL_REWARD_POINTS,
+      dailyRewardPoints:
+        DAILY_REWARD_POINTS,
+      qualifyingDeposit:
+        QUALIFYING_DEPOSIT,
+      requiredReferrals:
+        REQUIRED_REFERRALS
+    });
+  }
+);
+
+// ============================================================
+// ACCOUNT
+// ============================================================
+
+app.post(
+  "/api/account",
+  telegramAuth,
+  (req, res) => {
+    try {
+      const user =
+        req.appUser;
+
+      registerReferral(
+        user,
+        req.startParam
+      );
+
+      const successfulReferrals =
+        Number(
+          user.successfulReferrals ||
+            0
+        );
+
+      res.json({
+        ok: true,
+        user: {
+          id: user.id,
+          username:
+            user.username,
+          firstName:
+            user.firstName,
+          lastName:
+            user.lastName,
+          balance:
+            roundNumber(
+              user.balance,
+              6
+            ),
+          points:
+            roundNumber(
+              user.points,
+              2
+            ),
+          referrals:
+            Number(
+              user.referrals || 0
+            ),
+          successfulReferrals,
+          requiredReferrals:
+            REQUIRED_REFERRALS,
+          referralLink:
+            `https://t.me/${TELEGRAM_BOT_USERNAME}?startapp=ref_${user.id}`,
+          network:
+            "TRON TRC20"
+        }
+      });
+    } catch (err) {
+      console.error(
+        "Account error:",
+        err
+      );
+
+      res.status(500).json({
+        ok: false,
+        message:
+          "Could not load account."
+      });
+    }
+  }
+);
+
+// Also support GET account route
+app.get(
+  "/api/account/:telegramUserId",
+  telegramAuth,
+  (req, res) => {
+    try {
+      if (
+        String(
+          req.params.telegramUserId
+        ) !==
+        String(
+          req.telegramUser.id
+        )
+      ) {
+        return res.status(403).json({
+          ok: false,
+          message:
+            "User ID does not match Telegram account."
+        });
+      }
+
+      const user =
+        req.appUser;
+
+      registerReferral(
+        user,
+        req.startParam
+      );
+
+      res.json({
+        ok: true,
+        user: {
+          id: user.id,
+          username:
+            user.username,
+          firstName:
+            user.firstName,
+          lastName:
+            user.lastName,
+          balance:
+            roundNumber(
+              user.balance,
+              6
+            ),
+          points:
+            roundNumber(
+              user.points,
+              2
+            ),
+          referrals:
+            Number(
+              user.referrals || 0
+            ),
+          successfulReferrals:
+            Number(
+              user.successfulReferrals ||
+                0
+            ),
+          requiredReferrals:
+            REQUIRED_REFERRALS,
+          referralLink:
+            `https://t.me/${TELEGRAM_BOT_USERNAME}?startapp=ref_${user.id}`,
+          network:
+            "TRON TRC20"
+        }
+      });
+    } catch (err) {
+      res.status(500).json({
+        ok: false,
+        message:
+          "Could not load account."
+      });
+    }
+  }
+);
+
+// ============================================================
+// REFERRAL
+// ============================================================
 
 app.get(
   "/api/referral/:telegramUserId",
+  telegramAuth,
   (req, res) => {
-    const auth = requireTelegram(req, res);
+    try {
+      if (
+        String(
+          req.params.telegramUserId
+        ) !==
+        String(
+          req.telegramUser.id
+        )
+      ) {
+        return res.status(403).json({
+          ok: false,
+          message:
+            "User ID does not match Telegram account."
+        });
+      }
 
-    if (!auth) {
-      return;
-    }
+      const user =
+        req.appUser;
 
-    const requestedId =
-      String(req.params.telegramUserId);
+      registerReferral(
+        user,
+        req.startParam
+      );
 
-    const authenticatedId =
-      String(auth.telegramUser.id);
+      const successful =
+        Number(
+          user.successfulReferrals ||
+            0
+        );
 
-    if (requestedId !== authenticatedId) {
-      return res.status(403).json({
+      res.json({
+        ok: true,
+        referralLink:
+          `https://t.me/${TELEGRAM_BOT_USERNAME}?startapp=ref_${user.id}`,
+        referrals:
+          Number(
+            user.referrals || 0
+          ),
+        successfulReferrals:
+          successful,
+        requiredReferrals:
+          REQUIRED_REFERRALS,
+        points:
+          roundNumber(
+            user.points,
+            2
+          )
+      });
+    } catch (err) {
+      res.status(500).json({
         ok: false,
-        message: "Telegram account mismatch."
+        message:
+          "Could not load referral data."
       });
     }
-
-    const user = auth.user;
-
-    registerReferral(user, auth.params);
-
-    const referralLink =
-      `https://t.me/${TELEGRAM_BOT_USERNAME}` +
-      `?startapp=ref_${user.id}`;
-
-    res.json({
-      ok: true,
-      referralLink,
-      referrals: Number(user.referrals || 0),
-      points: roundNumber(user.points || 0, 2),
-      referralEarnings: roundNumber(
-        user.referralEarnings || 0,
-        2
-      ),
-      referredBy: user.referredBy || null
-    });
   }
 );
 
-// --------------------------------------------------
-// Deposit check
-// --------------------------------------------------
+// ============================================================
+// DEPOSIT CHECK
+// ============================================================
 
-app.get("/api/deposits/check", async (req, res) => {
-  try {
-    const auth = requireTelegram(req, res);
+app.get(
+  "/api/deposits/check",
+  telegramAuth,
+  async (req, res) => {
+    try {
+      const url =
+        `${TRONGRID_URL}/v1/accounts/${DEPOSIT_ADDRESS}/transactions/trc20` +
+        `?limit=50` +
+        `&contract_address=${USDT_CONTRACT}` +
+        `&only_confirmed=true` +
+        `&only_to=true`;
 
-    if (!auth) {
-      return;
+      const data =
+        await tronFetch(url);
+
+      const transfers =
+        Array.isArray(data.data)
+          ? data.data
+          : [];
+
+      const cleaned =
+        transfers.map(
+          item => ({
+            txid:
+              item.transaction_id,
+            from:
+              item.from,
+            to:
+              item.to,
+            amount:
+              Number(
+                item.value
+              ) /
+              Math.pow(
+                10,
+                USDT_DECIMALS
+              ),
+            token:
+              item.token_info?.symbol ||
+              "USDT",
+            confirmed:
+              true,
+            timestamp:
+              item.block_timestamp
+          })
+        );
+
+      res.json({
+        ok: true,
+        transfers: cleaned
+      });
+    } catch (err) {
+      console.error(
+        "Deposit check error:",
+        err
+      );
+
+      res.status(500).json({
+        ok: false,
+        message:
+          "Could not check TRON blockchain right now."
+      });
     }
-
-    const transfers =
-      await getUsdtTransfers(DEPOSIT_ADDRESS);
-
-    const confirmed = transfers
-      .filter((x) => x.confirmed)
-      .map((x) => ({
-        txid: x.txid,
-        from: x.from,
-        to: x.to,
-        amount: x.amount,
-        confirmed: x.confirmed,
-        blockTimestamp: x.blockTimestamp
-      }));
-
-    res.json({
-      ok: true,
-      address: DEPOSIT_ADDRESS,
-      transfers: confirmed
-    });
-  } catch (error) {
-    console.error(
-      "Deposit check error:",
-      error
-    );
-
-    res.status(500).json({
-      ok: false,
-      message:
-        error.message ||
-        "Unable to check blockchain."
-    });
   }
-});
+);
 
-// --------------------------------------------------
-// Deposit request
-// --------------------------------------------------
+// ============================================================
+// DEPOSIT REQUEST
+// ============================================================
 
 app.post(
   "/api/deposits/request",
-  async (req, res) => {
-    const auth = requireTelegram(req, res);
-
-    if (!auth) {
-      return;
-    }
-
-    const amount = normalizeAmount(
-      req.body?.amount
-    );
-
-    if (amount <= 0) {
-      return res.status(400).json({
-        ok: false,
-        message: "Invalid deposit amount."
-      });
-    }
-
-    const id =
-      "dep_" +
-      Date.now() +
-      "_" +
-      crypto.randomBytes(4).toString("hex");
-
-    const deposit = {
-      id,
-      telegramUserId: auth.user.id,
-      amount,
-      status: "waiting",
-      createdAt: nowIso()
-    };
-
-    db.deposits[id] = deposit;
-
-    auth.user.deposits.push(id);
-    auth.user.updatedAt = nowIso();
-
-    saveDB();
-
-    res.json({
-      ok: true,
-      deposit
-    });
-  }
-);
-
-// --------------------------------------------------
-// Deposit verify
-// --------------------------------------------------
-
-app.post(
-  "/api/deposits/verify",
-  async (req, res) => {
+  telegramAuth,
+  (req, res) => {
     try {
-      const auth = requireTelegram(req, res);
+      const amount =
+        Number(req.body?.amount);
 
-      if (!auth) {
-        return;
-      }
-
-      const txid = cleanTxid(
-        req.body?.txid
-      );
-
-      const requestedAmount =
-        normalizeAmount(
-          req.body?.amount
-        );
-
-      if (!isValidTxid(txid)) {
+      if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+      ) {
         return res.status(400).json({
           ok: false,
           message:
-            "Invalid TRON TXID. TXID must be 64 hexadecimal characters."
+            "Invalid deposit amount."
         });
       }
 
-      if (requestedAmount <= 0) {
+      const request = {
+        id: randomId("dep_req"),
+        telegramUserId:
+          String(
+            req.telegramUser.id
+          ),
+        amount:
+          roundNumber(
+            amount,
+            6
+          ),
+        status:
+          "waiting_txid",
+        createdAt:
+          nowISO()
+      };
+
+      db.deposits.push(
+        request
+      );
+
+      saveDB();
+
+      res.json({
+        ok: true,
+        request
+      });
+    } catch (err) {
+      res.status(500).json({
+        ok: false,
+        message:
+          "Could not create deposit request."
+      });
+    }
+  }
+);
+
+// ============================================================
+// DEPOSIT VERIFY
+// ============================================================
+
+app.post(
+  "/api/deposits/verify",
+  telegramAuth,
+  async (req, res) => {
+    try {
+      const user =
+        req.appUser;
+
+      registerReferral(
+        user,
+        req.startParam
+      );
+
+      const txid =
+        String(
+          req.body?.txid ||
+            ""
+        )
+          .trim()
+          .toLowerCase();
+
+      const amount =
+        Number(
+          req.body?.amount
+        );
+
+      // ------------------------------------------------------
+      // TXID validation
+      // ------------------------------------------------------
+
+      if (
+        !/^[a-f0-9]{64}$/i.test(
+          txid
+        )
+      ) {
         return res.status(400).json({
           ok: false,
-          message: "Invalid deposit amount."
+          message:
+            "Invalid TRON TXID. TXID must contain 64 hexadecimal characters."
         });
       }
 
-      // Prevent TX reuse
-      if (db.usedTransactions[txid]) {
+      if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Invalid deposit amount."
+        });
+      }
+
+      // ------------------------------------------------------
+      // Check duplicate
+      // ------------------------------------------------------
+
+      const existing =
+        db.usedTransactions.find(
+          x =>
+            String(x.txid).toLowerCase() ===
+            txid
+        );
+
+      if (existing) {
         return res.status(400).json({
           ok: false,
           message:
@@ -1048,101 +1786,43 @@ app.post(
         });
       }
 
-      // Check solidified transaction
-      const transaction =
-        await getTransactionById(txid);
+      // ------------------------------------------------------
+      // Find confirmed USDT transfer
+      // ------------------------------------------------------
 
-      if (
-        !transaction ||
-        !transaction.txID
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Transaction was not found on the TRON network."
-        });
-      }
+      let transfer;
 
-      // Check solidified receipt
-      const info =
-        await getTransactionInfoById(txid);
-
-      if (!info || !info.id) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Transaction confirmation information was not found."
-        });
-      }
-
-      if (
-        info.receipt &&
-        info.receipt.result &&
-        String(info.receipt.result).toUpperCase() !==
-          "SUCCESS"
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "The TRON transaction was not successful."
-        });
-      }
-
-      // Confirmed Transfer events
-      const events =
-        await getConfirmedTransferEvents(txid);
-
-      const matchingTransfers = [];
-
-      for (const event of events) {
-        const contract =
-          event?.contract_address ||
-          event?.contractAddress ||
-          "";
+      try {
+        transfer =
+          await findConfirmedUSDTTransfer(
+            txid
+          );
+      } catch (err) {
+        console.error(
+          "Blockchain verification error:",
+          err
+        );
 
         if (
-          String(contract).toLowerCase() !==
-          String(USDT_CONTRACT).toLowerCase()
+          String(
+            err.message || ""
+          ).includes("429")
         ) {
-          continue;
-        }
-
-        const result = event?.result || {};
-
-        const to =
-          result.to ||
-          event.to ||
-          "";
-
-        const from =
-          result.from ||
-          event.from ||
-          "";
-
-        const valueRaw =
-          result.value ??
-          event.value ??
-          0;
-
-        const value =
-          Number(valueRaw) / 1e6;
-
-        if (
-          String(to).toLowerCase() ===
-            String(DEPOSIT_ADDRESS).toLowerCase() &&
-          Number.isFinite(value) &&
-          value > 0
-        ) {
-          matchingTransfers.push({
-            from,
-            to,
-            amount: value,
-            contract
+          return res.status(429).json({
+            ok: false,
+            message:
+              "TRON network service is busy. Please wait 20-30 seconds and try again."
           });
         }
+
+        return res.status(502).json({
+          ok: false,
+          message:
+            "Could not verify the transaction on TRON right now."
+        });
       }
 
-      if (matchingTransfers.length === 0) {
+      if (!transfer) {
         return res.status(400).json({
           ok: false,
           message:
@@ -1150,293 +1830,243 @@ app.post(
         });
       }
 
-      if (matchingTransfers.length > 1) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "This TXID contains multiple matching USDT transfers and cannot be verified automatically."
-        });
-      }
+      // ------------------------------------------------------
+      // Exact recipient
+      // ------------------------------------------------------
 
-      const transfer =
-        matchingTransfers[0];
-
-      const actualAmount =
-        roundNumber(transfer.amount, 6);
-
-      // Exact amount
       if (
-        Math.abs(
-          actualAmount - requestedAmount
-        ) > 0.000001
+        !sameAddress(
+          transfer.to,
+          DEPOSIT_ADDRESS
+        )
       ) {
         return res.status(400).json({
           ok: false,
           message:
-            `Amount mismatch. Blockchain amount: ${actualAmount} USDT. Requested amount: ${requestedAmount} USDT.`
+            "This transaction was not sent to the Big Money deposit address."
         });
       }
 
-      // Find existing deposit request
-      let deposit = Object.values(
-        db.deposits
-      ).find(
-        (item) =>
-          item.telegramUserId ===
-            auth.user.id &&
-          item.txid === txid
-      );
+      // ------------------------------------------------------
+      // Exact amount
+      // ------------------------------------------------------
 
-      if (!deposit) {
-        const id =
-          "dep_" +
-          Date.now() +
-          "_" +
-          crypto.randomBytes(4).toString("hex");
+      const receivedAmount =
+        roundNumber(
+          Number(
+            transfer.amount
+          ),
+          6
+        );
 
-        deposit = {
-          id,
-          telegramUserId: auth.user.id,
-          amount: actualAmount,
-          txid,
-          from: transfer.from || "",
-          to: transfer.to,
-          status: "confirmed",
-          createdAt: nowIso(),
-          confirmedAt: nowIso()
-        };
-
-        db.deposits[id] = deposit;
-
-        auth.user.deposits.push(id);
-      } else {
-        if (deposit.status === "confirmed") {
-          return res.status(400).json({
-            ok: false,
-            message:
-              "This deposit is already confirmed."
-          });
-        }
-
-        deposit.amount = actualAmount;
-        deposit.txid = txid;
-        deposit.from = transfer.from || "";
-        deposit.to = transfer.to;
-        deposit.status = "confirmed";
-        deposit.confirmedAt = nowIso();
+      if (
+        !Number.isFinite(
+          receivedAmount
+        ) ||
+        receivedAmount <= 0
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Invalid USDT amount found on blockchain."
+        });
       }
 
-      // Credit balance
-      auth.user.balance = roundNumber(
-        Number(auth.user.balance || 0) +
-          actualAmount,
-        6
-      );
+      if (
+        Math.abs(
+          receivedAmount -
+            amount
+        ) >
+        0.000001
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            `Amount mismatch. Blockchain received ${receivedAmount} USDT, but you entered ${amount} USDT.`
+        });
+      }
 
-      // Mark TX as used
-      db.usedTransactions[txid] = {
+      // ------------------------------------------------------
+      // CREDIT USER
+      // ------------------------------------------------------
+
+      user.balance =
+        roundNumber(
+          Number(
+            user.balance || 0
+          ) +
+            receivedAmount,
+          6
+        );
+
+      // ------------------------------------------------------
+      // SAVE USED TXID FIRST
+      // ------------------------------------------------------
+
+      db.usedTransactions.push({
         txid,
-        userId: auth.user.id,
-        depositId: deposit.id,
-        amount: actualAmount,
-        from: transfer.from || "",
-        to: transfer.to,
-        createdAt: nowIso()
-      };
+        telegramUserId:
+          String(
+            user.id
+          ),
+        amount:
+          receivedAmount,
+        from:
+          transfer.from || "",
+        to:
+          DEPOSIT_ADDRESS,
+        source:
+          transfer.source,
+        createdAt:
+          nowISO()
+      });
 
-      auth.user.updatedAt = nowIso();
+      // ------------------------------------------------------
+      // DEPOSIT RECORD
+      // ------------------------------------------------------
+
+      db.deposits.push({
+        id:
+          randomId("deposit"),
+        telegramUserId:
+          String(
+            user.id
+          ),
+        txid,
+        amount:
+          receivedAmount,
+        from:
+          transfer.from || "",
+        to:
+          DEPOSIT_ADDRESS,
+        status:
+          "confirmed",
+        source:
+          transfer.source,
+        createdAt:
+          nowISO()
+      });
 
       saveDB();
 
-      // Rewards
-      const rewards =
-        processRewardsForDeposit(
-          auth.user,
-          actualAmount,
-          deposit.id
-        );
+      // ------------------------------------------------------
+      // REWARDS
+      // ------------------------------------------------------
 
-      const totalPoints =
-        roundNumber(
-          Number(auth.user.points || 0),
-          2
-        );
+      let referralReward =
+        false;
 
-      // Admin notification
-      await notifyAdmins(
-        `💰 <b>New confirmed deposit</b>\n\n` +
-        `User ID: <code>${auth.user.id}</code>\n` +
-        `Username: @${auth.user.username || "none"}\n` +
-        `Amount: <b>${actualAmount} USDT</b>\n` +
-        `TXID: <code>${txid}</code>\n` +
-        `Referral reward: ${rewards.referralReward} points\n` +
-        `Daily reward: ${rewards.dailyReward} points`
-      );
+      let dailyReward =
+        false;
+
+      if (
+        receivedAmount >=
+        QUALIFYING_DEPOSIT
+      ) {
+        referralReward =
+          applyReferralReward(
+            user
+          );
+
+        dailyReward =
+          applyDailyReward(
+            user
+          );
+      }
+
+      saveDB();
+
+      // ------------------------------------------------------
+      // RESPONSE
+      // ------------------------------------------------------
 
       res.json({
         ok: true,
         message:
-          "Deposit confirmed successfully.",
-        deposit,
-        balance: roundNumber(
-          auth.user.balance,
-          6
-        ),
-        points: totalPoints,
-        rewards
+          "Deposit verified successfully.",
+        txid,
+        amount:
+          receivedAmount,
+        balance:
+          roundNumber(
+            user.balance,
+            6
+          ),
+        points:
+          roundNumber(
+            user.points,
+            2
+          ),
+        referralReward,
+        dailyReward,
+        successfulReferrals:
+          Number(
+            user.successfulReferrals ||
+              0
+          )
       });
-    } catch (error) {
+    } catch (err) {
       console.error(
         "Deposit verify error:",
-        error
+        err
       );
 
       res.status(500).json({
         ok: false,
         message:
-          error.message ||
           "Deposit verification failed."
       });
     }
   }
 );
 
-// --------------------------------------------------
-// Admin test credit
-// --------------------------------------------------
-
-app.post(
-  "/api/admin/test-credit",
-  async (req, res) => {
-    try {
-      const adminId =
-        req.headers["x-admin-telegram-id"] ||
-        req.body?.adminTelegramId;
-
-      if (
-        !ADMIN_TELEGRAM_IDS.includes(
-          String(adminId || "")
-        )
-      ) {
-        return res.status(403).json({
-          ok: false,
-          message: "Admin access denied."
-        });
-      }
-
-      if (
-        ADMIN_TEST_KEY &&
-        String(req.headers["x-admin-test-key"] || "") !==
-          String(ADMIN_TEST_KEY)
-      ) {
-        return res.status(403).json({
-          ok: false,
-          message: "Invalid admin test key."
-        });
-      }
-
-      const telegramUserId =
-        String(req.body?.telegramUserId || "");
-
-      if (!telegramUserId) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "telegramUserId is required."
-        });
-      }
-
-      const user = getUser(
-        telegramUserId
-      );
-
-      if (!user) {
-        return res.status(404).json({
-          ok: false,
-          message: "User not found."
-        });
-      }
-
-      const id =
-        "test_" +
-        Date.now() +
-        "_" +
-        crypto.randomBytes(4).toString("hex");
-
-      const amount = 10;
-
-      user.balance = roundNumber(
-        Number(user.balance || 0) +
-          amount,
-        6
-      );
-
-      db.testCredits[id] = {
-        id,
-        telegramUserId,
-        amount,
-        createdAt: nowIso()
-      };
-
-      user.updatedAt = nowIso();
-
-      saveDB();
-
-      await sendTelegramMessage(
-        telegramUserId,
-        `🧪 Test credit added\n\n` +
-        `Amount: ${amount} USDT\n` +
-        `Balance: ${user.balance} USDT`
-      );
-
-      res.json({
-        ok: true,
-        amount,
-        balance: user.balance,
-        message:
-          "Test credit added successfully."
-      });
-    } catch (error) {
-      console.error(
-        "Admin test credit error:",
-        error
-      );
-
-      res.status(500).json({
-        ok: false,
-        message:
-          error.message ||
-          "Test credit failed."
-      });
-    }
-  }
-);
-
-// --------------------------------------------------
-// Withdraw request
-// --------------------------------------------------
+// ============================================================
+// WITHDRAWAL REQUEST
+// ============================================================
 
 app.post(
   "/api/withdrawals/request",
-  async (req, res) => {
+  telegramAuth,
+  (req, res) => {
     try {
-      const auth = requireTelegram(req, res);
-
-      if (!auth) {
-        return;
-      }
-
-      const amount =
-        normalizeAmount(
-          req.body?.amount
-        );
+      const user =
+        req.appUser;
 
       const address =
         String(
-          req.body?.address || ""
+          req.body?.address ||
+            ""
         ).trim();
 
-      if (amount <= 0) {
+      const amount =
+        Number(
+          req.body?.amount
+        );
+
+      // ------------------------------------------------------
+      // Address
+      // ------------------------------------------------------
+
+      if (
+        !/^T[a-zA-Z0-9]{33}$/.test(
+          address
+        )
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Invalid TRON USDT address."
+        });
+      }
+
+      // ------------------------------------------------------
+      // Amount
+      // ------------------------------------------------------
+
+      if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+      ) {
         return res.status(400).json({
           ok: false,
           message:
@@ -1444,16 +2074,33 @@ app.post(
         });
       }
 
-      if (!isValidTronAddress(address)) {
+      // ------------------------------------------------------
+      // Referral requirement
+      // ------------------------------------------------------
+
+      const successful =
+        Number(
+          user.successfulReferrals ||
+            0
+        );
+
+      if (
+        successful <
+        REQUIRED_REFERRALS
+      ) {
         return res.status(400).json({
           ok: false,
           message:
-            "Invalid TRON address."
+            `You need ${REQUIRED_REFERRALS} successful referrals before requesting a withdrawal. You currently have ${successful}.`
         });
       }
 
+      // ------------------------------------------------------
+      // Balance
+      // ------------------------------------------------------
+
       if (
-        Number(auth.user.balance || 0) <
+        Number(user.balance || 0) <
         amount
       ) {
         return res.status(400).json({
@@ -1463,172 +2110,237 @@ app.post(
         });
       }
 
-      const id =
-        "wd_" +
-        Date.now() +
-        "_" +
-        crypto.randomBytes(4).toString("hex");
+      // ------------------------------------------------------
+      // Deduct immediately
+      // ------------------------------------------------------
 
-      // Current requested withdrawal rule:
-      // 5 referrals are required.
-      //
-      // Note:
-      // referral count only increases after the
-      // referred user's confirmed >=10 USDT deposit.
-
-      if (
-        Number(auth.user.referrals || 0) < 5
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "You need 5 successful referrals before requesting a withdrawal."
-        });
-      }
+      user.balance =
+        roundNumber(
+          Number(
+            user.balance || 0
+          ) - amount,
+          6
+        );
 
       const withdrawal = {
-        id,
-        telegramUserId: auth.user.id,
-        username: auth.user.username || "",
-        amount,
+        id:
+          randomId("withdrawal"),
+        telegramUserId:
+          String(
+            user.id
+          ),
+        username:
+          user.username || "",
         address,
-        status: "pending",
-        createdAt: nowIso(),
-        updatedAt: nowIso()
+        amount:
+          roundNumber(
+            amount,
+            6
+          ),
+        status:
+          "pending",
+        paymentTxid:
+          "",
+        createdAt:
+          nowISO(),
+        updatedAt:
+          nowISO()
       };
 
-      // Reserve/deduct balance immediately.
-      auth.user.balance = roundNumber(
-        Number(auth.user.balance || 0) -
-          amount,
-        6
+      db.withdrawals.push(
+        withdrawal
       );
-
-      db.withdrawals[id] = withdrawal;
-
-      auth.user.withdrawals.push(id);
-      auth.user.updatedAt = nowIso();
 
       saveDB();
-
-      await notifyAdmins(
-        `💸 <b>New withdrawal request</b>\n\n` +
-        `Request ID: <code>${id}</code>\n` +
-        `User ID: <code>${auth.user.id}</code>\n` +
-        `Username: @${auth.user.username || "none"}\n` +
-        `Amount: <b>${amount} USDT</b>\n` +
-        `Address: <code>${address}</code>\n` +
-        `Status: Pending`
-      );
 
       res.json({
         ok: true,
         message:
-          "Withdrawal request submitted.",
-        withdrawal,
-        balance: roundNumber(
-          auth.user.balance,
-          6
-        )
+          "Withdrawal request submitted. Waiting for admin approval.",
+        withdrawalId:
+          withdrawal.id,
+        status:
+          withdrawal.status,
+        balance:
+          user.balance
       });
-    } catch (error) {
+    } catch (err) {
       console.error(
         "Withdrawal request error:",
-        error
+        err
       );
 
       res.status(500).json({
         ok: false,
         message:
-          error.message ||
-          "Withdrawal request failed."
+          "Could not create withdrawal request."
       });
     }
   }
 );
 
-// --------------------------------------------------
-// My withdrawals
-// --------------------------------------------------
+// ============================================================
+// MY WITHDRAWALS
+// ============================================================
 
 app.get(
   "/api/withdrawals/me",
+  telegramAuth,
   (req, res) => {
-    const auth = requireTelegram(req, res);
+    try {
+      const withdrawals =
+        db.withdrawals
+          .filter(
+            w =>
+              String(
+                w.telegramUserId
+              ) ===
+              String(
+                req.telegramUser.id
+              )
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt) -
+              new Date(a.createdAt)
+          );
 
-    if (!auth) {
-      return;
+      res.json({
+        ok: true,
+        withdrawals
+      });
+    } catch (err) {
+      res.status(500).json({
+        ok: false,
+        message:
+          "Could not load withdrawal history."
+      });
     }
+  }
+);
 
-    const list = Object.values(
-      db.withdrawals
-    )
-      .filter(
-        (x) =>
-          x.telegramUserId === auth.user.id
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt) -
-          new Date(a.createdAt)
+// ============================================================
+// ADMIN AUTH
+// ============================================================
+
+function adminAuth(
+  req,
+  res,
+  next
+) {
+  if (!ADMIN_KEY) {
+    return res.status(503).json({
+      ok: false,
+      message:
+        "Admin key is not configured."
+    });
+  }
+
+  const supplied =
+    req.headers[
+      "x-admin-test-key"
+    ] ||
+    req.headers.authorization
+      ?.replace(
+        /^Bearer\s+/i,
+        ""
       );
 
+  if (
+    !supplied ||
+    supplied !== ADMIN_KEY
+  ) {
+    return res.status(401).json({
+      ok: false,
+      message:
+        "Unauthorized."
+    });
+  }
+
+  next();
+}
+
+// ============================================================
+// ADMIN USERS
+// ============================================================
+
+app.get(
+  "/api/admin/users",
+  adminAuth,
+  (req, res) => {
     res.json({
       ok: true,
-      withdrawals: list
+      users: db.users.map(
+        user => ({
+          id: user.id,
+          username:
+            user.username,
+          balance:
+            roundNumber(
+              user.balance,
+              6
+            ),
+          points:
+            roundNumber(
+              user.points,
+              2
+            ),
+          referrals:
+            Number(
+              user.referrals || 0
+            ),
+          successfulReferrals:
+            Number(
+              user.successfulReferrals ||
+                0
+            ),
+          referredBy:
+            user.referredBy,
+          createdAt:
+            user.createdAt
+        })
+      )
     });
   }
 );
 
-// --------------------------------------------------
-// Admin withdrawals
-// --------------------------------------------------
+// ============================================================
+// ADMIN WITHDRAWALS
+// ============================================================
 
 app.get(
   "/api/admin/withdrawals",
+  adminAuth,
   (req, res) => {
-    const adminId =
-      requireAdmin(req, res);
-
-    if (!adminId) {
-      return;
-    }
-
-    const list = Object.values(
-      db.withdrawals
-    ).sort(
-      (a, b) =>
-        new Date(b.createdAt) -
-        new Date(a.createdAt)
-    );
-
     res.json({
       ok: true,
-      withdrawals: list
+      withdrawals:
+        db.withdrawals
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt) -
+              new Date(a.createdAt)
+          )
     });
   }
 );
 
-// --------------------------------------------------
-// Admin approve withdrawal
-// --------------------------------------------------
+// ============================================================
+// ADMIN APPROVE WITHDRAWAL
+// ============================================================
 
 app.post(
-  "/api/admin/withdrawals/approve",
-  async (req, res) => {
+  "/api/admin/withdrawals/:id/approve",
+  adminAuth,
+  (req, res) => {
     try {
-      const adminId =
-        requireAdmin(req, res);
-
-      if (!adminId) {
-        return;
-      }
-
-      const id =
-        String(req.body?.withdrawalId || "");
-
       const withdrawal =
-        db.withdrawals[id];
+        db.withdrawals.find(
+          w =>
+            w.id ===
+            req.params.id
+        );
 
       if (!withdrawal) {
         return res.status(404).json({
@@ -1639,7 +2351,8 @@ app.post(
       }
 
       if (
-        withdrawal.status !== "pending"
+        withdrawal.status !==
+        "pending"
       ) {
         return res.status(400).json({
           ok: false,
@@ -1648,67 +2361,45 @@ app.post(
         });
       }
 
-      withdrawal.status = "approved";
-      withdrawal.updatedAt = nowIso();
-      withdrawal.approvedAt = nowIso();
-      withdrawal.approvedBy = adminId;
+      withdrawal.status =
+        "approved";
+
+      withdrawal.updatedAt =
+        nowISO();
 
       saveDB();
 
-      await sendTelegramMessage(
-        withdrawal.telegramUserId,
-        `✅ <b>Withdrawal approved</b>\n\n` +
-        `Request ID: <code>${withdrawal.id}</code>\n` +
-        `Amount: <b>${withdrawal.amount} USDT</b>\n\n` +
-        `The withdrawal is approved by admin.`
-      );
-
       res.json({
         ok: true,
+        message:
+          "Withdrawal approved. USDT blockchain transfer is NOT automatic.",
         withdrawal
       });
-    } catch (error) {
-      console.error(
-        "Approve withdrawal error:",
-        error
-      );
-
+    } catch (err) {
       res.status(500).json({
         ok: false,
         message:
-          error.message ||
-          "Approval failed."
+          "Could not approve withdrawal."
       });
     }
   }
 );
 
-// --------------------------------------------------
-// Admin reject withdrawal
-// --------------------------------------------------
+// ============================================================
+// ADMIN REJECT WITHDRAWAL
+// ============================================================
 
 app.post(
-  "/api/admin/withdrawals/reject",
-  async (req, res) => {
+  "/api/admin/withdrawals/:id/reject",
+  adminAuth,
+  (req, res) => {
     try {
-      const adminId =
-        requireAdmin(req, res);
-
-      if (!adminId) {
-        return;
-      }
-
-      const id =
-        String(req.body?.withdrawalId || "");
-
-      const reason =
-        String(
-          req.body?.reason ||
-            "Withdrawal rejected by admin."
-        );
-
       const withdrawal =
-        db.withdrawals[id];
+        db.withdrawals.find(
+          w =>
+            w.id ===
+            req.params.id
+        );
 
       if (!withdrawal) {
         return res.status(404).json({
@@ -1719,105 +2410,83 @@ app.post(
       }
 
       if (
-        withdrawal.status !== "pending" &&
-        withdrawal.status !== "approved"
+        withdrawal.status !==
+        "pending"
       ) {
         return res.status(400).json({
           ok: false,
           message:
-            "This withdrawal cannot be rejected."
+            "Only pending withdrawals can be rejected."
         });
       }
 
       const user =
-        getUser(withdrawal.telegramUserId);
-
-      if (
-        user &&
-        withdrawal.status !== "rejected"
-      ) {
-        user.balance = roundNumber(
-          Number(user.balance || 0) +
-            Number(withdrawal.amount || 0),
-          6
+        db.users.find(
+          u =>
+            String(u.id) ===
+            String(
+              withdrawal.telegramUserId
+            )
         );
 
-        user.updatedAt = nowIso();
+      if (user) {
+        user.balance =
+          roundNumber(
+            Number(
+              user.balance || 0
+            ) +
+              Number(
+                withdrawal.amount
+              ),
+            6
+          );
       }
 
-      withdrawal.status = "rejected";
-      withdrawal.reason = reason;
-      withdrawal.updatedAt = nowIso();
-      withdrawal.rejectedAt = nowIso();
-      withdrawal.rejectedBy = adminId;
+      withdrawal.status =
+        "rejected";
+
+      withdrawal.updatedAt =
+        nowISO();
+
+      withdrawal.rejectionReason =
+        String(
+          req.body?.reason ||
+            "Rejected by admin."
+        );
 
       saveDB();
 
-      await sendTelegramMessage(
-        withdrawal.telegramUserId,
-        `❌ <b>Withdrawal rejected</b>\n\n` +
-        `Request ID: <code>${withdrawal.id}</code>\n` +
-        `Amount: <b>${withdrawal.amount} USDT</b>\n` +
-        `Reason: ${reason}\n\n` +
-        `The amount has been returned to your Big Money balance.`
-      );
-
       res.json({
         ok: true,
-        withdrawal,
-        balance: user
-          ? roundNumber(user.balance, 6)
-          : null
+        message:
+          "Withdrawal rejected and balance returned.",
+        withdrawal
       });
-    } catch (error) {
-      console.error(
-        "Reject withdrawal error:",
-        error
-      );
-
+    } catch (err) {
       res.status(500).json({
         ok: false,
         message:
-          error.message ||
-          "Rejection failed."
+          "Could not reject withdrawal."
       });
     }
   }
 );
 
-// --------------------------------------------------
-// Admin add payment TXID
-// --------------------------------------------------
+// ============================================================
+// ADMIN ADD PAYMENT TXID
+// ============================================================
 
 app.post(
-  "/api/admin/withdrawals/txid",
-  async (req, res) => {
+  "/api/admin/withdrawals/:id/txid",
+  adminAuth,
+  (req, res) => {
     try {
-      const adminId =
-        requireAdmin(req, res);
-
-      if (!adminId) {
-        return;
-      }
-
-      const id =
-        String(req.body?.withdrawalId || "");
-
-      const txid =
-        cleanTxid(
-          req.body?.txid
-        );
-
-      if (!isValidTxid(txid)) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Invalid TXID."
-        });
-      }
-
       const withdrawal =
-        db.withdrawals[id];
+        db.withdrawals.find(
+          w =>
+            w.id ===
+            req.params.id
+        );
 
       if (!withdrawal) {
         return res.status(404).json({
@@ -1827,160 +2496,195 @@ app.post(
         });
       }
 
-      withdrawal.paymentTxid = txid;
-      withdrawal.status = "approved";
-      withdrawal.updatedAt = nowIso();
-      withdrawal.paymentAddedAt = nowIso();
-      withdrawal.paymentAddedBy = adminId;
+      const txid =
+        String(
+          req.body?.txid ||
+            ""
+        )
+          .trim()
+          .toLowerCase();
+
+      if (
+        !/^[a-f0-9]{64}$/.test(
+          txid
+        )
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Invalid TRON TXID."
+        });
+      }
+
+      withdrawal.paymentTxid =
+        txid;
+
+      withdrawal.status =
+        "paid";
+
+      withdrawal.updatedAt =
+        nowISO();
 
       saveDB();
 
-      await sendTelegramMessage(
-        withdrawal.telegramUserId,
-        `💚 <b>Withdrawal payment recorded</b>\n\n` +
-        `Amount: <b>${withdrawal.amount} USDT</b>\n` +
-        `TXID: <code>${txid}</code>\n\n` +
-        `You can check the transaction on the TRON network.`
-      );
-
       res.json({
         ok: true,
+        message:
+          "Payment TXID recorded.",
         withdrawal
       });
-    } catch (error) {
-      console.error(
-        "Withdrawal TXID error:",
-        error
-      );
-
+    } catch (err) {
       res.status(500).json({
         ok: false,
         message:
-          error.message ||
-          "Could not save payment TXID."
+          "Could not record payment TXID."
       });
     }
   }
 );
 
-// --------------------------------------------------
-// Admin users
-// --------------------------------------------------
+// ============================================================
+// ADMIN TEST CREDIT
+// ============================================================
+// Adds exactly 10 USDT to the authenticated Telegram user.
+// This does NOT give referral or daily rewards.
+// Use only for testing.
 
-app.get(
-  "/api/admin/users",
+app.post(
+  "/api/admin/test-credit",
+  adminAuth,
+  telegramAuth,
   (req, res) => {
-    const adminId =
-      requireAdmin(req, res);
+    try {
+      const user =
+        req.appUser;
 
-    if (!adminId) {
-      return;
-    }
+      const amount = 10;
 
-    const users = Object.values(
-      db.users
-    )
-      .map((user) => ({
-        id: user.id,
-        telegramId: user.telegramId,
-        username: user.username || "",
-        firstName: user.firstName || "",
-        balance: roundNumber(
-          user.balance || 0,
+      user.balance =
+        roundNumber(
+          Number(
+            user.balance || 0
+          ) +
+            amount,
           6
-        ),
-        points: roundNumber(
-          user.points || 0,
-          2
-        ),
-        referrals: Number(
-          user.referrals || 0
-        ),
-        referredBy:
-          user.referredBy || null,
-        createdAt: user.createdAt
-      }))
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt) -
-          new Date(a.createdAt)
+        );
+
+      const record = {
+        id:
+          randomId("test"),
+        telegramUserId:
+          String(
+            user.id
+          ),
+        amount,
+        createdAt:
+          nowISO()
+      };
+
+      db.testCredits.push(
+        record
       );
 
-    res.json({
-      ok: true,
-      users
+      saveDB();
+
+      res.json({
+        ok: true,
+        message:
+          "Test credit added.",
+        amount,
+        balance:
+          user.balance
+      });
+    } catch (err) {
+      res.status(500).json({
+        ok: false,
+        message:
+          "Test credit failed."
+      });
+    }
+  }
+);
+
+// ============================================================
+// 404
+// ============================================================
+
+app.use(
+  (req, res) => {
+    res.status(404).json({
+      ok: false,
+      message:
+        "API endpoint not found."
     });
   }
 );
 
-// --------------------------------------------------
-// Health
-// --------------------------------------------------
+// ============================================================
+// ERROR HANDLER
+// ============================================================
 
-app.get("/health", (req, res) => {
-  res.json({
-    ok: true,
-    status: "healthy",
-    service: "Big Money",
-    time: nowIso()
-  });
-});
+app.use(
+  (
+    err,
+    req,
+    res,
+    next
+  ) => {
+    console.error(
+      "Unhandled error:",
+      err
+    );
 
-// --------------------------------------------------
-// 404
-// --------------------------------------------------
+    res.status(500).json({
+      ok: false,
+      message:
+        "Internal server error."
+    });
+  }
+);
 
-app.use((req, res) => {
-  res.status(404).json({
-    ok: false,
-    message: "Route not found."
-  });
-});
+// ============================================================
+// START
+// ============================================================
 
-// --------------------------------------------------
-// Error handler
-// --------------------------------------------------
+app.listen(
+  PORT,
+  () => {
+    console.log(
+      "========================================"
+    );
 
-app.use((error, req, res, next) => {
-  console.error(
-    "Unhandled server error:",
-    error
-  );
+    console.log(
+      "💚 BIG MONEY BACKEND"
+    );
 
-  res.status(500).json({
-    ok: false,
-    message:
-      error.message ||
-      "Internal server error."
-  });
-});
+    console.log(
+      `PORT: ${PORT}`
+    );
 
-// --------------------------------------------------
-// Start
-// --------------------------------------------------
+    console.log(
+      `TRON: ${TRONGRID_URL}`
+    );
 
-app.listen(PORT, () => {
-  console.log(
-    `Big Money server running on port ${PORT}`
-  );
+    console.log(
+      `USDT: ${USDT_CONTRACT}`
+    );
 
-  console.log(
-    "Admin IDs:",
-    ADMIN_TELEGRAM_IDS
-  );
+    console.log(
+      `Deposit: ${DEPOSIT_ADDRESS}`
+    );
 
-  console.log(
-    "Telegram bot:",
-    TELEGRAM_BOT_USERNAME
-  );
+    console.log(
+      `Origin: ${ALLOWED_ORIGIN}`
+    );
 
-  console.log(
-    "Deposit address:",
-    DEPOSIT_ADDRESS
-  );
+    console.log(
+      `Bot: @${TELEGRAM_BOT_USERNAME}`
+    );
 
-  console.log(
-    "USDT contract:",
-    USDT_CONTRACT
-  );
-});
+    console.log(
+      "========================================"
+    );
+  }
+);

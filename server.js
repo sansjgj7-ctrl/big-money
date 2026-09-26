@@ -11,9 +11,6 @@ const PORT = process.env.PORT || 10000;
 const TELEGRAM_BOT_TOKEN =
   process.env.TELEGRAM_BOT_TOKEN || "";
 
-const ADMIN_TEST_KEY =
-  process.env.ADMIN_TEST_KEY || "";
-
 const ADMIN_TELEGRAM_IDS =
   String(process.env.ADMIN_TELEGRAM_IDS || "")
     .split(",")
@@ -42,11 +39,8 @@ const ALLOWED_ORIGIN =
 const USDT_DECIMALS = 6;
 
 const REFERRAL_REWARD_POINTS = 3;
-
 const DAILY_REWARD_POINTS = 0.5;
-
 const QUALIFYING_DEPOSIT = 10;
-
 const REQUIRED_REFERRALS = 5;
 
 /*
@@ -77,7 +71,6 @@ app.use(
     allowedHeaders: [
       "Content-Type",
       "Authorization",
-      "X-Admin-Test-Key",
       "X-Telegram-Init-Data"
     ]
   })
@@ -105,6 +98,7 @@ const DATA_FILE =
     "big-money-data.json"
   );
 
+
 function defaultDB(){
 
   return {
@@ -112,7 +106,6 @@ function defaultDB(){
     deposits: [],
     withdrawals: [],
     usedTransactions: [],
-    testCredits: [],
     pointConversions: []
   };
 }
@@ -199,12 +192,6 @@ function loadDB(){
       !Array.isArray(db.usedTransactions)
     ){
       db.usedTransactions = [];
-    }
-
-    if(
-      !Array.isArray(db.testCredits)
-    ){
-      db.testCredits = [];
     }
 
     if(
@@ -338,8 +325,7 @@ function getKabulDate(){
     new Intl.DateTimeFormat(
       "en-CA",
       {
-        timeZone:
-          "Asia/Kabul",
+        timeZone:"Asia/Kabul",
         year:"numeric",
         month:"2-digit",
         day:"2-digit"
@@ -528,6 +514,7 @@ function verifyTelegramInitData(
 
 
   return {
+
     telegramUserId:
       String(user.id),
 
@@ -547,6 +534,7 @@ function verifyTelegramInitData(
       params.get("start_param") ||
       params.get("startapp") ||
       ""
+
   };
 }
 
@@ -592,10 +580,6 @@ function telegramAuth(
     req.appUser =
       user;
 
-
-    /*
-    Register referral from start_param.
-    */
 
     registerReferral(
       user,
@@ -698,10 +682,7 @@ function ensureUser(
 
   }else{
 
-    if(
-      username
-    ){
-
+    if(username){
       user.username =
         username;
     }
@@ -709,7 +690,6 @@ function ensureUser(
     if(
       telegramUser.firstName
     ){
-
       user.firstName =
         telegramUser.firstName;
     }
@@ -717,7 +697,6 @@ function ensureUser(
     if(
       telegramUser.lastName
     ){
-
       user.lastName =
         telegramUser.lastName;
     }
@@ -727,7 +706,6 @@ function ensureUser(
         user.referrals
       )
     ){
-
       user.referrals = [];
     }
 
@@ -736,7 +714,6 @@ function ensureUser(
         user.dailyRewards
       )
     ){
-
       user.dailyRewards = [];
     }
 
@@ -831,9 +808,7 @@ function registerReferral(
   startParam
 ){
 
-  if(
-    !startParam
-  ){
+  if(!startParam){
     return;
   }
 
@@ -858,10 +833,7 @@ function registerReferral(
   }
 
 
-  if(
-    user.referredBy
-  ){
-
+  if(user.referredBy){
     return;
   }
 
@@ -900,8 +872,12 @@ function registerReferral(
   const already =
     referrer.referrals.some(
       x =>
-        String(x.telegramUserId) ===
-        String(user.telegramUserId)
+        String(
+          x.telegramUserId
+        ) ===
+        String(
+          user.telegramUserId
+        )
     );
 
 
@@ -915,8 +891,7 @@ function registerReferral(
         ),
 
       username:
-        user.username ||
-        "",
+        user.username || "",
 
       successful:false,
 
@@ -924,6 +899,7 @@ function registerReferral(
 
       createdAt:
         nowISO()
+
     });
 
 
@@ -982,7 +958,6 @@ function applyReferralReward(
 
 
   if(!referrer){
-
     return 0;
   }
 
@@ -1041,6 +1016,7 @@ function applyReferralReward(
 
       createdAt:
         nowISO()
+
     };
 
 
@@ -1165,69 +1141,6 @@ TRON HELPERS
 =========================================================
 */
 
-function tronAddressToHex(
-  address
-){
-
-  const alphabet =
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-
-
-  let num =
-    BigInt(0);
-
-
-  for(
-    const char of address
-  ){
-
-    const index =
-      alphabet.indexOf(
-        char
-      );
-
-
-    if(index < 0){
-
-      throw new Error(
-        "Invalid TRON address."
-      );
-    }
-
-
-    num =
-      num *
-      BigInt(58) +
-      BigInt(index);
-  }
-
-
-  let hex =
-    num.toString(16);
-
-
-  if(
-    hex.length % 2
-  ){
-
-    hex =
-      "0" + hex;
-  }
-
-
-  while(
-    hex.length < 42
-  ){
-
-    hex =
-      "0" + hex;
-  }
-
-
-  return hex;
-}
-
-
 function tronHexToBase58(
   hex
 ){
@@ -1242,8 +1155,7 @@ function tronHexToBase58(
     );
 
 
-  let output =
-    "";
+  let output = "";
 
 
   while(
@@ -1359,14 +1271,10 @@ function base58CheckDecode(
   }
 
 
-  const payload =
-    hex.substring(
-      0,
-      hex.length - 8
-    );
-
-
-  return payload;
+  return hex.substring(
+    0,
+    hex.length - 8
+  );
 }
 
 
@@ -1450,32 +1358,27 @@ function decodeTransferInput(
     );
 
 
-  const recipient =
-    hexToTronAddress(
-      addressHex
-    );
-
-
   return {
 
-    recipient,
+    recipient:
+      hexToTronAddress(
+        addressHex
+      ),
 
     amount:
-
-      Number(
-        amount
-      ) /
+      Number(amount) /
       Math.pow(
         10,
         USDT_DECIMALS
       )
+
   };
 }
 
 
 /*
 =========================================================
-TRONGRID FETCH
+TRONGRID
 =========================================================
 */
 
@@ -1543,7 +1446,7 @@ async function tronFetch(
 
 /*
 =========================================================
-VERIFY EXACT TRANSACTION
+VERIFY TRANSACTION
 =========================================================
 */
 
@@ -1551,16 +1454,11 @@ async function findConfirmedUSDTTransfer(
   txid
 ){
 
-  /*
-  1. Solidified transaction
-  */
-
   const transaction =
     await tronFetch(
       "/walletsolidity/gettransactionbyid",
       {
         method:"POST",
-
         body:
           JSON.stringify({
             value:txid
@@ -1580,16 +1478,11 @@ async function findConfirmedUSDTTransfer(
   }
 
 
-  /*
-  2. Solidified receipt
-  */
-
   const info =
     await tronFetch(
       "/walletsolidity/gettransactioninfobyid",
       {
         method:"POST",
-
         body:
           JSON.stringify({
             value:txid
@@ -1613,10 +1506,6 @@ async function findConfirmedUSDTTransfer(
     );
   }
 
-
-  /*
-  3. Check contract call
-  */
 
   const contracts =
     transaction.raw_data &&
@@ -1653,26 +1542,23 @@ async function findConfirmedUSDTTransfer(
     const contractHex =
       base58CheckDecode(
         USDT_CONTRACT
-      ).toLowerCase();
+      )
+      .replace(
+        /^41/i,
+        ""
+      )
+      .toLowerCase();
 
 
-    let actualContractHex =
-      "";
-
-
-    if(
-      typeof contractAddress ===
-      "string"
-    ){
-
-      actualContractHex =
-        contractAddress
-          .replace(
-            /^41/i,
-            ""
-          )
-          .toLowerCase();
-    }
+    const actualContractHex =
+      String(
+        contractAddress || ""
+      )
+      .replace(
+        /^41/i,
+        ""
+      )
+      .toLowerCase();
 
 
     if(
@@ -1687,35 +1573,35 @@ async function findConfirmedUSDTTransfer(
 
 
       if(
-        decoded
+        decoded &&
+        decoded.recipient ===
+        DEPOSIT_ADDRESS
       ){
 
-        if(
-          decoded.recipient ===
-          DEPOSIT_ADDRESS
-        ){
+        return {
 
-          return {
-            txid,
-            from:
-              hexToTronAddress(
-                value.owner_address
-              ),
-            to:
-              decoded.recipient,
-            amount:
-              decoded.amount,
-            confirmed:true
-          };
-        }
+          txid,
+
+          from:
+            value.owner_address
+              ? hexToTronAddress(
+                  value.owner_address
+                )
+              : "",
+
+          to:
+            decoded.recipient,
+
+          amount:
+            decoded.amount,
+
+          confirmed:true
+
+        };
       }
     }
   }
 
-
-  /*
-  4. Fallback to confirmed Transfer event
-  */
 
   const events =
     await tronFetch(
@@ -1739,60 +1625,14 @@ async function findConfirmedUSDTTransfer(
           event.result ||
           {};
 
-
         const to =
           result.to ||
           event.to ||
           "";
 
-
-        const amountRaw =
-          result.value ||
-          event.value ||
-          "0";
-
-
-        const normalizedTo =
-          String(to);
-
-
-        let amount;
-
-
-        try{
-
-          amount =
-            Number(
-              BigInt(
-                String(
-                  amountRaw
-                )
-              )
-            ) /
-            Math.pow(
-              10,
-              USDT_DECIMALS
-            );
-
-        }catch{
-
-          amount =
-            Number(
-              amountRaw
-            ) /
-            Math.pow(
-              10,
-              USDT_DECIMALS
-            );
-        }
-
-
         return (
-          normalizedTo ===
-            DEPOSIT_ADDRESS &&
-          Number.isFinite(
-            amount
-          )
+          String(to) ===
+          DEPOSIT_ADDRESS
         );
       }
     );
@@ -1821,10 +1661,15 @@ async function findConfirmedUSDTTransfer(
   const event =
     matches[0];
 
-
   const result =
     event.result ||
     {};
+
+
+  const rawValue =
+    result.value ||
+    event.value ||
+    "0";
 
 
   let amount;
@@ -1835,11 +1680,7 @@ async function findConfirmedUSDTTransfer(
     amount =
       Number(
         BigInt(
-          String(
-            result.value ||
-            event.value ||
-            "0"
-          )
+          String(rawValue)
         )
       ) /
       Math.pow(
@@ -1850,11 +1691,7 @@ async function findConfirmedUSDTTransfer(
   }catch{
 
     amount =
-      Number(
-        result.value ||
-        event.value ||
-        0
-      ) /
+      Number(rawValue) /
       Math.pow(
         10,
         USDT_DECIMALS
@@ -1879,6 +1716,7 @@ async function findConfirmedUSDTTransfer(
     amount,
 
     confirmed:true
+
   };
 }
 
@@ -1894,10 +1732,15 @@ app.get(
   (req,res) => {
 
     res.json({
+
       ok:true,
+
       app:"Big Money",
+
       network:"TRON TRC20",
+
       token:"USDT"
+
     });
 
   }
@@ -2056,6 +1899,7 @@ app.get(
             user.points || 0,
             2
           )
+
       }
 
     });
@@ -2133,6 +1977,7 @@ app.get(
             user.points || 0,
             2
           )
+
       }
 
     });
@@ -2175,12 +2020,6 @@ app.post(
           });
       }
 
-
-      /*
-      Daily reward is 0.50,
-      so decimal points are allowed.
-      Maximum 2 decimal places.
-      */
 
       points =
         roundNumber(
@@ -2239,10 +2078,6 @@ app.post(
         );
 
 
-      /*
-      Deduct points
-      */
-
       user.points =
         roundNumber(
           availablePoints -
@@ -2250,10 +2085,6 @@ app.post(
           2
         );
 
-
-      /*
-      Add USDT
-      */
 
       user.balance =
         roundNumber(
@@ -2268,10 +2099,6 @@ app.post(
       user.updatedAt =
         nowISO();
 
-
-      /*
-      Save conversion history
-      */
 
       db.pointConversions.push({
 
@@ -2347,7 +2174,7 @@ app.post(
 
 /*
 =========================================================
-POINT CONVERSION HISTORY
+POINT HISTORY
 =========================================================
 */
 
@@ -2439,9 +2266,7 @@ app.get(
                 amount =
                   Number(
                     BigInt(
-                      String(
-                        rawValue
-                      )
+                      String(rawValue)
                     )
                   ) /
                   Math.pow(
@@ -2452,9 +2277,7 @@ app.get(
               }catch{
 
                 amount =
-                  Number(
-                    rawValue
-                  ) /
+                  Number(rawValue) /
                   Math.pow(
                     10,
                     USDT_DECIMALS
@@ -2613,10 +2436,6 @@ app.post(
       }
 
 
-      /*
-      Prevent TXID reuse
-      */
-
       const used =
         db.usedTransactions.some(
           x =>
@@ -2638,10 +2457,6 @@ app.post(
           });
       }
 
-
-      /*
-      Verify exact blockchain transaction
-      */
 
       const transfer =
         await findConfirmedUSDTTransfer(
@@ -2701,10 +2516,6 @@ app.post(
       }
 
 
-      /*
-      Credit balance
-      */
-
       user.balance =
         roundNumber(
           Number(
@@ -2718,10 +2529,6 @@ app.post(
       user.updatedAt =
         nowISO();
 
-
-      /*
-      Save deposit
-      */
 
       db.deposits.push({
 
@@ -2756,10 +2563,6 @@ app.post(
       });
 
 
-      /*
-      Mark TXID as used
-      */
-
       db.usedTransactions.push({
 
         txid,
@@ -2775,15 +2578,8 @@ app.post(
       });
 
 
-      /*
-      Rewards
-      */
-
-      let referralReward =
-        0;
-
-      let dailyReward =
-        0;
+      let referralReward = 0;
+      let dailyReward = 0;
 
 
       if(
@@ -2879,10 +2675,6 @@ app.post(
         );
 
 
-      /*
-      TRON address
-      */
-
       if(
         !/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(
           address
@@ -2916,10 +2708,6 @@ app.post(
       }
 
 
-      /*
-      Withdrawal requires 5 successful referrals
-      */
-
       const successful =
         Number(
           user.successfulReferrals || 0
@@ -2941,10 +2729,6 @@ app.post(
       }
 
 
-      /*
-      Check balance
-      */
-
       if(
         Number(
           user.balance || 0
@@ -2961,10 +2745,6 @@ app.post(
           });
       }
 
-
-      /*
-      Reserve balance
-      */
 
       user.balance =
         roundNumber(
@@ -3155,9 +2935,7 @@ function adminAuth(
   }
 
 
-  req.isAdmin =
-    true;
-
+  req.isAdmin = true;
 
   next();
 }
@@ -3360,10 +3138,6 @@ app.post(
       nowISO();
 
 
-    /*
-    Return reserved balance
-    */
-
     const user =
       db.users.find(
         x =>
@@ -3502,8 +3276,7 @@ app.post(
 
 
 /*
-
-========================================================
+=========================================================
 ERROR HANDLER
 =========================================================
 */
@@ -3549,7 +3322,7 @@ app.listen(
     );
 
     console.log(
-      "Point conversion rate:",
+      "Point conversion:",
       `1 Point = ${POINT_USDT_RATE} USDT`
     );
 

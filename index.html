@@ -107,12 +107,7 @@ button{
 }
 
 .hero{
-  background:
-    linear-gradient(
-      145deg,
-      #0d5a34,
-      #082516
-    );
+  background:linear-gradient(145deg,#0d5a34,#082516);
   border-color:#17663a;
 }
 
@@ -530,12 +525,7 @@ label{
 }
 
 .convert-card{
-  background:
-    linear-gradient(
-      145deg,
-      #17220a,
-      #0a2115
-    );
+  background:linear-gradient(145deg,#17220a,#0a2115);
   border-color:#695b14;
 }
 
@@ -693,9 +683,9 @@ onclick="convertPoints()"
 
 <div class="small">
 Make a confirmed deposit of at least
-10 USDT to receive
+<b>10 USDT</b> to receive
 <b>5 USDT directly to your balance</b>
-once per Kabul day.
+once per Kabul calendar day.
 </div>
 
 <button
@@ -703,7 +693,7 @@ class="secondary"
 style="margin-top:12px"
 onclick="showDailyInfo()"
 >
-🎁 Check Daily Reward
+⭐ Check Daily Reward
 </button>
 
 <div id="dailyMessage"></div>
@@ -723,14 +713,11 @@ onclick="showDailyInfo()"
 Invite friends with your referral link.
 When a referred user makes a confirmed
 deposit of at least
-<b>10 USDT</b>, the referral counts as
+<b>10 USDT</b>, the referral becomes
 a successful referral.
 </div>
 
-<div
-class="stat-grid"
-style="margin-top:12px"
->
+<div class="stat-grid" style="margin-top:12px">
 
 <div class="stat">
 
@@ -738,10 +725,7 @@ style="margin-top:12px"
 Invited
 </div>
 
-<div
-id="homeInvited"
-class="stat-value"
->
+<div id="homeInvited" class="stat-value">
 0
 </div>
 
@@ -753,15 +737,17 @@ class="stat-value"
 Successful
 </div>
 
-<div
-id="homeSuccessful"
-class="stat-value"
->
+<div id="homeSuccessful" class="stat-value">
 0
 </div>
 
 </div>
 
+</div>
+
+<div class="notice">
+Successful referrals are required for withdrawal eligibility.
+Withdrawal requires <b>5 successful referrals</b>.
 </div>
 
 <button
@@ -842,10 +828,7 @@ USDT
 Account
 </span>
 
-<span
-id="homeUsername"
-class="info-value"
->
+<span id="homeUsername" class="info-value">
 -
 </span>
 
@@ -878,7 +861,7 @@ Deposit Amount
 <input
 id="depAmount"
 type="number"
-min="0.01"
+min="10"
 step="0.01"
 placeholder="Example: 10"
 >
@@ -907,10 +890,7 @@ placeholder="Example: 10"
 Deposit Address
 </label>
 
-<div
-id="depositAddress"
-class="address-box"
->
+<div id="depositAddress" class="address-box">
 Loading...
 </div>
 
@@ -932,9 +912,8 @@ src=""
 <div class="notice">
 1. Send the exact amount using USDT TRC20.<br>
 2. Wait until the transaction is confirmed.<br>
-3. Copy the real TRON TXID.<br>
-4. Enter the same amount you sent.<br>
-5. Press Verify Deposit.
+3. Enter the TXID below.<br>
+4. Press Verify Deposit.
 </div>
 
 <label>
@@ -946,7 +925,6 @@ id="txid"
 type="text"
 placeholder="Paste your 64-character TRON TXID"
 autocomplete="off"
-spellcheck="false"
 >
 
 <button
@@ -1005,7 +983,6 @@ id="withdrawAddress"
 type="text"
 placeholder="Txxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 autocomplete="off"
-spellcheck="false"
 >
 
 <label>
@@ -1060,11 +1037,9 @@ onclick="loadWithdrawalHistory()"
 </button>
 
 <div id="withdrawalHistory" style="margin-top:12px">
-
 <div class="loading">
 Loading withdrawal history...
 </div>
-
 </div>
 
 </div>
@@ -1084,15 +1059,9 @@ Loading withdrawal history...
 
 <div class="small">
 Share your referral link with friends.
-Successful referrals are counted when
-the invited user makes a confirmed deposit
-of at least 10 USDT.
 </div>
 
-<div
-class="stat-grid"
-style="margin-top:14px"
->
+<div class="stat-grid" style="margin-top:14px">
 
 <div class="stat">
 
@@ -1100,10 +1069,7 @@ style="margin-top:14px"
 Total Invited
 </div>
 
-<div
-id="refInvited"
-class="stat-value"
->
+<div id="refInvited" class="stat-value">
 0
 </div>
 
@@ -1115,10 +1081,7 @@ class="stat-value"
 Successful
 </div>
 
-<div
-id="refSuccessful"
-class="stat-value"
->
+<div id="refSuccessful" class="stat-value">
 0
 </div>
 
@@ -1127,19 +1090,13 @@ class="stat-value"
 </div>
 
 
-<div
-class="stat"
-style="margin-top:10px"
->
+<div class="stat" style="margin-top:10px">
 
 <div class="stat-label">
 Your Points
 </div>
 
-<div
-id="refPoints"
-class="stat-value"
->
+<div id="refPoints" class="stat-value">
 ⭐ 0
 </div>
 
@@ -1150,10 +1107,7 @@ class="stat-value"
 Your Referral Link
 </label>
 
-<div
-id="referralLink"
-class="ref-link"
->
+<div id="referralLink" class="ref-link">
 Loading...
 </div>
 
@@ -1174,11 +1128,11 @@ onclick="shareReferral()"
 </button>
 
 <div class="notice">
-Referral reward:
-<b>No extra points</b>.
-A referred user who deposits at least
-<b>10 USDT</b> counts as one successful
-referral toward the withdrawal requirement.
+A successful referral requires a confirmed
+deposit of at least <b>10 USDT</b>.
+There is no 3-point referral reward.
+Successful referrals are counted toward the
+<b>5-referral withdrawal requirement</b>.
 </div>
 
 </div>
@@ -1202,10 +1156,7 @@ referral toward the withdrawal requirement.
 Telegram ID
 </span>
 
-<span
-id="profileTelegramId"
-class="info-value"
->
+<span id="profileTelegramId" class="info-value">
 -
 </span>
 
@@ -1217,10 +1168,7 @@ class="info-value"
 Username
 </span>
 
-<span
-id="profileUsername"
-class="info-value"
->
+<span id="profileUsername" class="info-value">
 -
 </span>
 
@@ -1232,10 +1180,7 @@ class="info-value"
 Balance
 </span>
 
-<span
-id="profileBalance"
-class="info-value"
->
+<span id="profileBalance" class="info-value">
 0.0000 USDT
 </span>
 
@@ -1247,10 +1192,7 @@ class="info-value"
 Points
 </span>
 
-<span
-id="profilePoints"
-class="info-value"
->
+<span id="profilePoints" class="info-value">
 ⭐ 0
 </span>
 
@@ -1262,10 +1204,7 @@ class="info-value"
 Referrals
 </span>
 
-<span
-id="profileReferrals"
-class="info-value"
->
+<span id="profileReferrals" class="info-value">
 0
 </span>
 
@@ -1308,10 +1247,7 @@ Conversion rate: 1 Point = 1 USDT
 Available Points
 </span>
 
-<span
-id="convertAvailablePoints"
-class="info-value"
->
+<span id="convertAvailablePoints" class="info-value">
 0
 </span>
 
@@ -1386,11 +1322,9 @@ onclick="loadAdminWithdrawals()"
 id="adminWithdrawals"
 style="margin-top:12px"
 >
-
 <div class="empty">
 Press View Withdrawal Requests.
 </div>
-
 </div>
 
 
@@ -1404,15 +1338,13 @@ style="margin-top:14px;margin-bottom:0;background:#10170d"
 </h3>
 
 <div class="small">
-Adds exactly <b>10 USDT</b> to the
-admin account for testing.
-This is only a database test credit and
-does not require a blockchain transaction.
+Adds exactly <b>10 USDT</b> to the admin account
+for testing. This is only a database test credit
+and does not require a blockchain transaction.
 It does not trigger referral or daily rewards.
 </div>
 
 <button
-id="testCreditButton"
 class="secondary"
 style="margin-top:12px"
 onclick="addTestUSDT()"
@@ -1513,13 +1445,9 @@ API
 const API =
 "https://big-money.onrender.com";
 
-
 let appConfig = null;
-
 let currentUser = null;
-
 let referralData = null;
-
 let isAdmin = false;
 
 
@@ -1573,6 +1501,7 @@ headers:{
 "X-Telegram-Init-Data":
 initData
 }
+
 };
 
 const response =
@@ -1654,7 +1583,8 @@ try{
 
 const response =
 await fetch(
-API + "/api/config"
+API +
+"/api/config"
 );
 
 const data =
@@ -1680,7 +1610,7 @@ document.getElementById(
 if(addressBox){
 
 addressBox.textContent =
-address || "Deposit address unavailable.";
+address;
 
 }
 
@@ -1696,9 +1626,7 @@ address
 
 qr.src =
 "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
-encodeURIComponent(
-address
-);
+encodeURIComponent(address);
 
 }
 
@@ -1997,9 +1925,7 @@ input?.value
 );
 
 if(
-!Number.isFinite(
-points
-) ||
+!Number.isFinite(points) ||
 points <= 0
 ){
 
@@ -2085,17 +2011,17 @@ message.innerHTML =
 '<div class="success">' +
 "✅ " +
 Number(
-data.convertedPoints || points
+data.convertedPoints
 ).toFixed(2) +
 " Points converted to " +
 Number(
-data.addedUSDT || 0
+data.addedUSDT
 ).toFixed(2) +
 " USDT." +
 "<br>" +
 "New balance: " +
 Number(
-data.balance || 0
+data.balance
 ).toFixed(4) +
 " USDT" +
 "</div>";
@@ -2110,7 +2036,6 @@ input.value =
 }
 
 await loadAccount();
-
 await loadReferral();
 
 }catch(error){
@@ -2124,9 +2049,7 @@ if(message){
 
 message.innerHTML =
 '<div class="error">' +
-escapeHtml(
-error.message
-) +
+escapeHtml(error.message) +
 "</div>";
 
 }
@@ -2210,7 +2133,6 @@ referral.successfulReferrals ??
 
 points:
 referral.points ??
-currentUser?.points ??
 0
 
 };
@@ -2265,7 +2187,6 @@ referralData.successful ??
 
 const points =
 referralData.points ??
-currentUser?.points ??
 0;
 
 const linkBox =
@@ -2487,10 +2408,7 @@ document.getElementById(
 )?.textContent ||
 "";
 
-if(
-!address ||
-address === "Loading..."
-){
+if(!address){
 
 showMessage(
 "Deposit address is not available.",
@@ -2540,26 +2458,22 @@ return;
 
 }
 
-const amountInput =
-document.getElementById(
-"depAmount"
-);
-
-const txidInput =
-document.getElementById(
-"txid"
-);
-
 const amount =
 Number(
-amountInput?.value
+document.getElementById(
+"depAmount"
+)?.value
 );
 
 const txid =
 String(
-txidInput?.value ||
+document.getElementById(
+"txid"
+)?.value ||
 ""
-).trim();
+)
+.trim()
+.replace(/\s+/g,"");
 
 const message =
 document.getElementById(
@@ -2567,16 +2481,14 @@ document.getElementById(
 );
 
 if(
-!Number.isFinite(
-amount
-) ||
+!Number.isFinite(amount) ||
 amount <= 0
 ){
 
 if(message){
 
 message.innerHTML =
-'<div class="error">Enter the exact USDT amount you sent.</div>';
+'<div class="error">Enter a valid deposit amount.</div>';
 
 }
 
@@ -2585,15 +2497,13 @@ return;
 }
 
 if(
-!/^[a-fA-F0-9]{64}$/.test(
-txid
-)
+!/^[a-fA-F0-9]{64}$/.test(txid)
 ){
 
 if(message){
 
 message.innerHTML =
-'<div class="error">TXID must contain exactly 64 letters/numbers. Paste the real TRON transaction ID.</div>';
+'<div class="error">Enter the complete 64-character TRON TXID.</div>';
 
 }
 
@@ -2604,7 +2514,7 @@ return;
 if(message){
 
 message.innerHTML =
-'<div class="loading">🔎 Checking TRON blockchain...<br>Please wait for confirmation.</div>';
+'<div class="loading">Checking blockchain and verifying your deposit...</div>';
 
 }
 
@@ -2618,8 +2528,8 @@ method:"POST",
 
 body:
 JSON.stringify({
-amount:amount,
-txid:txid
+amount,
+txid
 })
 
 }
@@ -2636,39 +2546,19 @@ data.message ||
 
 }
 
-const credited =
-Number(
-data.credited || amount
-);
+let rewardText = "";
 
 const dailyReward =
 Number(
 data.dailyReward || 0
 );
 
-const referralReward =
-Number(
-data.referralReward || 0
-);
-
-let rewardText =
-"";
-
 if(
 dailyReward > 0
 ){
 
-rewardText +=
-`<br>🎁 Daily Reward: +${dailyReward.toFixed(2)} USDT added to your balance.`;
-
-}
-
-if(
-referralReward > 0
-){
-
-rewardText +=
-`<br>Referral reward: +${referralReward} points.`;
+rewardText =
+` Daily reward: +${dailyReward.toFixed(2)} USDT added directly to your balance.`;
 
 }
 
@@ -2676,9 +2566,9 @@ if(message){
 
 message.innerHTML =
 '<div class="success">' +
-"✅ Deposit confirmed!<br>" +
+"✅ Deposit confirmed! " +
 Number(
-credited
+data.credited || amount
 ).toFixed(2) +
 " USDT added to your balance." +
 rewardText +
@@ -2686,22 +2576,12 @@ rewardText +
 
 }
 
-if(txidInput){
-
-txidInput.value =
+document.getElementById(
+"txid"
+).value =
 "";
-
-}
-
-if(amountInput){
-
-amountInput.value =
-"";
-
-}
 
 await loadAccount();
-
 await loadReferral();
 
 }catch(error){
@@ -2715,12 +2595,7 @@ if(message){
 
 message.innerHTML =
 '<div class="error">' +
-"❌ " +
-escapeHtml(
-error.message
-) +
-"<br><br>" +
-"Make sure the amount is exactly the amount sent and the TXID belongs to a confirmed USDT TRC20 transfer to the Big Money deposit address." +
+escapeHtml(error.message) +
 "</div>";
 
 }
@@ -2754,7 +2629,7 @@ document.getElementById(
 if(box){
 
 box.innerHTML =
-'<div class="loading">🔎 Checking confirmed TRC20 transfers...</div>';
+'<div class="loading">Checking confirmed TRC20 transfers...</div>';
 
 }
 
@@ -2766,9 +2641,7 @@ await apiFetch(
 );
 
 const deposits =
-Array.isArray(
-data.deposits
-)
+Array.isArray(data.deposits)
 ?
 data.deposits
 :
@@ -2796,9 +2669,7 @@ return `
 <div class="withdraw-item">
 
 <div class="withdraw-title">
-💰 ${Number(
-item.amount || 0
-).toFixed(2)} USDT
+💰 ${Number(item.amount || 0).toFixed(2)} USDT
 </div>
 
 <div class="withdraw-row">
@@ -2808,9 +2679,7 @@ TXID
 </span>
 
 <div class="history-txid">
-${escapeHtml(
-item.txid || "-"
-)}
+${escapeHtml(item.txid || "-")}
 </div>
 
 </div>
@@ -2836,9 +2705,7 @@ if(box){
 
 box.innerHTML =
 '<div class="error">' +
-escapeHtml(
-error.message
-) +
+escapeHtml(error.message) +
 "</div>";
 
 }
@@ -2870,7 +2737,8 @@ document.getElementById(
 "withdrawAddress"
 )?.value ||
 ""
-).trim();
+)
+.trim();
 
 const amount =
 Number(
@@ -2885,9 +2753,7 @@ document.getElementById(
 );
 
 if(
-!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(
-address
-)
+!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)
 ){
 
 if(message){
@@ -2902,9 +2768,7 @@ return;
 }
 
 if(
-!Number.isFinite(
-amount
-) ||
+!Number.isFinite(amount) ||
 amount <= 0
 ){
 
@@ -2921,9 +2785,7 @@ return;
 
 if(
 currentUser &&
-Number(
-currentUser.balance || 0
-) <
+Number(currentUser.balance || 0) <
 amount
 ){
 
@@ -2979,24 +2841,22 @@ message.innerHTML =
 '<div class="success">' +
 "✅ Withdrawal request submitted.<br>" +
 "Withdrawal ID: " +
-escapeHtml(
-data.withdrawalId ||
-"-"
-) +
+escapeHtml(data.withdrawalId || "-") +
 "</div>";
 
 }
 
 document.getElementById(
 "withdrawAmount"
-).value = "";
+).value =
+"";
 
 document.getElementById(
 "withdrawAddress"
-).value = "";
+).value =
+"";
 
 await loadAccount();
-
 await loadWithdrawalHistory();
 
 }catch(error){
@@ -3005,9 +2865,7 @@ if(message){
 
 message.innerHTML =
 '<div class="error">' +
-escapeHtml(
-error.message
-) +
+escapeHtml(error.message) +
 "</div>";
 
 }
@@ -3066,9 +2924,7 @@ data.message ||
 }
 
 const withdrawals =
-Array.isArray(
-data.withdrawals
-)
+Array.isArray(data.withdrawals)
 ?
 data.withdrawals
 :
@@ -3103,8 +2959,7 @@ withdrawal.status ||
 ).toLowerCase();
 
 const isPaid =
-rawStatus ===
-"approved" &&
+rawStatus === "approved" &&
 !!withdrawal.paymentTxid;
 
 let displayStatus =
@@ -3128,8 +2983,7 @@ itemClass =
 "paid";
 
 }else if(
-rawStatus ===
-"approved"
+rawStatus === "approved"
 ){
 
 displayStatus =
@@ -3142,8 +2996,7 @@ itemClass =
 "approved";
 
 }else if(
-rawStatus ===
-"rejected"
+rawStatus === "rejected"
 ){
 
 displayStatus =
@@ -3206,10 +3059,7 @@ ${displayStatus.toUpperCase()}
 Address:
 </span>
 
-${escapeHtml(
-withdrawal.address ||
-"-"
-)}
+${escapeHtml(withdrawal.address || "-")}
 
 </div>
 
@@ -3219,10 +3069,7 @@ withdrawal.address ||
 Withdrawal ID:
 </span>
 
-${escapeHtml(
-withdrawal.id ||
-"-"
-)}
+${escapeHtml(withdrawal.id || "-")}
 
 </div>
 
@@ -3232,9 +3079,7 @@ withdrawal.id ||
 Date:
 </span>
 
-${escapeHtml(
-date
-)}
+${escapeHtml(date)}
 
 </div>
 
@@ -3250,9 +3095,7 @@ Payment TXID:
 </span>
 
 <div class="history-txid">
-${escapeHtml(
-withdrawal.paymentTxid
-)}
+${escapeHtml(withdrawal.paymentTxid)}
 </div>
 
 </div>
@@ -3273,9 +3116,7 @@ withdrawal.reason
 Rejection Reason:
 </span>
 
-${escapeHtml(
-withdrawal.reason
-)}
+${escapeHtml(withdrawal.reason)}
 
 </div>
 
@@ -3297,9 +3138,7 @@ item
 
 box.innerHTML =
 '<div class="error">' +
-escapeHtml(
-error.message
-) +
+escapeHtml(error.message) +
 "</div>";
 
 }
@@ -3330,7 +3169,7 @@ message.innerHTML = `
 
 <div class="notice">
 
-🎁 <b>Daily Reward</b>
+🎁 Daily reward rules:
 
 <br><br>
 
@@ -3340,7 +3179,7 @@ message.innerHTML = `
 <br>
 
 • Receive
-<b>5 USDT directly to your Balance</b>.
+<b>5 USDT directly to your balance</b>.
 
 <br>
 
@@ -3349,8 +3188,8 @@ the next Kabul calendar day.
 
 <br><br>
 
-💰 The daily reward is added directly
-to your USDT balance.
+💰 The daily reward is added directly to
+your USDT balance.
 
 </div>
 
@@ -3473,9 +3312,7 @@ data.message ||
 }
 
 const withdrawals =
-Array.isArray(
-data.withdrawals
-)
+Array.isArray(data.withdrawals)
 ?
 data.withdrawals
 :
@@ -3516,9 +3353,7 @@ item.innerHTML = `
 
 <div class="withdraw-title">
 
-💸 ${Number(
-w.amount || 0
-).toFixed(2)} USDT
+💸 ${Number(w.amount || 0).toFixed(2)} USDT
 
 </div>
 
@@ -3532,9 +3367,7 @@ ${escapeHtml(status)}
 Withdrawal ID
 </span>
 
-${escapeHtml(
-w.id || "-"
-)}
+${escapeHtml(w.id || "-")}
 
 </div>
 
@@ -3544,10 +3377,7 @@ w.id || "-"
 User
 </span>
 
-@${escapeHtml(
-w.username ||
-"none"
-)}
+@${escapeHtml(w.username || "none")}
 
 </div>
 
@@ -3557,10 +3387,7 @@ w.username ||
 Telegram ID
 </span>
 
-${escapeHtml(
-w.telegramUserId ||
-"-"
-)}
+${escapeHtml(w.telegramUserId || "-")}
 
 </div>
 
@@ -3570,10 +3397,7 @@ w.telegramUserId ||
 Address
 </span>
 
-${escapeHtml(
-w.address ||
-"-"
-)}
+${escapeHtml(w.address || "-")}
 
 </div>
 
@@ -3586,9 +3410,7 @@ Date
 ${escapeHtml(
 w.createdAt
 ?
-new Date(
-w.createdAt
-).toLocaleString()
+new Date(w.createdAt).toLocaleString()
 :
 "-"
 )}
@@ -3607,11 +3429,7 @@ Payment TXID
 </span>
 
 <div class="history-txid">
-
-${escapeHtml(
-w.paymentTxid
-)}
-
+${escapeHtml(w.paymentTxid)}
 </div>
 
 </div>
@@ -3624,9 +3442,7 @@ w.paymentTxid
 `;
 
 if(
-String(
-w.status
-).toLowerCase() ===
+String(w.status).toLowerCase() ===
 "pending"
 ){
 
@@ -3652,9 +3468,7 @@ approveBtn.textContent =
 approveBtn.onclick =
 function(){
 
-approveWithdrawal(
-w.id
-);
+approveWithdrawal(w.id);
 
 };
 
@@ -3672,9 +3486,7 @@ rejectBtn.textContent =
 rejectBtn.onclick =
 function(){
 
-rejectWithdrawal(
-w.id
-);
+rejectWithdrawal(w.id);
 
 };
 
@@ -3707,9 +3519,7 @@ txidButton.textContent =
 txidButton.onclick =
 function(){
 
-addPaymentTxid(
-w.id
-);
+addPaymentTxid(w.id);
 
 };
 
@@ -3720,9 +3530,7 @@ txidButton
 }
 
 if(
-String(
-w.status
-).toLowerCase() ===
+String(w.status).toLowerCase() ===
 "approved"
 ){
 
@@ -3743,9 +3551,7 @@ txidButton.textContent =
 txidButton.onclick =
 function(){
 
-addPaymentTxid(
-w.id
-);
+addPaymentTxid(w.id);
 
 };
 
@@ -3766,9 +3572,7 @@ item
 
 box.innerHTML =
 '<div class="error">' +
-escapeHtml(
-error.message
-) +
+escapeHtml(error.message) +
 "</div>";
 
 }
@@ -3821,9 +3625,7 @@ try{
 const data =
 await apiFetch(
 "/api/admin/withdrawals/" +
-encodeURIComponent(
-withdrawalId
-) +
+encodeURIComponent(withdrawalId) +
 "/approve",
 {
 method:"POST",
@@ -3906,9 +3708,7 @@ try{
 const data =
 await apiFetch(
 "/api/admin/withdrawals/" +
-encodeURIComponent(
-withdrawalId
-) +
+encodeURIComponent(withdrawalId) +
 "/reject",
 {
 method:"POST",
@@ -3939,7 +3739,6 @@ alert(
 );
 
 await loadAdminWithdrawals();
-
 await loadAccount();
 
 }catch(error){
@@ -3989,9 +3788,7 @@ const clean =
 txid.trim();
 
 if(
-!/^[a-fA-F0-9]{64}$/.test(
-clean
-)
+!/^[a-fA-F0-9]{64}$/.test(clean)
 ){
 
 alert(
@@ -4007,9 +3804,7 @@ try{
 const data =
 await apiFetch(
 "/api/admin/withdrawals/" +
-encodeURIComponent(
-withdrawalId
-) +
+encodeURIComponent(withdrawalId) +
 "/txid",
 {
 method:"POST",
@@ -4067,47 +3862,25 @@ return;
 
 }
 
-if(!isAdmin){
-
-const adminCheck =
-await checkAdmin();
-
-if(!adminCheck){
-
-return;
-
-}
-
-}
-
 const box =
 document.getElementById(
 "testCreditMessage"
 );
 
-const button =
-document.getElementById(
-"testCreditButton"
-);
-
 if(box){
 
 box.innerHTML =
-'<div class="loading">Adding exactly 10 USDT test balance...</div>';
-
-}
-
-if(button){
-
-button.disabled =
-true;
-
-button.textContent =
-"Adding 10 USDT...";
+'<div class="loading">Adding 10 USDT test balance...</div>';
 
 }
 
 try{
+
+const user =
+tg.initDataUnsafe.user;
+
+const targetTelegramUserId =
+String(user.id);
 
 const data =
 await apiFetch(
@@ -4117,9 +3890,16 @@ method:"POST",
 
 body:
 JSON.stringify({
-amount:10
-})
 
+telegramUserId:
+targetTelegramUserId,
+
+targetTelegramUserId:
+targetTelegramUserId,
+
+amount:10
+
+})
 }
 );
 
@@ -4138,7 +3918,7 @@ if(box){
 
 box.innerHTML =
 '<div class="success">' +
-"✅ 10 USDT test balance added." +
+"✅ 10 USDT test balance added successfully." +
 "<br>" +
 "New balance: " +
 Number(
@@ -4162,23 +3942,8 @@ if(box){
 
 box.innerHTML =
 '<div class="error">' +
-"❌ " +
-escapeHtml(
-error.message
-) +
+escapeHtml(error.message) +
 "</div>";
-
-}
-
-}finally{
-
-if(button){
-
-button.disabled =
-false;
-
-button.textContent =
-"➕ Add 10 USDT Test Balance";
 
 }
 
@@ -4216,9 +3981,7 @@ profile:
 
 };
 
-Object.keys(
-pages
-).forEach(
+Object.keys(pages).forEach(
 function(key){
 
 const element =
@@ -4251,9 +4014,7 @@ profile:
 
 };
 
-Object.keys(
-navs
-).forEach(
+Object.keys(navs).forEach(
 function(key){
 
 const element =
@@ -4274,21 +4035,17 @@ key === page
 );
 
 if(
-page ===
-"profile"
+page === "profile"
 ){
 
 loadAccount();
-
 loadWithdrawalHistory();
-
 checkAdmin();
 
 }
 
 if(
-page ===
-"referral"
+page === "referral"
 ){
 
 loadReferral();
@@ -4296,19 +4053,16 @@ loadReferral();
 }
 
 if(
-page ===
-"withdraw"
+page === "withdraw"
 ){
 
 loadAccount();
-
 loadWithdrawalHistory();
 
 }
 
 if(
-page ===
-"home"
+page === "home"
 ){
 
 loadAccount();
@@ -4371,8 +4125,7 @@ message
 }
 
 const cls =
-type ===
-"success"
+type === "success"
 ?
 "success"
 :

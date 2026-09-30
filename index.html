@@ -1,36 +1,31 @@
 <!doctype html>
 <html lang="en">
 <head>
-
 <meta charset="utf-8">
-
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1,viewport-fit=cover"
->
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07140d">
 
 <title>Big Money</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-
 *{
   box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
 }
 
-html,
-body{
+html,body{
   margin:0;
   padding:0;
-  background:#06140d;
+  min-height:100%;
+  background:#06110b;
   color:#f4fff8;
   font-family:Arial,Helvetica,sans-serif;
-  min-height:100%;
 }
 
 body{
-  padding-bottom:90px;
+  min-height:100vh;
 }
 
 button,
@@ -39,54 +34,70 @@ input{
 }
 
 button{
-  border:0;
   cursor:pointer;
 }
 
 .app{
   width:100%;
   max-width:520px;
-  margin:auto;
-  padding:16px;
+  min-height:100vh;
+  margin:0 auto;
+  padding-bottom:92px;
+  background:
+    radial-gradient(circle at top,#123b25 0,#07170e 34%,#06110b 70%);
 }
 
-.header{
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  padding:18px 16px 14px;
+  background:rgba(6,17,11,.88);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(89,255,147,.08);
+}
+
+.brand{
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  margin-bottom:16px;
+  justify-content:space-between;
 }
 
-.logo{
+.brand-left{
   display:flex;
   align-items:center;
   gap:10px;
 }
 
-.logo-icon{
+.logo{
   width:42px;
   height:42px;
   border-radius:14px;
-  background:#0d6b3d;
   display:flex;
   align-items:center;
   justify-content:center;
+  background:linear-gradient(145deg,#18d96b,#0b7b3a);
+  box-shadow:0 8px 25px rgba(24,217,107,.22);
   font-size:22px;
-  box-shadow:0 0 20px rgba(34,197,94,.18);
 }
 
-.logo-text{
+.brand-name{
+  font-size:20px;
   font-weight:800;
-  font-size:19px;
 }
 
-.network{
-  font-size:11px;
-  background:#0b2b1b;
-  border:1px solid #145b36;
-  color:#6ee7a2;
+.network-pill{
   padding:7px 10px;
-  border-radius:20px;
+  border:1px solid rgba(80,255,143,.18);
+  border-radius:999px;
+  background:rgba(26,151,76,.12);
+  color:#7dffae;
+  font-size:11px;
+  font-weight:700;
+}
+
+main{
+  padding:16px;
 }
 
 .page{
@@ -98,444 +109,426 @@ button{
 }
 
 .card{
-  background:#0a2115;
-  border:1px solid #123b25;
-  border-radius:18px;
-  padding:16px;
+  background:linear-gradient(
+    145deg,
+    rgba(21,53,34,.92),
+    rgba(9,27,17,.94)
+  );
+  border:1px solid rgba(102,255,153,.10);
+  border-radius:20px;
+  padding:17px;
   margin-bottom:14px;
-  box-shadow:0 8px 30px rgba(0,0,0,.18);
+  box-shadow:0 12px 35px rgba(0,0,0,.18);
 }
 
-.hero{
-  background:linear-gradient(145deg,#0d5a34,#082516);
-  border-color:#17663a;
+.balance-card{
+  padding:22px;
+  background:
+    radial-gradient(circle at 90% 10%,rgba(38,222,113,.17),transparent 40%),
+    linear-gradient(145deg,#123b25,#092015);
 }
 
-.small{
-  color:#8ba998;
+.small-label{
+  color:#8ca998;
   font-size:12px;
-  line-height:1.6;
-}
-
-.muted{
-  color:#779384;
-}
-
-.balance-label{
-  color:#a3b9aa;
-  font-size:13px;
-}
-
-.balance{
-  font-size:34px;
-  font-weight:800;
-  margin-top:7px;
-}
-
-.points{
-  margin-top:8px;
-  color:#facc15;
-  font-size:14px;
-  font-weight:bold;
-}
-
-h1,
-h2,
-h3{
-  margin-top:0;
-}
-
-h2{
-  font-size:18px;
-  margin-bottom:10px;
-}
-
-h3{
-  font-size:15px;
   margin-bottom:8px;
 }
 
-.actions{
+.balance{
+  font-size:36px;
+  line-height:1.1;
+  font-weight:900;
+  letter-spacing:-1px;
+}
+
+.balance span{
+  font-size:14px;
+  color:#7dffae;
+  letter-spacing:0;
+}
+
+.user-line{
+  margin-top:10px;
+  color:#a7bdb0;
+  font-size:13px;
+}
+
+.grid2{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:15px;
+  gap:12px;
+}
+
+.stat{
+  padding:15px;
+  border-radius:17px;
+  background:rgba(8,27,17,.75);
+  border:1px solid rgba(100,255,151,.07);
+}
+
+.stat-value{
+  font-size:22px;
+  font-weight:800;
+  margin-top:5px;
+}
+
+.stat-title{
+  color:#8ca998;
+  font-size:11px;
+}
+
+.section-title{
+  font-size:18px;
+  font-weight:800;
+  margin:6px 0 13px;
+}
+
+.muted{
+  color:#91a99a;
+  font-size:13px;
+  line-height:1.55;
+}
+
+.green{
+  color:#61f99a;
+}
+
+.warning{
+  color:#ffd477;
+}
+
+.danger{
+  color:#ff7d7d;
+}
+
+.success{
+  color:#6effa0;
 }
 
 button.primary{
   width:100%;
-  padding:13px;
-  border-radius:12px;
-  background:#16a34a;
-  color:white;
-  font-weight:700;
-}
-
-button.primary:active{
-  transform:scale(.98);
+  border:0;
+  padding:14px 16px;
+  border-radius:15px;
+  color:#031008;
+  background:linear-gradient(135deg,#42f48a,#15bd5b);
+  font-weight:900;
+  box-shadow:0 8px 25px rgba(30,220,103,.18);
 }
 
 button.secondary{
   width:100%;
-  padding:12px;
-  border-radius:12px;
-  background:#102e1d;
-  color:#d9fbe7;
-  border:1px solid #1a5733;
-  font-weight:700;
+  border:1px solid rgba(89,255,147,.18);
+  padding:13px 16px;
+  border-radius:15px;
+  color:#dffff0;
+  background:rgba(20,71,39,.38);
+  font-weight:800;
 }
 
-button.danger{
+button.danger-btn{
   width:100%;
-  padding:12px;
-  border-radius:12px;
-  background:#4b1515;
-  color:#fecaca;
-  border:1px solid #7f1d1d;
-  font-weight:700;
-}
-
-button.warning{
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  background:#493d0b;
-  color:#fef08a;
-  border:1px solid #716313;
-  font-weight:700;
+  border:1px solid rgba(255,90,90,.20);
+  padding:13px 16px;
+  border-radius:15px;
+  color:#ffdada;
+  background:rgba(100,20,20,.35);
+  font-weight:800;
 }
 
 button:disabled{
-  opacity:.55;
+  opacity:.5;
   cursor:not-allowed;
 }
 
-input{
-  width:100%;
-  padding:13px;
-  border-radius:11px;
-  border:1px solid #1b5030;
-  background:#071a10;
-  color:white;
-  outline:none;
-  margin-top:7px;
+.btn-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
 }
 
-input:focus{
-  border-color:#22c55e;
+.btn-row3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:9px;
 }
 
 label{
   display:block;
+  color:#a4b8aa;
   font-size:12px;
-  color:#9db2a4;
-  margin-top:12px;
+  margin:0 0 7px;
+}
+
+input{
+  width:100%;
+  border:1px solid rgba(116,255,159,.13);
+  outline:none;
+  color:#f2fff7;
+  background:#07180e;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:12px;
+}
+
+input:focus{
+  border-color:rgba(66,244,138,.55);
+  box-shadow:0 0 0 3px rgba(66,244,138,.06);
 }
 
 .quick{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:7px;
-  margin-top:8px;
+  gap:8px;
+  margin-bottom:13px;
 }
 
 .quick button{
-  background:#0e321f;
-  border:1px solid #1b5b37;
-  color:#a7f3c4;
-  padding:9px 4px;
-  border-radius:9px;
-  font-size:12px;
+  border:1px solid rgba(95,255,148,.13);
+  background:rgba(23,75,41,.35);
+  color:#c9fbd9;
+  padding:11px 6px;
+  border-radius:12px;
+  font-weight:800;
 }
 
 .address-box{
-  background:#07180e;
-  border:1px dashed #28613e;
-  border-radius:11px;
-  padding:11px;
-  margin-top:10px;
-  word-break:break-all;
-  font-size:12px;
-  color:#baf5cf;
+  display:flex;
+  gap:8px;
+}
+
+.address-box input{
+  min-width:0;
+  margin:0;
+}
+
+.copy-btn{
+  flex:0 0 auto;
+  border:1px solid rgba(92,255,145,.14);
+  background:#0d2b19;
+  color:#7dffae;
+  padding:0 13px;
+  border-radius:13px;
+  font-weight:800;
 }
 
 .notice{
-  background:#10291a;
-  border:1px solid #214c31;
-  border-radius:11px;
-  padding:11px;
-  margin-top:12px;
-  color:#a9c2b1;
+  padding:12px;
+  border-radius:13px;
+  background:rgba(27,94,51,.20);
+  border:1px solid rgba(82,255,139,.08);
+  color:#a9c7b3;
   font-size:12px;
-  line-height:1.6;
+  line-height:1.55;
+  margin-bottom:13px;
 }
 
-.success{
-  background:#0b301a;
-  border:1px solid #176a36;
-  color:#86efac;
-  border-radius:11px;
-  padding:11px;
-  margin-top:10px;
-  font-size:12px;
-}
-
-.error{
-  background:#3a1212;
-  border:1px solid #7f1d1d;
-  color:#fecaca;
-  border-radius:11px;
-  padding:11px;
-  margin-top:10px;
-  font-size:12px;
-}
-
-.loading{
-  color:#91a999;
-  font-size:12px;
-  padding:12px 0;
-}
-
-.empty{
-  color:#82988b;
-  font-size:12px;
-  padding:15px 0;
-  text-align:center;
-}
-
-.stat-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-
-.stat{
-  background:#071b10;
-  border:1px solid #143e27;
-  border-radius:12px;
-  padding:13px;
-}
-
-.stat-value{
-  font-size:20px;
-  font-weight:800;
-  margin-top:5px;
-}
-
-.stat-label{
-  font-size:11px;
-  color:#809789;
-}
-
-.ref-link{
-  background:#07180e;
-  border:1px solid #1a5030;
-  border-radius:10px;
-  padding:10px;
-  font-size:11px;
-  word-break:break-all;
-  color:#a7f3c4;
-  margin-top:8px;
-}
-
-.info-row{
+.qr-wrap{
   display:flex;
-  justify-content:space-between;
-  gap:10px;
-  border-bottom:1px solid #12321f;
-  padding:11px 0;
-  font-size:13px;
+  justify-content:center;
+  padding:15px;
+  background:#fff;
+  border-radius:16px;
+  margin:12px 0 14px;
 }
 
-.info-row:last-child{
-  border-bottom:0;
-}
-
-.info-label{
-  color:#829789;
-}
-
-.info-value{
-  text-align:right;
-  word-break:break-all;
-}
-
-.qr{
+.qr-wrap img{
   width:190px;
   height:190px;
   display:block;
-  margin:14px auto;
-  background:white;
-  border-radius:10px;
-  padding:6px;
+}
+
+.feature{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.feature-icon{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(36,220,111,.10);
+  flex:none;
+}
+
+.feature-title{
+  font-weight:800;
+  margin-bottom:4px;
+}
+
+.feature-text{
+  color:#91aa9a;
+  font-size:12px;
+  line-height:1.5;
 }
 
 .bottom-nav{
   position:fixed;
+  z-index:50;
   left:50%;
   bottom:0;
   transform:translateX(-50%);
-  width:100%;
-  max-width:520px;
-  padding:9px 10px calc(9px + env(safe-area-inset-bottom));
-  background:rgba(4,18,11,.96);
-  backdrop-filter:blur(15px);
-  border-top:1px solid #143722;
+  width:min(520px,100%);
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:6px;
-  z-index:100;
+  grid-template-columns:repeat(5,1fr);
+  gap:4px;
+  padding:9px 8px calc(9px + env(safe-area-inset-bottom));
+  background:rgba(4,15,9,.94);
+  backdrop-filter:blur(18px);
+  border-top:1px solid rgba(91,255,145,.08);
 }
 
 .nav-btn{
+  border:0;
   background:transparent;
-  color:#6f897a;
-  padding:8px 4px;
-  border-radius:10px;
-  font-size:11px;
-}
-
-.nav-btn.active{
-  background:#103620;
-  color:#8ff0b0;
+  color:#718679;
+  padding:7px 3px;
+  border-radius:12px;
+  font-size:10px;
+  font-weight:700;
 }
 
 .nav-icon{
   display:block;
   font-size:19px;
-  margin-bottom:3px;
+  margin-bottom:4px;
 }
 
-.withdraw-item{
-  background:#07180e;
-  border:1px solid #20432e;
-  border-radius:13px;
-  padding:13px;
-  margin-top:10px;
+.nav-btn.active{
+  color:#64ff9d;
+  background:rgba(43,217,108,.08);
 }
 
-.withdraw-item.pending{
-  border-color:#7c6912;
+.row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
 }
 
-.withdraw-item.approved{
-  border-color:#27613c;
+.tx{
+  padding:13px 0;
+  border-bottom:1px solid rgba(100,255,150,.06);
 }
 
-.withdraw-item.rejected{
-  border-color:#713131;
+.tx:last-child{
+  border-bottom:0;
 }
 
-.withdraw-item.paid{
-  border-color:#22c55e;
+.tx-title{
+  font-weight:700;
+  font-size:13px;
 }
 
-.withdraw-title{
-  font-size:16px;
+.tx-meta{
+  color:#71877a;
+  font-size:10px;
+  margin-top:4px;
+}
+
+.tx-amount{
   font-weight:800;
-  margin-bottom:7px;
+  font-size:13px;
 }
 
-.withdraw-row{
-  margin-top:8px;
-  font-size:11px;
-  color:#a3b7aa;
-  line-height:1.5;
-}
-
-.withdraw-label{
-  color:#718679;
-  display:block;
-  margin-bottom:2px;
-}
-
-.badge{
+.status{
   display:inline-block;
   padding:5px 8px;
-  border-radius:20px;
-  background:#102419;
-  margin-bottom:4px;
-  font-size:10px;
-}
-
-.status-pending{
-  color:#facc15;
-  font-weight:bold;
-}
-
-.status-approved{
-  color:#86efac;
-  font-weight:bold;
-}
-
-.status-rejected{
-  color:#fca5a5;
-  font-weight:bold;
-}
-
-.status-paid{
-  color:#22c55e;
-  font-weight:bold;
-}
-
-.history-txid{
-  background:#111827;
-  padding:9px;
-  border-radius:9px;
-  font-size:11px;
-  word-break:break-all;
+  border-radius:999px;
+  font-size:9px;
+  font-weight:800;
   margin-top:5px;
-  color:#b7f7cb;
 }
 
-.admin-card{
-  border-color:#775e14;
-  background:#211d09;
+.status.pending{
+  color:#ffd77e;
+  background:rgba(255,190,70,.09);
 }
 
-.admin-title{
-  color:#fde68a;
+.status.approved{
+  color:#70ff9f;
+  background:rgba(43,220,108,.10);
+}
+
+.status.rejected{
+  color:#ff8585;
+  background:rgba(255,70,70,.09);
 }
 
 .admin-item{
-  background:#0b1710;
-  border:1px solid #2b4934;
-  border-radius:12px;
-  padding:12px;
-  margin-top:10px;
+  padding:15px 0;
+  border-bottom:1px solid rgba(100,255,150,.07);
+}
+
+.admin-item:last-child{
+  border-bottom:0;
 }
 
 .admin-actions{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:7px;
+  gap:8px;
   margin-top:10px;
 }
 
-.admin-actions button{
-  font-size:11px;
-  padding:9px 5px;
+.admin-actions.three{
+  grid-template-columns:1fr 1fr 1fr;
 }
 
-.footer{
+.empty{
   text-align:center;
-  color:#52685b;
-  font-size:10px;
-  padding:10px 0 20px;
+  padding:20px 8px;
+  color:#718679;
+  font-size:12px;
 }
 
-.convert-card{
-  background:linear-gradient(145deg,#17220a,#0a2115);
-  border-color:#695b14;
+.hidden{
+  display:none !important;
 }
 
-.convert-rate{
-  color:#facc15;
-  font-size:13px;
-  font-weight:bold;
-  margin-top:7px;
+.toast{
+  position:fixed;
+  z-index:100;
+  left:50%;
+  bottom:88px;
+  transform:translateX(-50%) translateY(15px);
+  width:calc(100% - 34px);
+  max-width:480px;
+  padding:13px 15px;
+  border-radius:14px;
+  background:#102d1b;
+  border:1px solid rgba(93,255,146,.16);
+  color:#e7fff0;
+  font-size:12px;
+  text-align:center;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s ease;
 }
 
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+.loading{
+  opacity:.65;
+  pointer-events:none;
+}
+
+@media(max-width:370px){
+  .balance{
+    font-size:31px;
+  }
+
+  .quick{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
 </style>
 </head>
 
@@ -543,3587 +536,2339 @@ label{
 
 <div class="app">
 
-<div class="header">
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-left">
+      <div class="logo">💚</div>
+      <div>
+        <div class="brand-name">Big Money</div>
+        <div class="muted" style="font-size:10px">
+          USDT TRC20
+        </div>
+      </div>
+    </div>
 
-<div class="logo">
+    <div class="network-pill">
+      USDT · TRC20
+    </div>
+  </div>
+</header>
 
-<div class="logo-icon">
-💚
-</div>
-
-<div>
-
-<div class="logo-text">
-Big Money
-</div>
-
-<div class="small">
-USDT · TRC20
-</div>
-
-</div>
-
-</div>
-
-<div class="network">
-TRON · TRC20
-</div>
-
-</div>
-
+<main>
 
 <!-- HOME -->
-
-<section id="homePage" class="page active">
-
-<div class="card hero">
-
-<div class="balance-label">
-Total Balance
-</div>
-
-<div id="balance" class="balance">
-0.0000 USDT
-</div>
-
-<div id="points" class="points">
-⭐ 0 Points
-</div>
-
-<div class="actions">
-
-<button
-class="primary"
-onclick="showPage('deposit')"
->
-💰 Deposit
-</button>
-
-<button
-class="secondary"
-onclick="showPage('withdraw')"
->
-💸 Withdraw
-</button>
-
-</div>
-
-</div>
-
-
-<div class="card convert-card">
-
-<h2>
-⭐ Convert Points
-</h2>
-
-<div class="small">
-Convert your earned points into USDT.
-</div>
-
-<div class="convert-rate">
-1 Point = 1 USDT
-</div>
-
-<label>
-Points to Convert
-</label>
-
-<input
-id="convertPoints"
-type="number"
-min="0.01"
-step="0.01"
-placeholder="Example: 3"
-/>
-
-<div class="quick">
-
-<button onclick="setConvertPoints(0.5)">
-0.5
-</button>
-
-<button onclick="setConvertPoints(1)">
-1
-</button>
-
-<button onclick="setConvertPoints(3)">
-3
-</button>
-
-<button onclick="setConvertAll()">
-ALL
-</button>
-
-</div>
-
-<button
-id="convertButton"
-class="primary"
-style="margin-top:12px"
-onclick="convertPoints()"
->
-💱 Convert Points
-</button>
-
-<div id="convertMessage"></div>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-🎁 Daily Reward
-</h2>
-
-<div class="small">
-Make a confirmed deposit of at least
-<b>10 USDT</b> to receive
-<b>5 USDT directly to your balance</b>
-once per Kabul calendar day.
-</div>
-
-<button
-class="secondary"
-style="margin-top:12px"
-onclick="showDailyInfo()"
->
-⭐ Check Daily Reward
-</button>
-
-<div id="dailyMessage"></div>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-👥 Referral Program
-</h2>
-
-<div class="small">
-Invite friends with your referral link.
-When a referred user makes a confirmed
-deposit of at least
-<b>10 USDT</b>, the referral becomes
-a successful referral.
-</div>
-
-<div class="stat-grid" style="margin-top:12px">
-
-<div class="stat">
-
-<div class="stat-label">
-Invited
-</div>
-
-<div id="homeInvited" class="stat-value">
-0
-</div>
-
-</div>
-
-<div class="stat">
-
-<div class="stat-label">
-Successful
-</div>
-
-<div id="homeSuccessful" class="stat-value">
-0
-</div>
-
-</div>
-
-</div>
-
-<div class="notice">
-Successful referrals are required for withdrawal eligibility.
-Withdrawal requires <b>5 successful referrals</b>.
-</div>
-
-<button
-class="secondary"
-style="margin-top:12px"
-onclick="showPage('referral')"
->
-🔗 Open Referral
-</button>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-⚡ Quick Actions
-</h2>
-
-<div class="actions">
-
-<button
-class="secondary"
-onclick="showPage('deposit')"
->
-💰 Send USDT
-</button>
-
-<button
-class="secondary"
-onclick="showPage('profile')"
->
-👤 Profile
-</button>
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-📊 Account Status
-</h2>
-
-<div class="info-row">
-
-<span class="info-label">
-Network
-</span>
-
-<span class="info-value">
-TRON TRC20
-</span>
-
-</div>
-
-<div class="info-row">
-
-<span class="info-label">
-Token
-</span>
-
-<span class="info-value">
-USDT
-</span>
-
-</div>
-
-<div class="info-row">
-
-<span class="info-label">
-Account
-</span>
-
-<span id="homeUsername" class="info-value">
--
-</span>
-
-</div>
-
-</div>
+<section id="page-home" class="page active">
+
+  <div class="card balance-card">
+    <div class="small-label">Total Balance</div>
+
+    <div class="balance">
+      <span id="balance">0.0000</span>
+      <span>USDT</span>
+    </div>
+
+    <div class="user-line" id="userLine">
+      Connecting to Telegram...
+    </div>
+
+    <div class="btn-row" style="margin-top:18px">
+      <button class="primary" onclick="showPage('deposit')">
+        Deposit
+      </button>
+
+      <button class="secondary" onclick="showPage('withdraw')">
+        Withdraw
+      </button>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="stat">
+      <div class="stat-title">Successful Referrals</div>
+      <div class="stat-value" id="refCount">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title">Points</div>
+      <div class="stat-value" id="points">0</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="section-title">Quick Actions</div>
+
+    <div class="btn-row">
+      <button class="secondary" onclick="showPage('send')">
+        💸 Send
+      </button>
+
+      <button class="secondary" onclick="showPage('referral')">
+        👥 Referral
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Daily Reward</div>
+
+    <div class="feature">
+      <div class="feature-icon">🎁</div>
+
+      <div>
+        <div class="feature-title">
+          +5 USDT Daily Reward
+        </div>
+
+        <div class="feature-text">
+          Make a confirmed deposit of at least
+          <b class="green">10 USDT</b>.
+          If the daily condition is met, you can receive
+          <b class="green">5 USDT</b> directly to your balance
+          once per Kabul calendar day.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Withdrawal Requirement</div>
+
+    <div class="feature">
+      <div class="feature-icon">🔐</div>
+
+      <div>
+        <div class="feature-title">
+          5 Successful Referrals
+        </div>
+
+        <div class="feature-text">
+          A successful referral is a user you invited who makes
+          a confirmed deposit of at least
+          <b class="green">10 USDT</b>.
+          You need 5 successful referrals before requesting a withdrawal.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Recent Transactions</div>
+    <div id="homeTransactions">
+      <div class="empty">
+        No transactions yet.
+      </div>
+    </div>
+  </div>
 
 </section>
 
 
 <!-- DEPOSIT -->
+<section id="page-deposit" class="page">
 
-<section id="depositPage" class="page">
+  <div class="section-title">Deposit USDT</div>
 
-<div class="card">
+  <div class="card">
 
-<h2>
-💰 Deposit USDT
-</h2>
+    <label>Deposit Amount</label>
 
-<div class="small">
-Send USDT through the TRON TRC20 network
-to the address below.
-</div>
+    <input
+      id="depAmount"
+      type="number"
+      min="5"
+      step="0.01"
+      placeholder="Example: 5"
+    >
 
-<label>
-Deposit Amount
-</label>
+    <div class="quick">
 
-<input
-id="depAmount"
-type="number"
-min="5"
-step="0.01"
-placeholder="Example: 5"
->
+      <button onclick="setDepositAmount(5)">
+        5
+      </button>
 
-<div class="quick">
+      <button onclick="setDepositAmount(10)">
+        10
+      </button>
 
-<button onclick="setDepositAmount(5)">
-5
-</button>
+      <button onclick="setDepositAmount(20)">
+        20
+      </button>
 
-<button onclick="setDepositAmount(10)">
-10
-</button>
+      <button onclick="setDepositAmount(50)">
+        50
+      </button>
 
-<button onclick="setDepositAmount(20)">
-20
-</button>
+    </div>
 
-<button onclick="setDepositAmount(50)">
-50
-</button>
+    <label>TRON TRC20 Deposit Address</label>
 
-</div>
+    <div class="address-box">
 
-<label>
-Deposit Address
-</label>
+      <input
+        id="depositAddress"
+        readonly
+        value="Loading..."
+      >
 
-<div id="depositAddress" class="address-box">
-Loading...
-</div>
+      <button
+        class="copy-btn"
+        onclick="copyDepositAddress()"
+      >
+        Copy
+      </button>
 
-<button
-class="secondary"
-style="margin-top:8px"
-onclick="copyDepositAddress()"
->
-📋 Copy Address
-</button>
+    </div>
 
-<img
-id="depositQr"
-class="qr"
-alt="Deposit QR"
-src=""
->
+    <div id="qrWrap" class="qr-wrap">
+      <img
+        id="qrImage"
+        alt="Deposit QR"
+      >
+    </div>
 
-<div class="notice">
-1. Send the exact amount using USDT TRC20.<br>
-2. Wait until the transaction is confirmed.<br>
-3. Enter the TXID below.<br>
-4. Press Verify Deposit.
-</div>
+    <div class="notice">
+      Send USDT only through the
+      <b class="green">TRON TRC20</b>
+      network to the address above.
+      After the transaction is confirmed on the blockchain,
+      enter your TXID below.
+    </div>
 
-<label>
-TRON Transaction ID (TXID)
-</label>
+    <label>Transaction ID (TXID)</label>
 
-<input
-id="txid"
-type="text"
-placeholder="Paste your 64-character TRON TXID"
-autocomplete="off"
->
+    <input
+      id="txid"
+      type="text"
+      maxlength="64"
+      placeholder="64-character TRON TXID"
+      autocomplete="off"
+    >
 
-<button
-class="primary"
-style="margin-top:12px"
-onclick="verifyDeposit()"
->
-✅ Verify Deposit
-</button>
+    <button
+      id="verifyBtn"
+      class="primary"
+      onclick="verifyDeposit()"
+    >
+      Verify Deposit
+    </button>
 
-<button
-class="secondary"
-style="margin-top:8px"
-onclick="checkBlockchain()"
->
-🔍 Check Blockchain
-</button>
+    <button
+      class="secondary"
+      style="margin-top:10px"
+      onclick="checkBlockchain()"
+    >
+      Check Blockchain
+    </button>
 
-<div id="depositMessage"></div>
+  </div>
 
-</div>
+  <div class="card">
+    <div class="section-title">Deposit Rules</div>
+
+    <div class="feature" style="margin-bottom:14px">
+      <div class="feature-icon">💵</div>
+
+      <div>
+        <div class="feature-title">
+          Minimum Deposit: 5 USDT
+        </div>
+
+        <div class="feature-text">
+          Deposits of 5 USDT or more can be submitted for verification.
+        </div>
+      </div>
+    </div>
+
+    <div class="feature" style="margin-bottom:14px">
+      <div class="feature-icon">🎁</div>
+
+      <div>
+        <div class="feature-title">
+          Daily Reward Condition
+        </div>
+
+        <div class="feature-text">
+          A confirmed deposit of at least
+          <b class="green">10 USDT</b>
+          qualifies for the daily reward condition.
+        </div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">🔗</div>
+
+      <div>
+        <div class="feature-title">
+          Correct Network
+        </div>
+
+        <div class="feature-text">
+          Only USDT on TRON TRC20 should be sent to the deposit address.
+        </div>
+      </div>
+    </div>
+  </div>
 
 </section>
 
 
 <!-- WITHDRAW -->
+<section id="page-withdraw" class="page">
 
-<section id="withdrawPage" class="page">
+  <div class="section-title">Withdraw</div>
 
-<div class="card">
+  <div class="card">
 
-<h2>
-💸 Withdraw USDT
-</h2>
+    <div class="notice">
+      Withdrawals are handled as requests.
+      Your USDT is not automatically sent from this page.
+      An admin must review and approve the request.
+    </div>
 
-<div class="small">
-Submit a withdrawal request.
-An administrator must review and process
-the request.
-</div>
+    <div class="stat" style="margin-bottom:14px">
+      <div class="stat-title">Successful Referrals</div>
 
-<div class="notice">
-Withdrawal requires
-<b>5 successful referrals</b>.
-A successful referral means the invited user
-has made a confirmed deposit of at least
-<b>10 USDT</b>.
-</div>
+      <div class="stat-value">
+        <span id="withdrawRefCount">0</span>
+        / 5
+      </div>
 
-<label>
-TRON TRC20 Address
-</label>
+      <div
+        class="muted"
+        style="margin-top:6px"
+      >
+        5 successful referrals are required.
+      </div>
+    </div>
 
-<input
-id="withdrawAddress"
-type="text"
-placeholder="Txxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-autocomplete="off"
->
+    <label>TRC20 USDT Address</label>
 
-<label>
-Amount
-</label>
+    <input
+      id="withdrawAddress"
+      type="text"
+      placeholder="T..."
+      autocomplete="off"
+    >
 
-<input
-id="withdrawAmount"
-type="number"
-min="0.01"
-step="0.01"
-placeholder="Example: 10"
->
+    <label>Amount</label>
 
-<div class="notice">
-Your balance is reserved when you submit
-the request. If the administrator rejects
-the request, the amount is returned to your
-balance.
-</div>
+    <input
+      id="withdrawAmount"
+      type="number"
+      min="0.01"
+      step="0.01"
+      placeholder="Example: 10"
+    >
 
-<button
-class="primary"
-style="margin-top:12px"
-onclick="requestWithdrawal()"
->
-💸 Request Withdrawal
-</button>
+    <button
+      id="withdrawBtn"
+      class="primary"
+      onclick="requestWithdrawal()"
+    >
+      Request Withdrawal
+    </button>
 
-<div id="withdrawMessage"></div>
+  </div>
 
-</div>
+  <div class="card">
+
+    <div class="section-title">
+      Withdrawal History
+    </div>
+
+    <div id="withdrawalHistory">
+      <div class="empty">
+        Loading...
+      </div>
+    </div>
+
+  </div>
+
+</section>
 
 
-<div class="card">
+<!-- SEND -->
+<section id="page-send" class="page">
 
-<h2>
-📋 Withdrawal History
-</h2>
+  <div class="section-title">Send USDT</div>
 
-<div class="small">
-Here you can see the status of your
-withdrawal requests.
-</div>
+  <div class="card">
 
-<button
-class="secondary"
-style="margin-top:12px"
-onclick="loadWithdrawalHistory()"
->
-🔄 Refresh Withdrawal History
-</button>
+    <div class="notice">
+      Direct blockchain sending is currently not active.
+      Withdrawals are submitted as requests and reviewed by an admin.
+    </div>
 
-<div id="withdrawalHistory" style="margin-top:12px">
-<div class="loading">
-Loading withdrawal history...
-</div>
-</div>
+    <div class="feature">
+      <div class="feature-icon">💚</div>
 
-</div>
+      <div>
+        <div class="feature-title">
+          Send Feature
+        </div>
+
+        <div class="feature-text">
+          This section is reserved for a future internal transfer feature.
+        </div>
+      </div>
+    </div>
+
+  </div>
 
 </section>
 
 
 <!-- REFERRAL -->
+<section id="page-referral" class="page">
 
-<section id="referralPage" class="page">
+  <div class="section-title">Referral</div>
 
-<div class="card">
+  <div class="card">
 
-<h2>
-👥 Referral Program
-</h2>
+    <div class="stat" style="margin-bottom:14px">
+      <div class="stat-title">
+        Successful Referrals
+      </div>
 
-<div class="small">
-Share your referral link with friends.
-</div>
+      <div class="stat-value" id="refPageCount">
+        0
+      </div>
+    </div>
 
-<div class="stat-grid" style="margin-top:14px">
+    <div class="notice">
+      There is currently
+      <b class="warning">no 3-point referral reward</b>.
+      Successful referrals are counted toward the withdrawal requirement.
+    </div>
 
-<div class="stat">
+    <label>Your Referral Link</label>
 
-<div class="stat-label">
-Total Invited
-</div>
+    <div class="address-box">
 
-<div id="refInvited" class="stat-value">
-0
-</div>
+      <input
+        id="referralLink"
+        readonly
+        value="Loading..."
+      >
 
-</div>
+      <button
+        class="copy-btn"
+        onclick="copyReferralLink()"
+      >
+        Copy
+      </button>
 
-<div class="stat">
+    </div>
 
-<div class="stat-label">
-Successful
-</div>
+  </div>
 
-<div id="refSuccessful" class="stat-value">
-0
-</div>
+  <div class="card">
 
-</div>
+    <div class="section-title">
+      How Successful Referrals Work
+    </div>
 
-</div>
+    <div class="feature" style="margin-bottom:15px">
 
+      <div class="feature-icon">
+        1
+      </div>
 
-<div class="stat" style="margin-top:10px">
+      <div>
+        <div class="feature-title">
+          Invite a user
+        </div>
 
-<div class="stat-label">
-Your Points
-</div>
+        <div class="feature-text">
+          Share your referral link with another user.
+        </div>
+      </div>
 
-<div id="refPoints" class="stat-value">
-⭐ 0
-</div>
+    </div>
 
-</div>
+    <div class="feature" style="margin-bottom:15px">
 
+      <div class="feature-icon">
+        2
+      </div>
 
-<label>
-Your Referral Link
-</label>
+      <div>
+        <div class="feature-title">
+          User deposits
+        </div>
 
-<div id="referralLink" class="ref-link">
-Loading...
-</div>
+        <div class="feature-text">
+          The invited user must make a confirmed deposit of at least
+          <b class="green">10 USDT</b>.
+        </div>
+      </div>
 
-<button
-class="primary"
-style="margin-top:10px"
-onclick="copyReferral()"
->
-📋 Copy Referral Link
-</button>
+    </div>
 
-<button
-class="secondary"
-style="margin-top:8px"
-onclick="shareReferral()"
->
-📤 Share Referral Link
-</button>
+    <div class="feature">
 
-<div class="notice">
-A successful referral requires a confirmed
-deposit of at least <b>10 USDT</b>.
-There is no 3-point referral reward.
-Successful referrals are counted toward the
-<b>5-referral withdrawal requirement</b>.
-</div>
+      <div class="feature-icon">
+        3
+      </div>
 
-</div>
+      <div>
+        <div class="feature-title">
+          Referral becomes successful
+        </div>
+
+        <div class="feature-text">
+          The successful referral is counted toward the
+          <b class="green">5-referral withdrawal requirement</b>.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 
 </section>
 
 
 <!-- PROFILE -->
+<section id="page-profile" class="page">
 
-<section id="profilePage" class="page">
+  <div class="section-title">Profile</div>
 
-<div class="card">
+  <div class="card">
 
-<h2>
-👤 Profile
-</h2>
+    <div class="row" style="margin-bottom:15px">
 
-<div class="info-row">
+      <div>
+        <div class="small-label">
+          Telegram Username
+        </div>
 
-<span class="info-label">
-Telegram ID
-</span>
+        <div
+          id="profileUsername"
+          style="font-size:18px;font-weight:800"
+        >
+          —
+        </div>
+      </div>
 
-<span id="profileTelegramId" class="info-value">
--
-</span>
+      <div style="font-size:28px">
+        👤
+      </div>
 
-</div>
+    </div>
 
-<div class="info-row">
+    <div class="grid2">
 
-<span class="info-label">
-Username
-</span>
+      <div class="stat">
+        <div class="stat-title">
+          Balance
+        </div>
 
-<span id="profileUsername" class="info-value">
--
-</span>
+        <div
+          class="stat-value"
+          id="profileBalance"
+        >
+          0.0000
+        </div>
+      </div>
 
-</div>
+      <div class="stat">
+        <div class="stat-title">
+          Points
+        </div>
 
-<div class="info-row">
+        <div
+          class="stat-value"
+          id="profilePoints"
+        >
+          0
+        </div>
+      </div>
 
-<span class="info-label">
-Balance
-</span>
+    </div>
 
-<span id="profileBalance" class="info-value">
-0.0000 USDT
-</span>
+  </div>
 
-</div>
+  <div class="card">
 
-<div class="info-row">
+    <div class="section-title">
+      Points Conversion
+    </div>
 
-<span class="info-label">
-Points
-</span>
+    <div class="notice">
+      Current conversion rate:
+      <b class="green">1 Point = 1 USDT</b>.
+    </div>
 
-<span id="profilePoints" class="info-value">
-⭐ 0
-</span>
+    <label>Points to Convert</label>
 
-</div>
+    <input
+      id="convertPoints"
+      type="number"
+      min="1"
+      step="1"
+      placeholder="Example: 10"
+    >
 
-<div class="info-row">
+    <button
+      class="primary"
+      onclick="convertPoints()"
+    >
+      Convert Points
+    </button>
 
-<span class="info-label">
-Referrals
-</span>
+  </div>
 
-<span id="profileReferrals" class="info-value">
-0
-</span>
+  <div class="card">
 
-</div>
+    <div class="section-title">
+      Account Information
+    </div>
 
-<div class="info-row">
+    <div class="row" style="padding:9px 0">
+      <span class="muted">Network</span>
+      <b id="profileNetwork">TRON TRC20</b>
+    </div>
 
-<span class="info-label">
-Network
-</span>
+    <div class="row" style="padding:9px 0">
+      <span class="muted">Referral Count</span>
+      <b id="profileReferrals">0</b>
+    </div>
 
-<span class="info-value">
-TRON TRC20
-</span>
+    <div class="row" style="padding:9px 0">
+      <span class="muted">Daily Reward</span>
+      <b class="green">5 USDT</b>
+    </div>
 
-</div>
-
-</div>
-
-
-<div class="card convert-card">
-
-<h2>
-⭐ Points → USDT
-</h2>
-
-<div class="small">
-Your points can be converted to USDT.
-</div>
-
-<div class="convert-rate">
-Conversion rate: 1 Point = 1 USDT
-</div>
-
-<div class="info-row">
-
-<span class="info-label">
-Available Points
-</span>
-
-<span id="convertAvailablePoints" class="info-value">
-0
-</span>
-
-</div>
-
-<button
-class="primary"
-style="margin-top:10px"
-onclick="setConvertAll()"
->
-💱 Convert All Points
-</button>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-💸 Quick Withdraw
-</h2>
-
-<div class="small">
-Submit a withdrawal request from your
-available balance.
-</div>
-
-<button
-class="primary"
-style="margin-top:12px"
-onclick="showPage('withdraw')"
->
-Open Withdrawal
-</button>
-
-</div>
-
-
-<!-- ADMIN -->
-
-<div
-id="adminCard"
-class="card admin-card"
-style="display:none"
->
-
-<h2 class="admin-title">
-👨‍💼 Admin Panel
-</h2>
-
-<div class="small">
-Admin withdrawal management.
-</div>
-
-<button
-class="warning"
-style="margin-top:12px"
-onclick="loadAdminWithdrawals()"
->
-📋 View Withdrawal Requests
-</button>
-
-<button
-class="secondary"
-style="margin-top:8px"
-onclick="loadAdminWithdrawals()"
->
-🔄 Refresh Requests
-</button>
-
-<div
-id="adminWithdrawals"
-style="margin-top:12px"
->
-<div class="empty">
-Press View Withdrawal Requests.
-</div>
-</div>
-
-</div>
+  </div>
 
 </section>
 
 
-<div class="footer">
-Big Money · USDT TRC20
-</div>
-
-</div>
-
-
-<!-- NAV -->
-
-<div class="bottom-nav">
-
-<button
-id="navHome"
-class="nav-btn active"
-onclick="showPage('home')"
+<!-- ADMIN -->
+<section
+  id="adminPanel"
+  class="page"
 >
 
-<span class="nav-icon">
-🏠
-</span>
+  <div class="section-title">
+    Admin Panel
+  </div>
 
-Home
+  <div class="card">
 
-</button>
+    <div class="row">
+      <div>
+        <div class="section-title" style="margin:0">
+          Withdrawal Requests
+        </div>
+
+        <div class="muted">
+          Review and manage withdrawal requests.
+        </div>
+      </div>
+
+      <button
+        class="copy-btn"
+        onclick="loadAdminWithdrawals()"
+      >
+        Refresh
+      </button>
+    </div>
+
+    <div
+      id="adminWithdrawals"
+      style="margin-top:12px"
+    >
+      <div class="empty">
+        Loading...
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+</main>
 
 
-<button
-id="navReferral"
-class="nav-btn"
-onclick="showPage('referral')"
->
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
 
-<span class="nav-icon">
-👥
-</span>
+  <button
+    id="nav-home"
+    class="nav-btn active"
+    onclick="showPage('home')"
+  >
+    <span class="nav-icon">🏠</span>
+    Home
+  </button>
 
-Referral
+  <button
+    id="nav-deposit"
+    class="nav-btn"
+    onclick="showPage('deposit')"
+  >
+    <span class="nav-icon">💰</span>
+    Deposit
+  </button>
 
-</button>
+  <button
+    id="nav-withdraw"
+    class="nav-btn"
+    onclick="showPage('withdraw')"
+  >
+    <span class="nav-icon">↗️</span>
+    Withdraw
+  </button>
 
+  <button
+    id="nav-referral"
+    class="nav-btn"
+    onclick="showPage('referral')"
+  >
+    <span class="nav-icon">👥</span>
+    Referral
+  </button>
 
-<button
-id="navProfile"
-class="nav-btn"
-onclick="showPage('profile')"
->
+  <button
+    id="nav-profile"
+    class="nav-btn"
+    onclick="showPage('profile')"
+  >
+    <span class="nav-icon">👤</span>
+    Profile
+  </button>
 
-<span class="nav-icon">
-👤
-</span>
+</nav>
 
-Profile
-
-</button>
-
-</div>
+<div id="toast" class="toast"></div>
 
 
 <script>
+"use strict";
 
-/*
-=========================================================
-TELEGRAM
-=========================================================
-*/
+/* =========================
+   CONFIG
+========================= */
 
-const tg =
-window.Telegram &&
-window.Telegram.WebApp
-?
-window.Telegram.WebApp
-:
-null;
+const API = "https://big-money.onrender.com";
 
+const tg = window.Telegram?.WebApp || null;
 
-/*
-=========================================================
-API
-=========================================================
-*/
-
-const API =
-"https://big-money.onrender.com";
-
-let appConfig = null;
 let currentUser = null;
-let referralData = null;
+let currentReferral = null;
+let appConfig = null;
+let withdrawalData = [];
 let isAdmin = false;
 
 
-/*
-=========================================================
-TELEGRAM INIT DATA
-=========================================================
-*/
+/* =========================
+   TELEGRAM
+========================= */
 
 function telegramInitData(){
 
-if(
-!tg ||
-!tg.initData
-){
+  if(!tg || !tg.initData){
+    throw new Error(
+      "Please open Big Money inside Telegram."
+    );
+  }
 
-throw new Error(
-"Please open Big Money inside Telegram."
-);
-
-}
-
-return tg.initData;
-
+  return tg.initData;
 }
 
 
-/*
-=========================================================
-API FETCH
-=========================================================
-*/
+if(tg){
+
+  try{
+    tg.ready();
+    tg.expand();
+  }catch(e){
+    console.log(e);
+  }
+
+}
+
+
+/* =========================
+   UI HELPERS
+========================= */
+
+function showToast(message){
+
+  const el = document.getElementById("toast");
+
+  el.textContent = message;
+  el.classList.add("show");
+
+  clearTimeout(window.__toastTimer);
+
+  window.__toastTimer = setTimeout(()=>{
+    el.classList.remove("show");
+  },3000);
+}
+
+
+function formatNumber(value){
+
+  const n = Number(value || 0);
+
+  return n.toLocaleString(
+    "en-US",
+    {
+      minimumFractionDigits:4,
+      maximumFractionDigits:4
+    }
+  );
+}
+
+
+function formatAmount(value){
+
+  const n = Number(value || 0);
+
+  return n.toLocaleString(
+    "en-US",
+    {
+      minimumFractionDigits:2,
+      maximumFractionDigits:6
+    }
+  );
+}
+
+
+function escapeHtml(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+
+/* =========================
+   PAGE NAVIGATION
+========================= */
+
+function showPage(page){
+
+  document.querySelectorAll(".page").forEach(el=>{
+    el.classList.remove("active");
+  });
+
+  const target = document.getElementById(
+    "page-" + page
+  );
+
+  if(target){
+    target.classList.add("active");
+  }
+
+  document.querySelectorAll(".nav-btn").forEach(el=>{
+    el.classList.remove("active");
+  });
+
+  const nav = document.getElementById(
+    "nav-" + page
+  );
+
+  if(nav){
+    nav.classList.add("active");
+  }
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+/* =========================
+   API
+========================= */
 
 async function apiFetch(
-endpoint,
-options = {}
+  path,
+  options={}
 ){
 
-const initData =
-telegramInitData();
+  const initData = telegramInitData();
 
-const config = {
-...options,
+  const headers = {
+    "Content-Type":"application/json",
+    "X-Telegram-Init-Data":initData,
+    ...(options.headers || {})
+  };
 
-headers:{
-...(options.headers || {}),
+  const response = await fetch(
+    API + path,
+    {
+      ...options,
+      headers
+    }
+  );
 
-"Content-Type":
-"application/json",
+  let data = null;
 
-"X-Telegram-Init-Data":
-initData
-}
+  try{
+    data = await response.json();
+  }catch(e){
+    throw new Error(
+      "Server returned an invalid response."
+    );
+  }
 
-};
+  if(!response.ok || data?.ok === false){
 
-const response =
-await fetch(
-API + endpoint,
-config
-);
+    throw new Error(
+      data?.message ||
+      data?.error ||
+      `Request failed (${response.status})`
+    );
+  }
 
-let data = null;
-
-try{
-
-data =
-await response.json();
-
-}catch{
-
-data = {
-ok:false,
-message:
-"Invalid server response."
-};
-
-}
-
-if(
-!response.ok
-){
-
-throw new Error(
-data.message ||
-`Server error ${response.status}`
-);
-
-}
-
-return data;
-
+  return data;
 }
 
 
-/*
-=========================================================
-USER
-=========================================================
-*/
+async function publicFetch(path){
 
-function requireUser(){
+  const response = await fetch(API + path);
 
-if(
-!tg ||
-!tg.initDataUnsafe ||
-!tg.initDataUnsafe.user
-){
+  let data = null;
 
-showMessage(
-"Please open Big Money inside Telegram.",
-"error"
-);
+  try{
+    data = await response.json();
+  }catch(e){
+    throw new Error(
+      "Server returned an invalid response."
+    );
+  }
 
-return false;
+  if(!response.ok || data?.ok === false){
 
+    throw new Error(
+      data?.message ||
+      data?.error ||
+      `Request failed (${response.status})`
+    );
+  }
+
+  return data;
 }
 
-return true;
 
-}
-
-
-/*
-=========================================================
-CONFIG
-=========================================================
-*/
+/* =========================
+   CONFIG
+========================= */
 
 async function loadConfig(){
 
-try{
+  try{
 
-const response =
-await fetch(
-API +
-"/api/config"
-);
+    const data = await publicFetch(
+      "/api/config"
+    );
 
-const data =
-await response.json();
+    appConfig = data;
 
-if(
-data &&
-data.ok
-){
+    const address =
+      data.depositAddress || "";
 
-appConfig =
-data;
+    document.getElementById(
+      "depositAddress"
+    ).value = address || "Unavailable";
 
-const address =
-data.depositAddress ||
-"";
+    document.getElementById(
+      "profileNetwork"
+    ).textContent =
+      `${data.network || "TRON"} ${data.standard || "TRC20"}`;
 
-const addressBox =
-document.getElementById(
-"depositAddress"
-);
+    if(address){
 
-if(addressBox){
+      const qr =
+        "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
+        encodeURIComponent(address);
 
-addressBox.textContent =
-address;
+      document.getElementById(
+        "qrImage"
+      ).src = qr;
+    }
 
-}
+  }catch(error){
 
-const qr =
-document.getElementById(
-"depositQr"
-);
+    console.error(error);
 
-if(
-qr &&
-address
-){
+    document.getElementById(
+      "depositAddress"
+    ).value = "Unable to load";
 
-qr.src =
-"https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
-encodeURIComponent(address);
-
-}
-
-}
-
-}catch(error){
-
-console.error(
-"Config error:",
-error
-);
-
-const box =
-document.getElementById(
-"depositAddress"
-);
-
-if(box){
-
-box.textContent =
-"Could not load deposit address.";
-
-}
-
-}
+    showToast(
+      "Could not load server configuration."
+    );
+  }
 
 }
 
 
-/*
-=========================================================
-ACCOUNT
-=========================================================
-*/
+/* =========================
+   ACCOUNT
+========================= */
 
 async function loadAccount(){
 
-if(
-!requireUser()
-){
+  try{
 
-return;
+    const data = await apiFetch(
+      "/api/account/" +
+      encodeURIComponent(
+        tg.initDataUnsafe.user.id
+      )
+    );
 
-}
+    currentUser = data.user || null;
+    currentReferral = data.referral || null;
 
-try{
+    updateAccountUI();
 
-const user =
-tg.initDataUnsafe.user;
+  }catch(error){
 
-const data =
-await apiFetch(
-"/api/account/" +
-encodeURIComponent(
-String(user.id)
-)
-);
+    console.error(error);
 
-if(
-!data.ok
-){
+    document.getElementById(
+      "userLine"
+    ).textContent =
+      error.message ||
+      "Unable to load account.";
 
-throw new Error(
-data.message ||
-"Could not load account."
-);
-
-}
-
-currentUser =
-data.user ||
-{};
-
-const balance =
-Number(
-currentUser.balance || 0
-).toFixed(4);
-
-const points =
-Number(
-currentUser.points || 0
-);
-
-document.getElementById(
-"balance"
-).textContent =
-balance +
-" USDT";
-
-document.getElementById(
-"points"
-).textContent =
-"⭐ " +
-points +
-" Points";
-
-document.getElementById(
-"profileTelegramId"
-).textContent =
-currentUser.telegramUserId ||
-user.id;
-
-document.getElementById(
-"profileUsername"
-).textContent =
-currentUser.username
-?
-"@" +
-currentUser.username
-:
-"No username";
-
-document.getElementById(
-"profileBalance"
-).textContent =
-balance +
-" USDT";
-
-document.getElementById(
-"profilePoints"
-).textContent =
-"⭐ " +
-points;
-
-document.getElementById(
-"convertAvailablePoints"
-).textContent =
-points;
-
-document.getElementById(
-"profileReferrals"
-).textContent =
-currentUser.successfulReferrals ??
-currentUser.referrals ??
-0;
-
-document.getElementById(
-"homeUsername"
-).textContent =
-currentUser.username
-?
-"@" +
-currentUser.username
-:
-"Telegram User";
-
-document.getElementById(
-"homeInvited"
-).textContent =
-currentUser.totalInvited ??
-0;
-
-document.getElementById(
-"homeSuccessful"
-).textContent =
-currentUser.successfulReferrals ??
-currentUser.referrals ??
-0;
-
-if(
-data.referral
-){
-
-referralData =
-data.referral;
-
-}
-
-updateReferralUI();
-
-}catch(error){
-
-console.error(
-"Account load error:",
-error
-);
-
-showMessage(
-error.message,
-"error"
-);
-
-}
+    showToast(
+      error.message ||
+      "Unable to load account."
+    );
+  }
 
 }
 
 
-/*
-=========================================================
-POINT CONVERSION
-=========================================================
-*/
+function updateAccountUI(){
 
-function setConvertPoints(
-amount
-){
+  if(!currentUser){
+    return;
+  }
 
-const input =
-document.getElementById(
-"convertPoints"
-);
+  const balance =
+    Number(currentUser.balance || 0);
 
-if(input){
+  const points =
+    Number(currentUser.points || 0);
 
-input.value =
-amount;
+  const refs =
+    Number(
+      currentUser.successfulReferrals ??
+      currentUser.referrals ??
+      0
+    );
 
-}
+  const username =
+    currentUser.username
+      ? "@" + currentUser.username
+      : (
+          tg?.initDataUnsafe?.user?.first_name ||
+          "Telegram User"
+        );
 
-}
+  document.getElementById(
+    "balance"
+  ).textContent =
+    formatNumber(balance);
 
+  document.getElementById(
+    "points"
+  ).textContent =
+    formatAmount(points);
 
-function setConvertAll(){
+  document.getElementById(
+    "refCount"
+  ).textContent =
+    refs;
 
-const points =
-Number(
-currentUser?.points || 0
-);
+  document.getElementById(
+    "withdrawRefCount"
+  ).textContent =
+    refs;
 
-if(
-points <= 0
-){
+  document.getElementById(
+    "refPageCount"
+  ).textContent =
+    refs;
 
-showMessage(
-"You do not have any points to convert.",
-"error"
-);
+  document.getElementById(
+    "profileUsername"
+  ).textContent =
+    username;
 
-return;
+  document.getElementById(
+    "profileBalance"
+  ).textContent =
+    formatNumber(balance);
 
-}
+  document.getElementById(
+    "profilePoints"
+  ).textContent =
+    formatAmount(points);
 
-const input =
-document.getElementById(
-"convertPoints"
-);
+  document.getElementById(
+    "profileReferrals"
+  ).textContent =
+    refs;
 
-if(input){
-
-input.value =
-points;
-
-}
-
-showPage("home");
-
-setTimeout(
-function(){
-
-const target =
-document.getElementById(
-"convertPoints"
-);
-
-if(target){
-
-target.focus();
-
-}
-
-},
-200
-);
-
-}
-
-
-async function convertPoints(){
-
-if(
-!requireUser()
-){
-
-return;
+  document.getElementById(
+    "userLine"
+  ).textContent =
+    username;
 
 }
 
-const input =
-document.getElementById(
-"convertPoints"
-);
 
-const message =
-document.getElementById(
-"convertMessage"
-);
-
-const button =
-document.getElementById(
-"convertButton"
-);
-
-const points =
-Number(
-input?.value
-);
-
-if(
-!Number.isFinite(points) ||
-points <= 0
-){
-
-if(message){
-
-message.innerHTML =
-'<div class="error">Enter a valid amount of points.</div>';
-
-}
-
-return;
-
-}
-
-const available =
-Number(
-currentUser?.points || 0
-);
-
-if(
-points >
-available
-){
-
-if(message){
-
-message.innerHTML =
-'<div class="error">You do not have enough points.</div>';
-
-}
-
-return;
-
-}
-
-if(button){
-
-button.disabled =
-true;
-
-button.textContent =
-"Converting...";
-
-}
-
-if(message){
-
-message.innerHTML =
-'<div class="loading">Converting points to USDT...</div>';
-
-}
-
-try{
-
-const data =
-await apiFetch(
-"/api/points/convert",
-{
-method:"POST",
-
-body:
-JSON.stringify({
-points
-})
-
-}
-);
-
-if(
-!data.ok
-){
-
-throw new Error(
-data.message ||
-"Point conversion failed."
-);
-
-}
-
-if(message){
-
-message.innerHTML =
-'<div class="success">' +
-"✅ " +
-Number(
-data.convertedPoints
-).toFixed(2) +
-" Points converted to " +
-Number(
-data.addedUSDT
-).toFixed(2) +
-" USDT." +
-"<br>" +
-"New balance: " +
-Number(
-data.balance
-).toFixed(4) +
-" USDT" +
-"</div>";
-
-}
-
-if(input){
-
-input.value =
-"";
-
-}
-
-await loadAccount();
-await loadReferral();
-
-}catch(error){
-
-console.error(
-"Point conversion error:",
-error
-);
-
-if(message){
-
-message.innerHTML =
-'<div class="error">' +
-escapeHtml(error.message) +
-"</div>";
-
-}
-
-}finally{
-
-if(button){
-
-button.disabled =
-false;
-
-button.textContent =
-"💱 Convert Points";
-
-}
-
-}
-
-}
-
-
-/*
-=========================================================
-REFERRAL
-=========================================================
-*/
+/* =========================
+   REFERRAL
+========================= */
 
 async function loadReferral(){
 
-if(
-!requireUser()
-){
+  try{
 
-return;
+    const userId =
+      tg?.initDataUnsafe?.user?.id;
 
-}
+    if(!userId){
+      return;
+    }
 
-try{
+    const data = await apiFetch(
+      "/api/referral/" +
+      encodeURIComponent(userId)
+    );
 
-const user =
-tg.initDataUnsafe.user;
+    currentReferral =
+      data.referral || currentReferral;
 
-const data =
-await apiFetch(
-"/api/referral/" +
-encodeURIComponent(
-String(user.id)
-)
-);
+    const link =
+      currentReferral?.referralLink ||
+      (
+        "https://t.me/bigmoney2026bot?start=ref_" +
+        userId
+      );
 
-if(
-!data.ok
-){
+    document.getElementById(
+      "referralLink"
+    ).value = link;
 
-throw new Error(
-data.message ||
-"Could not load referral."
-);
+    const count =
+      Number(
+        currentReferral?.successfulReferrals ??
+        currentReferral?.referralCount ??
+        currentUser?.successfulReferrals ??
+        0
+      );
 
-}
+    document.getElementById(
+      "refCount"
+    ).textContent = count;
 
-const referral =
-data.referral ||
-data;
+    document.getElementById(
+      "withdrawRefCount"
+    ).textContent = count;
 
-referralData = {
+    document.getElementById(
+      "refPageCount"
+    ).textContent = count;
 
-referralLink:
-referral.referralLink ||
-"",
+    document.getElementById(
+      "profileReferrals"
+    ).textContent = count;
 
-invited:
-referral.invited ??
-referral.totalInvited ??
-0,
+  }catch(error){
 
-successful:
-referral.successful ??
-referral.successfulReferrals ??
-0,
+    console.error(error);
 
-points:
-referral.points ??
-0
+    const userId =
+      tg?.initDataUnsafe?.user?.id;
 
-};
+    if(userId){
 
-updateReferralUI();
+      const fallback =
+        "https://t.me/bigmoney2026bot?start=ref_" +
+        userId;
 
-}catch(error){
-
-console.error(
-"Referral load error:",
-error
-);
-
-const box =
-document.getElementById(
-"referralLink"
-);
-
-if(box){
-
-box.textContent =
-error.message;
-
-}
-
-}
+      document.getElementById(
+        "referralLink"
+      ).value = fallback;
+    }
+  }
 
 }
 
 
-function updateReferralUI(){
+/* =========================
+   DEPOSIT
+========================= */
 
-if(
-!referralData
-){
+function setDepositAmount(amount){
 
-return;
-
-}
-
-const link =
-referralData.referralLink ||
-"";
-
-const invited =
-referralData.invited ??
-0;
-
-const successful =
-referralData.successful ??
-0;
-
-const points =
-referralData.points ??
-0;
-
-const linkBox =
-document.getElementById(
-"referralLink"
-);
-
-if(linkBox){
-
-linkBox.textContent =
-link ||
-"Referral link unavailable.";
-
-}
-
-const refInvited =
-document.getElementById(
-"refInvited"
-);
-
-if(refInvited){
-
-refInvited.textContent =
-invited;
-
-}
-
-const refSuccessful =
-document.getElementById(
-"refSuccessful"
-);
-
-if(refSuccessful){
-
-refSuccessful.textContent =
-successful;
-
-}
-
-const refPoints =
-document.getElementById(
-"refPoints"
-);
-
-if(refPoints){
-
-refPoints.textContent =
-"⭐ " +
-Number(points);
-
-}
-
-const homeInvited =
-document.getElementById(
-"homeInvited"
-);
-
-if(homeInvited){
-
-homeInvited.textContent =
-invited;
-
-}
-
-const homeSuccessful =
-document.getElementById(
-"homeSuccessful"
-);
-
-if(homeSuccessful){
-
-homeSuccessful.textContent =
-successful;
-
-}
+  document.getElementById(
+    "depAmount"
+  ).value = amount;
 
 }
 
 
-/*
-=========================================================
-COPY REFERRAL
-=========================================================
-*/
+async function copyText(text){
 
-async function copyReferral(){
+  try{
 
-if(
-!referralData ||
-!referralData.referralLink
-){
+    await navigator.clipboard.writeText(text);
 
-await loadReferral();
+    showToast("Copied successfully.");
 
-}
+  }catch(error){
 
-const link =
-referralData?.referralLink ||
-"";
+    const temp =
+      document.createElement("textarea");
 
-if(!link){
+    temp.value = text;
 
-showMessage(
-"Referral link is not available.",
-"error"
-);
+    document.body.appendChild(temp);
 
-return;
+    temp.select();
 
-}
+    document.execCommand("copy");
 
-try{
+    temp.remove();
 
-await navigator.clipboard.writeText(
-link
-);
-
-showMessage(
-"Referral link copied.",
-"success"
-);
-
-}catch{
-
-prompt(
-"Copy your referral link:",
-link
-);
-
-}
+    showToast("Copied successfully.");
+  }
 
 }
 
 
-/*
-=========================================================
-SHARE REFERRAL
-=========================================================
-*/
+function copyDepositAddress(){
 
-function shareReferral(){
+  const address =
+    document.getElementById(
+      "depositAddress"
+    ).value;
 
-const link =
-referralData?.referralLink ||
-"";
+  if(!address || address === "Loading..."){
 
-if(!link){
+    showToast(
+      "Deposit address is not ready."
+    );
 
-showMessage(
-"Referral link is not available.",
-"error"
-);
+    return;
+  }
 
-return;
-
-}
-
-const text =
-"Join Big Money and use my referral link.";
-
-const shareUrl =
-"https://t.me/share/url?url=" +
-encodeURIComponent(link) +
-"&text=" +
-encodeURIComponent(text);
-
-if(
-tg &&
-tg.openTelegramLink
-){
-
-tg.openTelegramLink(
-shareUrl
-);
-
-}else{
-
-window.open(
-shareUrl,
-"_blank"
-);
-
-}
-
+  copyText(address);
 }
 
 
-/*
-=========================================================
-DEPOSIT
-=========================================================
-*/
+function copyReferralLink(){
 
-function setDepositAmount(
-amount
-){
+  const link =
+    document.getElementById(
+      "referralLink"
+    ).value;
 
-const input =
-document.getElementById(
-"depAmount"
-);
+  if(!link || link === "Loading..."){
+    showToast(
+      "Referral link is not ready."
+    );
 
-if(input){
+    return;
+  }
 
-input.value =
-amount;
-
+  copyText(link);
 }
 
-}
-
-
-async function copyDepositAddress(){
-
-const address =
-appConfig?.depositAddress ||
-document.getElementById(
-"depositAddress"
-)?.textContent ||
-"";
-
-if(!address){
-
-showMessage(
-"Deposit address is not available.",
-"error"
-);
-
-return;
-
-}
-
-try{
-
-await navigator.clipboard.writeText(
-address
-);
-
-showMessage(
-"Deposit address copied.",
-"success"
-);
-
-}catch{
-
-prompt(
-"Copy deposit address:",
-address
-);
-
-}
-
-}
-
-
-/*
-=========================================================
-VERIFY DEPOSIT
-=========================================================
-*/
 
 async function verifyDeposit(){
 
-if(
-!requireUser()
-){
+  const amount =
+    Number(
+      document.getElementById(
+        "depAmount"
+      ).value
+    );
 
-return;
+  const txid =
+    document.getElementById(
+      "txid"
+    ).value.trim();
 
-}
+  if(!Number.isFinite(amount) || amount < 5){
 
-const amount =
-Number(
-document.getElementById(
-"depAmount"
-)?.value
-);
+    showToast(
+      "Minimum deposit amount is 5 USDT."
+    );
 
-const txid =
-String(
-document.getElementById(
-"txid"
-)?.value ||
-""
-)
-.trim()
-.replace(/\s+/g,"");
+    return;
+  }
 
-const message =
-document.getElementById(
-"depositMessage"
-);
+  if(!/^[a-fA-F0-9]{64}$/.test(txid)){
 
-if(
-!Number.isFinite(amount) ||
-amount <= 0
-){
+    showToast(
+      "TXID must be exactly 64 hexadecimal characters."
+    );
 
-if(message){
+    return;
+  }
 
-message.innerHTML =
-'<div class="error">Enter a valid deposit amount.</div>';
+  const button =
+    document.getElementById(
+      "verifyBtn"
+    );
 
-}
+  button.disabled = true;
+  button.textContent = "Verifying...";
 
-return;
+  try{
 
-}
+    const data = await apiFetch(
+      "/api/deposits/verify",
+      {
+        method:"POST",
+        body:JSON.stringify({
+          amount,
+          txid
+        })
+      }
+    );
 
-if(
-!/^[a-fA-F0-9]{64}$/.test(txid)
-){
+    if(data.ok){
 
-if(message){
+      const dailyReward =
+        Number(
+          data.dailyReward || 0
+        );
 
-message.innerHTML =
-'<div class="error">Enter the complete 64-character TRON TXID.</div>';
+      const referralReward =
+        Number(
+          data.referralReward || 0
+        );
 
-}
+      let message =
+        data.message ||
+        "Deposit verified successfully.";
 
-return;
+      if(dailyReward > 0){
 
-}
+        message +=
+          ` Daily reward: +${formatAmount(dailyReward)} USDT.`;
+      }
 
-if(message){
+      if(referralReward > 0){
 
-message.innerHTML =
-'<div class="loading">Checking blockchain and verifying your deposit...</div>';
+        message +=
+          ` Referral reward: +${formatAmount(referralReward)} points.`;
+      }
 
-}
+      showToast(message);
 
-try{
+      document.getElementById(
+        "txid"
+      ).value = "";
 
-const data =
-await apiFetch(
-"/api/deposits/verify",
-{
-method:"POST",
+      if(data.balance !== undefined){
 
-body:
-JSON.stringify({
-amount,
-txid
-})
+        if(!currentUser){
+          currentUser = {};
+        }
 
-}
-);
+        currentUser.balance =
+          data.balance;
 
-if(
-!data.ok
-){
+        updateAccountUI();
 
-throw new Error(
-data.message ||
-"Deposit verification failed."
-);
+      }else{
 
-}
+        await loadAccount();
+      }
 
-let rewardText = "";
+      await loadReferral();
 
-const dailyReward =
-Number(
-data.dailyReward || 0
-);
+    }
 
-if(
-dailyReward > 0
-){
+  }catch(error){
 
-rewardText =
-` Daily reward: +${dailyReward.toFixed(2)} USDT added directly to your balance.`;
+    console.error(error);
 
-}
+    showToast(
+      error.message ||
+      "Deposit verification failed."
+    );
 
-if(message){
+  }finally{
 
-message.innerHTML =
-'<div class="success">' +
-"✅ Deposit confirmed! " +
-Number(
-data.credited || amount
-).toFixed(2) +
-" USDT added to your balance." +
-rewardText +
-"</div>";
+    button.disabled = false;
+    button.textContent = "Verify Deposit";
+  }
 
 }
 
-document.getElementById(
-"txid"
-).value =
-"";
-
-await loadAccount();
-await loadReferral();
-
-}catch(error){
-
-console.error(
-"Verify deposit error:",
-error
-);
-
-if(message){
-
-message.innerHTML =
-'<div class="error">' +
-escapeHtml(error.message) +
-"</div>";
-
-}
-
-}
-
-}
-
-
-/*
-=========================================================
-CHECK BLOCKCHAIN
-=========================================================
-*/
 
 async function checkBlockchain(){
 
-if(
-!requireUser()
-){
+  try{
 
-return;
+    const data = await apiFetch(
+      "/api/deposits/check",
+      {
+        method:"GET"
+      }
+    );
 
-}
+    const deposits =
+      Array.isArray(data.deposits)
+        ? data.deposits
+        : [];
 
-const box =
-document.getElementById(
-"depositMessage"
-);
+    if(!deposits.length){
 
-if(box){
+      showToast(
+        "No confirmed deposits found."
+      );
 
-box.innerHTML =
-'<div class="loading">Checking confirmed TRC20 transfers...</div>';
+      return;
+    }
 
-}
+    const latest =
+      deposits[deposits.length - 1];
 
-try{
+    showToast(
+      `Latest confirmed deposit: ${formatAmount(latest.amount)} USDT`
+    );
 
-const data =
-await apiFetch(
-"/api/deposits/check"
-);
+  }catch(error){
 
-const deposits =
-Array.isArray(data.deposits)
-?
-data.deposits
-:
-[];
+    console.error(error);
 
-if(box){
-
-if(
-deposits.length === 0
-){
-
-box.innerHTML =
-'<div class="empty">No confirmed transfer found yet.</div>';
-
-}else{
-
-const latest =
-deposits
-.slice(0,5)
-.map(
-function(item){
-
-return `
-
-<div class="withdraw-item">
-
-<div class="withdraw-title">
-💰 ${Number(item.amount || 0).toFixed(2)} USDT
-</div>
-
-<div class="withdraw-row">
-
-<span class="withdraw-label">
-TXID
-</span>
-
-<div class="history-txid">
-${escapeHtml(item.txid || "-")}
-</div>
-
-</div>
-
-</div>
-
-`;
-
-}
-)
-.join("");
-
-box.innerHTML =
-latest;
-
-}
-
-}
-
-}catch(error){
-
-if(box){
-
-box.innerHTML =
-'<div class="error">' +
-escapeHtml(error.message) +
-"</div>";
-
-}
-
-}
+    showToast(
+      error.message ||
+      "Could not check blockchain."
+    );
+  }
 
 }
 
 
-/*
-=========================================================
-WITHDRAW
-=========================================================
-*/
+/* =========================
+   WITHDRAWALS
+========================= */
 
 async function requestWithdrawal(){
 
-if(
-!requireUser()
-){
+  const address =
+    document.getElementById(
+      "withdrawAddress"
+    ).value.trim();
 
-return;
+  const amount =
+    Number(
+      document.getElementById(
+        "withdrawAmount"
+      ).value
+    );
 
-}
+  const refs =
+    Number(
+      currentUser?.successfulReferrals ??
+      currentUser?.referrals ??
+      0
+    );
 
-const address =
-String(
-document.getElementById(
-"withdrawAddress"
-)?.value ||
-""
-)
-.trim();
+  if(refs < 5){
 
-const amount =
-Number(
-document.getElementById(
-"withdrawAmount"
-)?.value
-);
+    showToast(
+      "You need 5 successful referrals before requesting a withdrawal."
+    );
 
-const message =
-document.getElementById(
-"withdrawMessage"
-);
+    return;
+  }
 
-if(
-!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)
-){
+  if(!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)){
 
-if(message){
+    showToast(
+      "Please enter a valid TRON TRC20 address."
+    );
 
-message.innerHTML =
-'<div class="error">Enter a valid TRON TRC20 address.</div>';
+    return;
+  }
 
-}
+  if(!Number.isFinite(amount) || amount <= 0){
 
-return;
+    showToast(
+      "Enter a valid withdrawal amount."
+    );
 
-}
+    return;
+  }
 
-if(
-!Number.isFinite(amount) ||
-amount <= 0
-){
+  const balance =
+    Number(currentUser?.balance || 0);
 
-if(message){
+  if(amount > balance){
 
-message.innerHTML =
-'<div class="error">Enter a valid withdrawal amount.</div>';
+    showToast(
+      "Insufficient balance."
+    );
 
-}
+    return;
+  }
 
-return;
+  const button =
+    document.getElementById(
+      "withdrawBtn"
+    );
 
-}
+  button.disabled = true;
+  button.textContent = "Submitting...";
 
-if(
-currentUser &&
-Number(currentUser.balance || 0) <
-amount
-){
+  try{
 
-if(message){
+    const data = await apiFetch(
+      "/api/withdrawals/request",
+      {
+        method:"POST",
+        body:JSON.stringify({
+          address,
+          amount
+        })
+      }
+    );
 
-message.innerHTML =
-'<div class="error">Insufficient balance.</div>';
+    showToast(
+      data.message ||
+      (
+        "Withdrawal request submitted. ID: " +
+        (data.withdrawalId || "—")
+      )
+    );
 
-}
+    document.getElementById(
+      "withdrawAddress"
+    ).value = "";
 
-return;
+    document.getElementById(
+      "withdrawAmount"
+    ).value = "";
 
-}
+    await loadAccount();
+    await loadWithdrawals();
 
-if(message){
+  }catch(error){
 
-message.innerHTML =
-'<div class="loading">Submitting withdrawal request...</div>';
+    console.error(error);
 
-}
+    showToast(
+      error.message ||
+      "Withdrawal request failed."
+    );
 
-try{
+  }finally{
 
-const data =
-await apiFetch(
-"/api/withdrawals/request",
-{
-method:"POST",
-
-body:
-JSON.stringify({
-address,
-amount
-})
-
-}
-);
-
-if(
-!data.ok
-){
-
-throw new Error(
-data.message ||
-"Could not submit withdrawal."
-);
-
-}
-
-if(message){
-
-message.innerHTML =
-'<div class="success">' +
-"✅ Withdrawal request submitted.<br>" +
-"Withdrawal ID: " +
-escapeHtml(data.withdrawalId || "-") +
-"</div>";
-
-}
-
-document.getElementById(
-"withdrawAmount"
-).value =
-"";
-
-document.getElementById(
-"withdrawAddress"
-).value =
-"";
-
-await loadAccount();
-await loadWithdrawalHistory();
-
-}catch(error){
-
-if(message){
-
-message.innerHTML =
-'<div class="error">' +
-escapeHtml(error.message) +
-"</div>";
-
-}
-
-}
+    button.disabled = false;
+    button.textContent = "Request Withdrawal";
+  }
 
 }
 
 
-/*
-=========================================================
-WITHDRAW HISTORY
-=========================================================
-*/
+async function loadWithdrawals(){
 
-async function loadWithdrawalHistory(){
+  try{
 
-if(
-!requireUser()
-){
+    const data = await apiFetch(
+      "/api/withdrawals/me",
+      {
+        method:"GET"
+      }
+    );
 
-return;
+    withdrawalData =
+      Array.isArray(data.withdrawals)
+        ? data.withdrawals
+        : [];
 
-}
+    renderWithdrawals();
 
-const box =
-document.getElementById(
-"withdrawalHistory"
-);
+  }catch(error){
 
-if(!box){
+    console.error(error);
 
-return;
-
-}
-
-box.innerHTML =
-'<div class="loading">Loading withdrawal history...</div>';
-
-try{
-
-const data =
-await apiFetch(
-"/api/withdrawals/me"
-);
-
-if(
-!data.ok
-){
-
-throw new Error(
-data.message ||
-"Could not load withdrawal history."
-);
+    document.getElementById(
+      "withdrawalHistory"
+    ).innerHTML =
+      `
+      <div class="empty">
+        Unable to load withdrawal history.
+      </div>
+      `;
+  }
 
 }
 
-const withdrawals =
-Array.isArray(data.withdrawals)
-?
-data.withdrawals
-:
-[];
 
-if(
-withdrawals.length === 0
-){
+function statusClass(status){
 
-box.innerHTML =
-'<div class="empty">No withdrawal requests yet.</div>';
+  const s =
+    String(status || "")
+      .toLowerCase();
 
-return;
+  if(s === "approved" || s === "paid"){
+    return "approved";
+  }
 
+  if(s === "rejected"){
+    return "rejected";
+  }
+
+  return "pending";
 }
 
-box.innerHTML =
-"";
 
-withdrawals.forEach(
-function(withdrawal){
+function renderWithdrawals(){
 
-const item =
-document.createElement(
-"div"
-);
+  const container =
+    document.getElementById(
+      "withdrawalHistory"
+    );
 
-const rawStatus =
-String(
-withdrawal.status ||
-"pending"
-).toLowerCase();
+  if(!withdrawalData.length){
 
-const isPaid =
-rawStatus === "approved" &&
-!!withdrawal.paymentTxid;
+    container.innerHTML =
+      `
+      <div class="empty">
+        No withdrawal requests yet.
+      </div>
+      `;
 
-let displayStatus =
-rawStatus;
+    return;
+  }
 
-let statusClass =
-"status-pending";
+  container.innerHTML =
+    withdrawalData
+      .map(w=>{
 
-let itemClass =
-rawStatus;
+        const status =
+          escapeHtml(w.status || "Pending");
 
-if(isPaid){
+        const cls =
+          statusClass(w.status);
 
-displayStatus =
-"paid";
+        const amount =
+          formatAmount(w.amount);
 
-statusClass =
-"status-paid";
+        const address =
+          escapeHtml(w.address || "—");
 
-itemClass =
-"paid";
+        const date =
+          w.createdAt
+            ? new Date(w.createdAt).toLocaleString()
+            : "—";
 
-}else if(
-rawStatus === "approved"
-){
+        const txid =
+          w.paymentTxid
+            ? escapeHtml(w.paymentTxid)
+            : "";
 
-displayStatus =
-"approved";
+        return `
+          <div class="tx">
 
-statusClass =
-"status-approved";
+            <div class="row">
 
-itemClass =
-"approved";
+              <div>
+                <div class="tx-title">
+                  Withdrawal
+                </div>
 
-}else if(
-rawStatus === "rejected"
-){
+                <div class="tx-meta">
+                  ${date}
+                </div>
 
-displayStatus =
-"rejected";
+                <div class="tx-meta">
+                  ${address}
+                </div>
 
-statusClass =
-"status-rejected";
+                ${
+                  txid
+                    ? `
+                    <div class="tx-meta">
+                      Payment TXID:
+                      ${txid}
+                    </div>
+                    `
+                    : ""
+                }
 
-itemClass =
-"rejected";
+                <span class="status ${cls}">
+                  ${status}
+                </span>
+              </div>
 
-}else{
+              <div class="tx-amount">
+                -${amount} USDT
+              </div>
 
-displayStatus =
-"pending";
+            </div>
 
-statusClass =
-"status-pending";
-
-itemClass =
-"pending";
-
+          </div>
+        `;
+      })
+      .join("");
 }
 
-item.className =
-"withdraw-item " +
-itemClass;
 
-const amount =
-Number(
-withdrawal.amount || 0
-).toFixed(2);
+/* =========================
+   POINTS
+========================= */
 
-const date =
-withdrawal.createdAt
-?
-new Date(
-withdrawal.createdAt
-).toLocaleString()
-:
-"-";
+async function convertPoints(){
 
-item.innerHTML = `
+  const amount =
+    Number(
+      document.getElementById(
+        "convertPoints"
+      ).value
+    );
 
-<div class="withdraw-title">
-💸 ${amount} USDT
-</div>
+  const points =
+    Number(currentUser?.points || 0);
 
-<div class="badge">
+  if(!Number.isFinite(amount) || amount <= 0){
 
-<span class="${statusClass}">
-${displayStatus.toUpperCase()}
-</span>
+    showToast(
+      "Enter a valid number of points."
+    );
 
-</div>
+    return;
+  }
 
-<div class="withdraw-row">
+  if(amount > points){
 
-<span class="withdraw-label">
-Address:
-</span>
+    showToast(
+      "You do not have enough points."
+    );
 
-${escapeHtml(withdrawal.address || "-")}
+    return;
+  }
 
-</div>
+  try{
 
-<div class="withdraw-row">
+    const data = await apiFetch(
+      "/api/points/convert",
+      {
+        method:"POST",
+        body:JSON.stringify({
+          points:amount
+        })
+      }
+    );
 
-<span class="withdraw-label">
-Withdrawal ID:
-</span>
+    showToast(
+      data.message ||
+      `Converted ${formatAmount(amount)} points to USDT.`
+    );
 
-${escapeHtml(withdrawal.id || "-")}
+    document.getElementById(
+      "convertPoints"
+    ).value = "";
 
-</div>
+    await loadAccount();
 
-<div class="withdraw-row">
+  }catch(error){
 
-<span class="withdraw-label">
-Date:
-</span>
+    console.error(error);
 
-${escapeHtml(date)}
-
-</div>
-
-${
-withdrawal.paymentTxid
-?
-`
-
-<div class="withdraw-row">
-
-<span class="withdraw-label">
-Payment TXID:
-</span>
-
-<div class="history-txid">
-${escapeHtml(withdrawal.paymentTxid)}
-</div>
-
-</div>
-
-`
-:
-""
-}
-
-${
-withdrawal.reason
-?
-`
-
-<div class="withdraw-row">
-
-<span class="withdraw-label">
-Rejection Reason:
-</span>
-
-${escapeHtml(withdrawal.reason)}
-
-</div>
-
-`
-:
-""
-}
-
-`;
-
-box.appendChild(
-item
-);
-
-}
-);
-
-}catch(error){
-
-box.innerHTML =
-'<div class="error">' +
-escapeHtml(error.message) +
-"</div>";
-
-}
+    showToast(
+      error.message ||
+      "Point conversion failed."
+    );
+  }
 
 }
 
 
-/*
-=========================================================
-DAILY INFO
-=========================================================
-*/
-
-function showDailyInfo(){
-
-const message =
-document.getElementById(
-"dailyMessage"
-);
-
-if(!message){
-
-return;
-
-}
-
-message.innerHTML = `
-
-<div class="notice">
-
-🎁 Daily reward rules:
-
-<br><br>
-
-• Make a confirmed deposit of at least
-<b>10 USDT</b>.
-
-<br>
-
-• Receive
-<b>5 USDT directly to your balance</b>.
-
-<br>
-
-• The reward can be received again on
-the next Kabul calendar day.
-
-<br><br>
-
-💰 The daily reward is added directly to
-your USDT balance.
-
-</div>
-
-`;
-
-}
-
-
-/*
-=========================================================
-ADMIN
-=========================================================
-*/
+/* =========================
+   ADMIN
+========================= */
 
 async function checkAdmin(){
 
-if(
-!requireUser()
-){
+  try{
 
-return false;
+    const data = await apiFetch(
+      "/api/admin/withdrawals",
+      {
+        method:"GET"
+      }
+    );
 
-}
+    isAdmin = true;
 
-try{
+    const panel =
+      document.getElementById(
+        "adminPanel"
+      );
 
-const data =
-await apiFetch(
-"/api/admin/withdrawals"
-);
+    panel.classList.add("active");
 
-if(
-data &&
-data.ok
-){
+    renderAdminWithdrawals(
+      Array.isArray(data.withdrawals)
+        ? data.withdrawals
+        : []
+    );
 
-isAdmin =
-true;
+  }catch(error){
 
-const card =
-document.getElementById(
-"adminCard"
-);
+    isAdmin = false;
 
-if(card){
-
-card.style.display =
-"block";
-
-}
-
-return true;
-
-}
-
-}catch(error){
-
-isAdmin =
-false;
-
-const card =
-document.getElementById(
-"adminCard"
-);
-
-if(card){
-
-card.style.display =
-"none";
-
-}
-
-}
-
-return false;
+    document.getElementById(
+      "adminPanel"
+    ).classList.remove("active");
+  }
 
 }
 
 
 async function loadAdminWithdrawals(){
 
-if(
-!requireUser()
-){
+  if(!isAdmin){
+    return;
+  }
 
-return;
+  try{
 
-}
+    const data = await apiFetch(
+      "/api/admin/withdrawals",
+      {
+        method:"GET"
+      }
+    );
 
-const box =
-document.getElementById(
-"adminWithdrawals"
-);
+    renderAdminWithdrawals(
+      Array.isArray(data.withdrawals)
+        ? data.withdrawals
+        : []
+    );
 
-if(!box){
+  }catch(error){
 
-return;
+    console.error(error);
 
-}
-
-box.innerHTML =
-'<div class="loading">Loading withdrawal requests...</div>';
-
-try{
-
-const data =
-await apiFetch(
-"/api/admin/withdrawals"
-);
-
-if(
-!data.ok
-){
-
-throw new Error(
-data.message ||
-"Could not load requests."
-);
+    showToast(
+      error.message ||
+      "Unable to load admin requests."
+    );
+  }
 
 }
 
-const withdrawals =
-Array.isArray(data.withdrawals)
-?
-data.withdrawals
-:
-[];
 
-if(
-withdrawals.length === 0
-){
+function renderAdminWithdrawals(withdrawals){
 
-box.innerHTML =
-'<div class="empty">No withdrawal requests.</div>';
+  const container =
+    document.getElementById(
+      "adminWithdrawals"
+    );
 
-return;
+  if(!withdrawals.length){
 
+    container.innerHTML =
+      `
+      <div class="empty">
+        No withdrawal requests.
+      </div>
+      `;
+
+    return;
+  }
+
+  container.innerHTML =
+    withdrawals
+      .map(w=>{
+
+        const id =
+          escapeHtml(w.id || "");
+
+        const status =
+          escapeHtml(w.status || "Pending");
+
+        const amount =
+          formatAmount(w.amount);
+
+        const address =
+          escapeHtml(w.address || "—");
+
+        const username =
+          escapeHtml(
+            w.username ||
+            w.telegramUsername ||
+            "User"
+          );
+
+        const date =
+          w.createdAt
+            ? new Date(w.createdAt).toLocaleString()
+            : "—";
+
+        const paymentTxid =
+          escapeHtml(
+            w.paymentTxid || ""
+          );
+
+        const normalizedStatus =
+          String(w.status || "")
+            .toLowerCase();
+
+        return `
+          <div class="admin-item">
+
+            <div class="row">
+              <div>
+                <div class="tx-title">
+                  ${username}
+                </div>
+
+                <div class="tx-meta">
+                  ID: ${id}
+                </div>
+
+                <div class="tx-meta">
+                  ${date}
+                </div>
+              </div>
+
+              <div
+                class="tx-amount"
+                style="text-align:right"
+              >
+                ${amount} USDT
+                <br>
+                <span class="status ${statusClass(w.status)}">
+                  ${status}
+                </span>
+              </div>
+            </div>
+
+            <div
+              class="tx-meta"
+              style="margin-top:10px;word-break:break-all"
+            >
+              ${address}
+            </div>
+
+            ${
+              paymentTxid
+                ? `
+                <div
+                  class="tx-meta"
+                  style="margin-top:7px;word-break:break-all"
+                >
+                  Payment TXID:
+                  ${paymentTxid}
+                </div>
+                `
+                : ""
+            }
+
+            ${
+              normalizedStatus === "pending"
+                ? `
+                <div class="admin-actions">
+
+                  <button
+                    class="primary"
+                    onclick="adminApprove('${id}')"
+                  >
+                    Approve
+                  </button>
+
+                  <button
+                    class="danger-btn"
+                    onclick="adminReject('${id}')"
+                  >
+                    Reject
+                  </button>
+
+                </div>
+                `
+                : ""
+            }
+
+            ${
+              normalizedStatus === "approved"
+                ? `
+                <div
+                  style="margin-top:10px"
+                >
+
+                  <label>
+                    Payment TXID
+                  </label>
+
+                  <input
+                    id="admin-txid-${id}"
+                    type="text"
+                    maxlength="64"
+                    placeholder="Enter payment TXID"
+                  >
+
+                  <button
+                    class="secondary"
+                    onclick="adminSetTxid('${id}')"
+                  >
+                    Save Payment TXID
+                  </button>
+
+                </div>
+                `
+                : ""
+            }
+
+          </div>
+        `;
+      })
+      .join("");
 }
 
-box.innerHTML =
-"";
 
-withdrawals.forEach(
-function(w){
+async function adminApprove(id){
 
-const item =
-document.createElement(
-"div"
-);
+  if(!id){
+    return;
+  }
 
-item.className =
-"admin-item";
+  if(!confirm(
+    "Approve this withdrawal request?"
+  )){
+    return;
+  }
 
-const status =
-String(
-w.status ||
-"pending"
-).toUpperCase();
+  try{
 
-item.innerHTML = `
+    await apiFetch(
+      "/api/admin/withdrawals/" +
+      encodeURIComponent(id) +
+      "/approve",
+      {
+        method:"POST",
+        body:JSON.stringify({})
+      }
+    );
 
-<div class="withdraw-title">
+    showToast(
+      "Withdrawal approved."
+    );
 
-💸 ${Number(w.amount || 0).toFixed(2)} USDT
+    await loadAdminWithdrawals();
 
-</div>
+  }catch(error){
 
-<div class="badge">
-${escapeHtml(status)}
-</div>
+    console.error(error);
 
-<div class="withdraw-row">
-
-<span class="withdraw-label">
-Withdrawal ID
-</span>
-
-${escapeHtml(w.id || "-")}
-
-</div>
-
-<div class="withdraw-row">
-
-<span class="withdraw-label">
-User
-</span>
-
-@${escapeHtml(w.username || "none")}
-
-</div>
-
-<div class="withdraw-row">
-
-<span class="withdraw-label">
-Telegram ID
-</span>
-
-${escapeHtml(w.telegramUserId || "-")}
-
-</div>
-
-<div class="withdraw-row">
-
-<span class="withdraw-label">
-Address
-</span>
-
-${escapeHtml(w.address || "-")}
-
-</div>
-
-<div class="withdraw-row">
-
-<span class="withdraw-label">
-Date
-</span>
-
-${escapeHtml(
-w.createdAt
-?
-new Date(w.createdAt).toLocaleString()
-:
-"-"
-)}
-
-</div>
-
-${
-w.paymentTxid
-?
-`
-
-<div class="withdraw-row">
-
-<span class="withdraw-label">
-Payment TXID
-</span>
-
-<div class="history-txid">
-${escapeHtml(w.paymentTxid)}
-</div>
-
-</div>
-
-`
-:
-""
-}
-
-`;
-
-if(
-String(w.status).toLowerCase() ===
-"pending"
-){
-
-const actions =
-document.createElement(
-"div"
-);
-
-actions.className =
-"admin-actions";
-
-const approveBtn =
-document.createElement(
-"button"
-);
-
-approveBtn.className =
-"primary";
-
-approveBtn.textContent =
-"✅ Approve";
-
-approveBtn.onclick =
-function(){
-
-approveWithdrawal(w.id);
-
-};
-
-const rejectBtn =
-document.createElement(
-"button"
-);
-
-rejectBtn.className =
-"danger";
-
-rejectBtn.textContent =
-"❌ Reject";
-
-rejectBtn.onclick =
-function(){
-
-rejectWithdrawal(w.id);
-
-};
-
-actions.appendChild(
-approveBtn
-);
-
-actions.appendChild(
-rejectBtn
-);
-
-item.appendChild(
-actions
-);
-
-const txidButton =
-document.createElement(
-"button"
-);
-
-txidButton.className =
-"secondary";
-
-txidButton.style.marginTop =
-"8px";
-
-txidButton.textContent =
-"💳 Add Payment TXID";
-
-txidButton.onclick =
-function(){
-
-addPaymentTxid(w.id);
-
-};
-
-item.appendChild(
-txidButton
-);
-
-}
-
-if(
-String(w.status).toLowerCase() ===
-"approved"
-){
-
-const txidButton =
-document.createElement(
-"button"
-);
-
-txidButton.className =
-"secondary";
-
-txidButton.style.marginTop =
-"8px";
-
-txidButton.textContent =
-"💳 Add / Update Payment TXID";
-
-txidButton.onclick =
-function(){
-
-addPaymentTxid(w.id);
-
-};
-
-item.appendChild(
-txidButton
-);
-
-}
-
-box.appendChild(
-item
-);
-
-}
-);
-
-}catch(error){
-
-box.innerHTML =
-'<div class="error">' +
-escapeHtml(error.message) +
-"</div>";
-
-}
+    showToast(
+      error.message ||
+      "Approval failed."
+    );
+  }
 
 }
 
 
-/*
-=========================================================
-ADMIN APPROVE
-=========================================================
-*/
+async function adminReject(id){
 
-async function approveWithdrawal(
-withdrawalId
-){
+  if(!id){
+    return;
+  }
 
-if(
-!requireUser()
-){
+  const reason =
+    prompt(
+      "Enter rejection reason:"
+    );
 
-return;
+  if(reason === null){
+    return;
+  }
 
-}
+  try{
 
-const paymentTxid =
-prompt(
-"Payment TXID (optional):",
-""
-);
+    await apiFetch(
+      "/api/admin/withdrawals/" +
+      encodeURIComponent(id) +
+      "/reject",
+      {
+        method:"POST",
+        body:JSON.stringify({
+          reason
+        })
+      }
+    );
 
-if(
-paymentTxid !== null &&
-paymentTxid.trim() !== "" &&
-!/^[a-fA-F0-9]{64}$/.test(
-paymentTxid.trim()
-)
-){
+    showToast(
+      "Withdrawal rejected."
+    );
 
-alert(
-"Invalid payment TXID."
-);
+    await loadAdminWithdrawals();
 
-return;
+  }catch(error){
 
-}
+    console.error(error);
 
-try{
-
-const data =
-await apiFetch(
-"/api/admin/withdrawals/" +
-encodeURIComponent(withdrawalId) +
-"/approve",
-{
-method:"POST",
-
-body:
-JSON.stringify({
-paymentTxid:
-paymentTxid
-?
-paymentTxid.trim()
-:
-""
-})
-
-}
-);
-
-if(
-!data.ok
-){
-
-throw new Error(
-data.message ||
-"Could not approve withdrawal."
-);
-
-}
-
-alert(
-"Withdrawal approved."
-);
-
-await loadAdminWithdrawals();
-
-}catch(error){
-
-alert(
-error.message
-);
-
-}
+    showToast(
+      error.message ||
+      "Rejection failed."
+    );
+  }
 
 }
 
 
-/*
-=========================================================
-ADMIN REJECT
-=========================================================
-*/
+async function adminSetTxid(id){
 
-async function rejectWithdrawal(
-withdrawalId
-){
+  const input =
+    document.getElementById(
+      "admin-txid-" + id
+    );
 
-if(
-!requireUser()
-){
+  if(!input){
+    return;
+  }
 
-return;
+  const txid =
+    input.value.trim();
 
-}
+  if(!/^[a-fA-F0-9]{64}$/.test(txid)){
 
-const reason =
-prompt(
-"Reason for rejection:",
-"Withdrawal rejected by admin."
-);
+    showToast(
+      "Payment TXID must be 64 hexadecimal characters."
+    );
 
-if(
-reason === null
-){
+    return;
+  }
 
-return;
+  try{
 
-}
+    await apiFetch(
+      "/api/admin/withdrawals/" +
+      encodeURIComponent(id) +
+      "/txid",
+      {
+        method:"POST",
+        body:JSON.stringify({
+          txid
+        })
+      }
+    );
 
-try{
+    showToast(
+      "Payment TXID saved."
+    );
 
-const data =
-await apiFetch(
-"/api/admin/withdrawals/" +
-encodeURIComponent(withdrawalId) +
-"/reject",
-{
-method:"POST",
+    await loadAdminWithdrawals();
 
-body:
-JSON.stringify({
-reason:
-reason.trim() ||
-"Withdrawal rejected by admin."
-})
+  }catch(error){
 
-}
-);
+    console.error(error);
 
-if(
-!data.ok
-){
-
-throw new Error(
-data.message ||
-"Could not reject withdrawal."
-);
-
-}
-
-alert(
-"Withdrawal rejected."
-);
-
-await loadAdminWithdrawals();
-await loadAccount();
-
-}catch(error){
-
-alert(
-error.message
-);
-
-}
+    showToast(
+      error.message ||
+      "Could not save payment TXID."
+    );
+  }
 
 }
 
 
-/*
-=========================================================
-ADMIN PAYMENT TXID
-=========================================================
-*/
+/* =========================
+   TRANSACTIONS
+========================= */
 
-async function addPaymentTxid(
-withdrawalId
-){
+async function loadTransactions(){
 
-if(
-!requireUser()
-){
+  try{
 
-return;
+    const data = await apiFetch(
+      "/api/deposits/check",
+      {
+        method:"GET"
+      }
+    );
 
-}
+    const deposits =
+      Array.isArray(data.deposits)
+        ? data.deposits
+        : [];
 
-const txid =
-prompt(
-"Enter the real payment TXID:",
-""
-);
+    renderTransactions(deposits);
 
-if(
-txid === null
-){
+  }catch(error){
 
-return;
+    console.error(error);
 
-}
-
-const clean =
-txid.trim();
-
-if(
-!/^[a-fA-F0-9]{64}$/.test(clean)
-){
-
-alert(
-"Invalid 64-character TRON TXID."
-);
-
-return;
-
-}
-
-try{
-
-const data =
-await apiFetch(
-"/api/admin/withdrawals/" +
-encodeURIComponent(withdrawalId) +
-"/txid",
-{
-method:"POST",
-
-body:
-JSON.stringify({
-paymentTxid:
-clean
-})
-
-}
-);
-
-if(
-!data.ok
-){
-
-throw new Error(
-data.message ||
-"Could not save payment TXID."
-);
-
-}
-
-alert(
-"Payment TXID saved."
-);
-
-await loadAdminWithdrawals();
-
-}catch(error){
-
-alert(
-error.message
-);
-
-}
+    renderTransactions([]);
+  }
 
 }
 
 
-/*
-=========================================================
-PAGE NAVIGATION
-=========================================================
-*/
+function renderTransactions(deposits){
 
-function showPage(
-page
-){
+  const container =
+    document.getElementById(
+      "homeTransactions"
+    );
 
-const pages = {
+  if(!deposits.length){
 
-home:
-"homePage",
+    container.innerHTML =
+      `
+      <div class="empty">
+        No confirmed deposits yet.
+      </div>
+      `;
 
-deposit:
-"depositPage",
+    return;
+  }
 
-withdraw:
-"withdrawPage",
+  const recent =
+    deposits
+      .slice(-5)
+      .reverse();
 
-referral:
-"referralPage",
+  container.innerHTML =
+    recent
+      .map(d=>{
 
-profile:
-"profilePage"
+        const amount =
+          formatAmount(d.amount);
 
-};
+        const txid =
+          escapeHtml(
+            d.txid || ""
+          );
 
-Object.keys(pages).forEach(
-function(key){
+        const shortTx =
+          txid
+            ? txid.slice(0,10) +
+              "..." +
+              txid.slice(-8)
+            : "Confirmed deposit";
 
-const element =
-document.getElementById(
-pages[key]
-);
+        return `
+          <div class="tx">
 
-if(element){
+            <div class="row">
 
-element.classList.toggle(
-"active",
-key === page
-);
+              <div>
 
-}
+                <div class="tx-title">
+                  Deposit
+                </div>
 
-}
-);
+                <div class="tx-meta">
+                  ${shortTx}
+                </div>
 
-const navs = {
+                <span class="status approved">
+                  Confirmed
+                </span>
 
-home:
-"navHome",
+              </div>
 
-referral:
-"navReferral",
+              <div
+                class="tx-amount green"
+              >
+                +${amount}
+                <br>
+                <span style="font-size:9px">
+                  USDT
+                </span>
+              </div>
 
-profile:
-"navProfile"
+            </div>
 
-};
+          </div>
+        `;
 
-Object.keys(navs).forEach(
-function(key){
-
-const element =
-document.getElementById(
-navs[key]
-);
-
-if(element){
-
-element.classList.toggle(
-"active",
-key === page
-);
-
-}
-
-}
-);
-
-if(
-page === "profile"
-){
-
-loadAccount();
-loadWithdrawalHistory();
-checkAdmin();
-
-}
-
-if(
-page === "referral"
-){
-
-loadReferral();
-
-}
-
-if(
-page === "withdraw"
-){
-
-loadAccount();
-loadWithdrawalHistory();
-
-}
-
-if(
-page === "home"
-){
-
-loadAccount();
-
-}
-
-window.scrollTo({
-top:0,
-behavior:"smooth"
-});
-
+      })
+      .join("");
 }
 
 
-/*
-=========================================================
-MESSAGE
-=========================================================
-*/
-
-function showMessage(
-text,
-type
-){
-
-let message =
-document.getElementById(
-"globalMessage"
-);
-
-if(!message){
-
-message =
-document.createElement(
-"div"
-);
-
-message.id =
-"globalMessage";
-
-message.style.position =
-"fixed";
-
-message.style.left =
-"16px";
-
-message.style.right =
-"16px";
-
-message.style.bottom =
-"82px";
-
-message.style.zIndex =
-"999";
-
-document.body.appendChild(
-message
-);
-
-}
-
-const cls =
-type === "success"
-?
-"success"
-:
-"error";
-
-message.innerHTML =
-`<div class="${cls}">${escapeHtml(text)}</div>`;
-
-setTimeout(
-function(){
-
-if(message){
-
-message.innerHTML =
-"";
-
-}
-
-},
-3500
-);
-
-}
-
-
-/*
-=========================================================
-ESCAPE
-=========================================================
-*/
-
-function escapeHtml(
-value
-){
-
-return String(
-value ?? ""
-)
-
-.replace(
-/&/g,
-"&amp;"
-)
-
-.replace(
-/</g,
-"&lt;"
-)
-
-.replace(
-/>/g,
-"&gt;"
-)
-
-.replace(
-/"/g,
-"&quot;"
-)
-
-.replace(
-/'/g,
-"&#039;"
-);
-
-}
-
-
-/*
-=========================================================
-INITIALIZE
-=========================================================
-*/
+/* =========================
+   INITIALIZE
+========================= */
 
 async function initialize(){
 
-try{
+  try{
 
-if(tg){
+    if(!tg || !tg.initData){
 
-tg.ready();
+      document.getElementById(
+        "userLine"
+      ).textContent =
+        "Open Big Money inside Telegram";
 
-tg.expand();
+      showToast(
+        "Please open Big Money inside Telegram."
+      );
 
-try{
+      return;
+    }
 
-tg.setHeaderColor(
-"#06140d"
-);
+    await loadConfig();
 
-tg.setBackgroundColor(
-"#06140d"
-);
+    await loadAccount();
 
-}catch{}
+    await loadReferral();
 
-}
+    await loadWithdrawals();
 
-await loadConfig();
+    await loadTransactions();
 
-if(
-!requireUser()
-){
+    await checkAdmin();
 
-return;
+  }catch(error){
 
-}
+    console.error(error);
 
-await loadAccount();
-
-await loadWithdrawalHistory();
-
-await loadReferral();
-
-await checkAdmin();
-
-}catch(error){
-
-console.error(
-"Initialization error:",
-error
-);
-
-showMessage(
-error.message ||
-"Could not initialize Big Money.",
-"error"
-);
-
-}
+    showToast(
+      error.message ||
+      "Could not initialize Big Money."
+    );
+  }
 
 }
 
 
-/*
-=========================================================
-START
-=========================================================
-*/
+/* =========================
+   START
+========================= */
 
 document.addEventListener(
-"DOMContentLoaded",
-initialize
+  "DOMContentLoaded",
+  initialize
 );
 
 </script>
 
+</div>
+
 </body>
-  </html>
+</html>

@@ -611,8 +611,6 @@ onclick="showPage('withdraw')"
 </div>
 
 
-<!-- CONVERT POINTS -->
-
 <div class="card convert-card">
 
 <h2>
@@ -673,8 +671,6 @@ onclick="convertPoints()"
 </div>
 
 
-<!-- DAILY -->
-
 <div class="card">
 
 <h2>
@@ -700,8 +696,6 @@ onclick="showDailyInfo()"
 
 </div>
 
-
-<!-- REFERRAL -->
 
 <div class="card">
 
@@ -761,8 +755,6 @@ onclick="showPage('referral')"
 </div>
 
 
-<!-- QUICK -->
-
 <div class="card">
 
 <h2>
@@ -789,8 +781,6 @@ onclick="showPage('profile')"
 
 </div>
 
-
-<!-- STATUS -->
 
 <div class="card">
 
@@ -861,12 +851,16 @@ Deposit Amount
 <input
 id="depAmount"
 type="number"
-min="10"
+min="5"
 step="0.01"
-placeholder="Example: 10"
+placeholder="Example: 5"
 >
 
 <div class="quick">
+
+<button onclick="setDepositAmount(5)">
+5
+</button>
 
 <button onclick="setDepositAmount(10)">
 10
@@ -878,10 +872,6 @@ placeholder="Example: 10"
 
 <button onclick="setDepositAmount(50)">
 50
-</button>
-
-<button onclick="setDepositAmount(100)">
-100
 </button>
 
 </div>
@@ -1225,8 +1215,6 @@ TRON TRC20
 </div>
 
 
-<!-- POINT CONVERSION -->
-
 <div class="card convert-card">
 
 <h2>
@@ -1299,7 +1287,7 @@ style="display:none"
 </h2>
 
 <div class="small">
-Admin withdrawal management and testing.
+Admin withdrawal management.
 </div>
 
 <button
@@ -1325,35 +1313,6 @@ style="margin-top:12px"
 <div class="empty">
 Press View Withdrawal Requests.
 </div>
-</div>
-
-
-<div
-class="card"
-style="margin-top:14px;margin-bottom:0;background:#10170d"
->
-
-<h3>
-🧪 Admin Test Balance
-</h3>
-
-<div class="small">
-Adds exactly <b>10 USDT</b> to the admin account
-for testing. This is only a database test credit
-and does not require a blockchain transaction.
-It does not trigger referral or daily rewards.
-</div>
-
-<button
-class="secondary"
-style="margin-top:12px"
-onclick="addTestUSDT()"
->
-➕ Add 10 USDT Test Balance
-</button>
-
-<div id="testCreditMessage"></div>
-
 </div>
 
 </div>
@@ -3840,112 +3799,6 @@ await loadAdminWithdrawals();
 alert(
 error.message
 );
-
-}
-
-}
-
-
-/*
-=========================================================
-ADMIN TEST CREDIT
-=========================================================
-*/
-
-async function addTestUSDT(){
-
-if(
-!requireUser()
-){
-
-return;
-
-}
-
-const box =
-document.getElementById(
-"testCreditMessage"
-);
-
-if(box){
-
-box.innerHTML =
-'<div class="loading">Adding 10 USDT test balance...</div>';
-
-}
-
-try{
-
-const user =
-tg.initDataUnsafe.user;
-
-const targetTelegramUserId =
-String(user.id);
-
-const data =
-await apiFetch(
-"/api/admin/test-credit",
-{
-method:"POST",
-
-body:
-JSON.stringify({
-
-telegramUserId:
-targetTelegramUserId,
-
-targetTelegramUserId:
-targetTelegramUserId,
-
-amount:10
-
-})
-}
-);
-
-if(
-!data.ok
-){
-
-throw new Error(
-data.message ||
-"Could not add test balance."
-);
-
-}
-
-if(box){
-
-box.innerHTML =
-'<div class="success">' +
-"✅ 10 USDT test balance added successfully." +
-"<br>" +
-"New balance: " +
-Number(
-data.balance || 0
-).toFixed(4) +
-" USDT" +
-"</div>";
-
-}
-
-await loadAccount();
-
-}catch(error){
-
-console.error(
-"Test credit error:",
-error
-);
-
-if(box){
-
-box.innerHTML =
-'<div class="error">' +
-escapeHtml(error.message) +
-"</div>";
-
-}
 
 }
 

@@ -38,20 +38,29 @@ const ALLOWED_ORIGIN =
 
 const USDT_DECIMALS = 6;
 
-const REFERRAL_REWARD_POINTS = 3;
-const DAILY_REWARD_POINTS = 0.5;
-const QUALIFYING_DEPOSIT = 10;
-const REQUIRED_REFERRALS = 5;
 
 /*
 =========================================================
-POINT CONVERSION
-=========================================================
-1 Point = 1 USDT
+BIG MONEY RULES
 =========================================================
 */
 
+const QUALIFYING_DEPOSIT = 10;
+
+// Daily reward = 5 USDT directly to Balance
+const DAILY_REWARD_USDT = 5;
+
+// No referral points anymore
+const REFERRAL_REWARD_POINTS = 0;
+
+// 5 successful referrals required for withdrawal
+const REQUIRED_REFERRALS = 5;
+
+// 1 Point = 1 USDT
 const POINT_USDT_RATE = 1;
+
+// Admin test credit
+const TEST_CREDIT_USDT = 10;
 
 
 /*
@@ -99,7 +108,7 @@ const DATA_FILE =
   );
 
 
-function defaultDB(){
+function defaultDB() {
 
   return {
     users: [],
@@ -111,31 +120,31 @@ function defaultDB(){
 }
 
 
-function ensureDataDir(){
+function ensureDataDir() {
 
-  if(
+  if (
     !fs.existsSync(DATA_DIR)
-  ){
+  ) {
 
     fs.mkdirSync(
       DATA_DIR,
       {
-        recursive:true
+        recursive: true
       }
     );
   }
 }
 
 
-function loadDB(){
+function loadDB() {
 
-  try{
+  try {
 
     ensureDataDir();
 
-    if(
+    if (
       !fs.existsSync(DATA_FILE)
-    ){
+    ) {
 
       const db =
         defaultDB();
@@ -170,40 +179,40 @@ function loadDB(){
     };
 
 
-    if(
+    if (
       !Array.isArray(db.users)
-    ){
+    ) {
       db.users = [];
     }
 
-    if(
+    if (
       !Array.isArray(db.deposits)
-    ){
+    ) {
       db.deposits = [];
     }
 
-    if(
+    if (
       !Array.isArray(db.withdrawals)
-    ){
+    ) {
       db.withdrawals = [];
     }
 
-    if(
+    if (
       !Array.isArray(db.usedTransactions)
-    ){
+    ) {
       db.usedTransactions = [];
     }
 
-    if(
+    if (
       !Array.isArray(db.pointConversions)
-    ){
+    ) {
       db.pointConversions = [];
     }
 
 
     return db;
 
-  }catch(error){
+  } catch (error) {
 
     console.error(
       "Database load error:",
@@ -219,7 +228,7 @@ let db =
   loadDB();
 
 
-function saveDB(){
+function saveDB() {
 
   ensureDataDir();
 
@@ -248,7 +257,7 @@ HELPERS
 =========================================================
 */
 
-function nowISO(){
+function nowISO() {
 
   return new Date().toISOString();
 }
@@ -257,7 +266,7 @@ function nowISO(){
 function roundNumber(
   value,
   decimals = 6
-){
+) {
 
   const factor =
     Math.pow(
@@ -275,7 +284,7 @@ function roundNumber(
 
 function makeId(
   prefix
-){
+) {
 
   return (
     prefix +
@@ -288,7 +297,7 @@ function makeId(
 function constantTimeEqual(
   a,
   b
-){
+) {
 
   const A =
     Buffer.from(
@@ -300,9 +309,9 @@ function constantTimeEqual(
       String(b || "")
     );
 
-  if(
+  if (
     A.length !== B.length
-  ){
+  ) {
     return false;
   }
 
@@ -319,16 +328,16 @@ KABUL DAY
 =========================================================
 */
 
-function getKabulDate(){
+function getKabulDate() {
 
   const formatter =
     new Intl.DateTimeFormat(
       "en-CA",
       {
-        timeZone:"Asia/Kabul",
-        year:"numeric",
-        month:"2-digit",
-        day:"2-digit"
+        timeZone: "Asia/Kabul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
       }
     );
 
@@ -346,11 +355,11 @@ TELEGRAM WEB APP AUTH
 
 function verifyTelegramInitData(
   initData
-){
+) {
 
-  if(
+  if (
     !TELEGRAM_BOT_TOKEN
-  ){
+  ) {
 
     throw new Error(
       "TELEGRAM_BOT_TOKEN is not configured."
@@ -358,10 +367,10 @@ function verifyTelegramInitData(
   }
 
 
-  if(
+  if (
     !initData ||
     typeof initData !== "string"
-  ){
+  ) {
 
     throw new Error(
       "Telegram authentication data is missing."
@@ -379,7 +388,7 @@ function verifyTelegramInitData(
     params.get("hash");
 
 
-  if(!hash){
+  if (!hash) {
 
     throw new Error(
       "Telegram authentication hash is missing."
@@ -393,11 +402,11 @@ function verifyTelegramInitData(
   const dataCheckString =
     Array.from(params.entries())
       .sort(
-        ([a],[b]) =>
+        ([a], [b]) =>
           a.localeCompare(b)
       )
       .map(
-        ([key,value]) =>
+        ([key, value]) =>
           `${key}=${value}`
       )
       .join("\n");
@@ -427,12 +436,12 @@ function verifyTelegramInitData(
       .digest("hex");
 
 
-  if(
+  if (
     !constantTimeEqual(
       calculatedHash,
       hash
     )
-  ){
+  ) {
 
     throw new Error(
       "Invalid Telegram authentication."
@@ -446,9 +455,9 @@ function verifyTelegramInitData(
     );
 
 
-  if(
+  if (
     !authDate
-  ){
+  ) {
 
     throw new Error(
       "Telegram auth_date is missing."
@@ -462,10 +471,10 @@ function verifyTelegramInitData(
     ) - authDate;
 
 
-  if(
+  if (
     age < 0 ||
     age > 86400
-  ){
+  ) {
 
     throw new Error(
       "Telegram authentication has expired."
@@ -477,7 +486,7 @@ function verifyTelegramInitData(
     params.get("user");
 
 
-  if(!userRaw){
+  if (!userRaw) {
 
     throw new Error(
       "Telegram user information is missing."
@@ -487,14 +496,14 @@ function verifyTelegramInitData(
 
   let user;
 
-  try{
+  try {
 
     user =
       JSON.parse(
         userRaw
       );
 
-  }catch{
+  } catch {
 
     throw new Error(
       "Invalid Telegram user data."
@@ -502,10 +511,10 @@ function verifyTelegramInitData(
   }
 
 
-  if(
+  if (
     !user ||
     !user.id
-  ){
+  ) {
 
     throw new Error(
       "Invalid Telegram user."
@@ -549,9 +558,9 @@ function telegramAuth(
   req,
   res,
   next
-){
+) {
 
-  try{
+  try {
 
     const initData =
       req.get(
@@ -589,7 +598,7 @@ function telegramAuth(
 
     next();
 
-  }catch(error){
+  } catch (error) {
 
     console.error(
       "Telegram auth error:",
@@ -599,7 +608,7 @@ function telegramAuth(
     return res
       .status(401)
       .json({
-        ok:false,
+        ok: false,
         message:
           error.message ||
           "Telegram authentication failed."
@@ -618,7 +627,7 @@ function ensureUser(
   telegramUserId,
   username = "",
   telegramUser = {}
-){
+) {
 
   const id =
     String(
@@ -633,11 +642,11 @@ function ensureUser(
     );
 
 
-  if(!user){
+  if (!user) {
 
     user = {
 
-      telegramUserId:id,
+      telegramUserId: id,
 
       username:
         username || "",
@@ -650,21 +659,21 @@ function ensureUser(
         telegramUser.lastName ||
         "",
 
-      balance:0,
+      balance: 0,
 
-      points:0,
+      points: 0,
 
-      referrals:[],
+      referrals: [],
 
-      totalInvited:0,
+      totalInvited: 0,
 
-      successfulReferrals:0,
+      successfulReferrals: 0,
 
-      referredBy:null,
+      referredBy: null,
 
-      referralRewardGiven:false,
+      referralRewardGiven: false,
 
-      dailyRewards:[],
+      dailyRewards: [],
 
       createdAt:
         nowISO(),
@@ -680,47 +689,47 @@ function ensureUser(
 
     saveDB();
 
-  }else{
+  } else {
 
-    if(username){
+    if (username) {
       user.username =
         username;
     }
 
-    if(
+    if (
       telegramUser.firstName
-    ){
+    ) {
       user.firstName =
         telegramUser.firstName;
     }
 
-    if(
+    if (
       telegramUser.lastName
-    ){
+    ) {
       user.lastName =
         telegramUser.lastName;
     }
 
-    if(
+    if (
       !Array.isArray(
         user.referrals
       )
-    ){
+    ) {
       user.referrals = [];
     }
 
-    if(
+    if (
       !Array.isArray(
         user.dailyRewards
       )
-    ){
+    ) {
       user.dailyRewards = [];
     }
 
-    if(
+    if (
       typeof user.balance !==
       "number"
-    ){
+    ) {
 
       user.balance =
         Number(
@@ -728,10 +737,10 @@ function ensureUser(
         );
     }
 
-    if(
+    if (
       typeof user.points !==
       "number"
-    ){
+    ) {
 
       user.points =
         Number(
@@ -739,19 +748,19 @@ function ensureUser(
         );
     }
 
-    if(
+    if (
       typeof user.successfulReferrals !==
       "number"
-    ){
+    ) {
 
       user.successfulReferrals =
         0;
     }
 
-    if(
+    if (
       typeof user.totalInvited !==
       "number"
-    ){
+    ) {
 
       user.totalInvited =
         user.referrals.length;
@@ -771,9 +780,9 @@ REFERRAL REGISTRATION
 
 function cleanReferralId(
   value
-){
+) {
 
-  if(!value){
+  if (!value) {
     return "";
   }
 
@@ -781,18 +790,18 @@ function cleanReferralId(
     String(value).trim();
 
 
-  if(
+  if (
     id.startsWith("ref_")
-  ){
+  ) {
 
     id =
       id.substring(4);
   }
 
 
-  if(
+  if (
     id.startsWith("ref")
-  ){
+  ) {
 
     id =
       id.substring(3);
@@ -806,9 +815,9 @@ function cleanReferralId(
 function registerReferral(
   user,
   startParam
-){
+) {
 
-  if(!startParam){
+  if (!startParam) {
     return;
   }
 
@@ -819,21 +828,21 @@ function registerReferral(
     );
 
 
-  if(!referrerId){
+  if (!referrerId) {
     return;
   }
 
 
-  if(
+  if (
     String(referrerId) ===
     String(user.telegramUserId)
-  ){
+  ) {
 
     return;
   }
 
 
-  if(user.referredBy){
+  if (user.referredBy) {
     return;
   }
 
@@ -848,7 +857,7 @@ function registerReferral(
     );
 
 
-  if(!referrer){
+  if (!referrer) {
     return;
   }
 
@@ -859,11 +868,11 @@ function registerReferral(
     );
 
 
-  if(
+  if (
     !Array.isArray(
       referrer.referrals
     )
-  ){
+  ) {
 
     referrer.referrals = [];
   }
@@ -881,7 +890,7 @@ function registerReferral(
     );
 
 
-  if(!already){
+  if (!already) {
 
     referrer.referrals.push({
 
@@ -893,9 +902,9 @@ function registerReferral(
       username:
         user.username || "",
 
-      successful:false,
+      successful: false,
 
-      rewardGiven:false,
+      rewardGiven: false,
 
       createdAt:
         nowISO()
@@ -921,25 +930,20 @@ function registerReferral(
 
 /*
 =========================================================
-REFERRAL REWARD
+SUCCESSFUL REFERRAL
+=========================================================
+NO POINTS ARE GIVEN.
+ONLY SUCCESSFUL REFERRAL STATUS IS RECORDED.
 =========================================================
 */
 
 function applyReferralReward(
   depositedUser
-){
+) {
 
-  if(
+  if (
     !depositedUser.referredBy
-  ){
-
-    return 0;
-  }
-
-
-  if(
-    depositedUser.referralRewardGiven
-  ){
+  ) {
 
     return 0;
   }
@@ -957,29 +961,29 @@ function applyReferralReward(
     );
 
 
-  if(!referrer){
+  if (!referrer) {
     return 0;
   }
 
 
-  if(
+  if (
     String(
       referrer.telegramUserId
     ) ===
     String(
       depositedUser.telegramUserId
     )
-  ){
+  ) {
 
     return 0;
   }
 
 
-  if(
+  if (
     !Array.isArray(
       referrer.referrals
     )
-  ){
+  ) {
 
     referrer.referrals = [];
   }
@@ -997,7 +1001,7 @@ function applyReferralReward(
     );
 
 
-  if(!referral){
+  if (!referral) {
 
     referral = {
 
@@ -1010,9 +1014,9 @@ function applyReferralReward(
         depositedUser.username ||
         "",
 
-      successful:false,
+      successful: false,
 
-      rewardGiven:false,
+      rewardGiven: false,
 
       createdAt:
         nowISO()
@@ -1026,9 +1030,15 @@ function applyReferralReward(
   }
 
 
-  if(
+  /*
+  If this referral was already counted,
+  do nothing.
+  */
+
+  if (
+    referral.successful ||
     referral.rewardGiven
-  ){
+  ) {
 
     depositedUser.referralRewardGiven =
       true;
@@ -1037,15 +1047,10 @@ function applyReferralReward(
   }
 
 
-  referrer.points =
-    roundNumber(
-      Number(
-        referrer.points || 0
-      ) +
-      REFERRAL_REWARD_POINTS,
-      2
-    );
-
+  /*
+  IMPORTANT:
+  No points are added here.
+  */
 
   referrer.successfulReferrals =
     Number(
@@ -1074,7 +1079,7 @@ function applyReferralReward(
     nowISO();
 
 
-  return REFERRAL_REWARD_POINTS;
+  return 0;
 }
 
 
@@ -1082,43 +1087,55 @@ function applyReferralReward(
 =========================================================
 DAILY REWARD
 =========================================================
+5 USDT DIRECTLY TO BALANCE
+ONCE PER KABUL CALENDAR DAY
+=========================================================
 */
 
 function applyDailyReward(
   user
-){
+) {
 
   const today =
     getKabulDate();
 
 
-  if(
+  if (
     !Array.isArray(
       user.dailyRewards
     )
-  ){
+  ) {
 
     user.dailyRewards = [];
   }
 
 
-  if(
+  /*
+  Already received today's reward
+  */
+
+  if (
     user.dailyRewards.includes(
       today
     )
-  ){
+  ) {
 
     return 0;
   }
 
 
-  user.points =
+  /*
+  Add 5 USDT directly to balance.
+  NOT points.
+  */
+
+  user.balance =
     roundNumber(
       Number(
-        user.points || 0
+        user.balance || 0
       ) +
-      DAILY_REWARD_POINTS,
-      2
+      DAILY_REWARD_USDT,
+      6
     );
 
 
@@ -1131,7 +1148,7 @@ function applyDailyReward(
     nowISO();
 
 
-  return DAILY_REWARD_POINTS;
+  return DAILY_REWARD_USDT;
 }
 
 
@@ -1143,7 +1160,7 @@ TRON HELPERS
 
 function tronHexToBase58(
   hex
-){
+) {
 
   const alphabet =
     "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -1158,9 +1175,9 @@ function tronHexToBase58(
   let output = "";
 
 
-  while(
+  while (
     num > 0
-  ){
+  ) {
 
     const remainder =
       Number(
@@ -1181,22 +1198,22 @@ function tronHexToBase58(
   let leadingZeros = 0;
 
 
-  for(
+  for (
     let i = 0;
     i < hex.length;
     i += 2
-  ){
+  ) {
 
-    if(
+    if (
       hex.substring(
         i,
         i + 2
       ) === "00"
-    ){
+    ) {
 
       leadingZeros++;
 
-    }else{
+    } else {
 
       break;
     }
@@ -1214,7 +1231,7 @@ function tronHexToBase58(
 
 function base58CheckDecode(
   address
-){
+) {
 
   const alphabet =
     "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -1224,9 +1241,9 @@ function base58CheckDecode(
     BigInt(0);
 
 
-  for(
+  for (
     const char of address
-  ){
+  ) {
 
     const index =
       alphabet.indexOf(
@@ -1234,7 +1251,7 @@ function base58CheckDecode(
       );
 
 
-    if(index < 0){
+    if (index < 0) {
 
       throw new Error(
         "Invalid base58 address."
@@ -1253,18 +1270,18 @@ function base58CheckDecode(
     num.toString(16);
 
 
-  if(
+  if (
     hex.length % 2
-  ){
+  ) {
 
     hex =
       "0" + hex;
   }
 
 
-  while(
+  while (
     hex.length < 50
-  ){
+  ) {
 
     hex =
       "0" + hex;
@@ -1280,7 +1297,7 @@ function base58CheckDecode(
 
 function hexToTronAddress(
   value
-){
+) {
 
   let hex =
     String(
@@ -1291,9 +1308,9 @@ function hexToTronAddress(
     );
 
 
-  if(
+  if (
     hex.length > 40
-  ){
+  ) {
 
     hex =
       hex.slice(-40);
@@ -1308,7 +1325,7 @@ function hexToTronAddress(
 
 function decodeTransferInput(
   data
-){
+) {
 
   const clean =
     String(
@@ -1319,19 +1336,19 @@ function decodeTransferInput(
     );
 
 
-  if(
+  if (
     !clean.startsWith(
       "a9059cbb"
     )
-  ){
+  ) {
 
     return null;
   }
 
 
-  if(
+  if (
     clean.length < 136
-  ){
+  ) {
 
     return null;
   }
@@ -1385,7 +1402,7 @@ TRONGRID
 async function tronFetch(
   endpoint,
   options = {}
-){
+) {
 
   const headers = {
     "Content-Type":
@@ -1394,9 +1411,9 @@ async function tronFetch(
   };
 
 
-  if(
+  if (
     TRONGRID_API_KEY
-  ){
+  ) {
 
     headers[
       "TRON-PRO-API-KEY"
@@ -1419,20 +1436,20 @@ async function tronFetch(
   let data = null;
 
 
-  try{
+  try {
 
     data =
       await response.json();
 
-  }catch{
+  } catch {
 
     data = null;
   }
 
 
-  if(
+  if (
     !response.ok
-  ){
+  ) {
 
     throw new Error(
       `TronGrid error: ${response.status}`
@@ -1452,25 +1469,25 @@ VERIFY TRANSACTION
 
 async function findConfirmedUSDTTransfer(
   txid
-){
+) {
 
   const transaction =
     await tronFetch(
       "/walletsolidity/gettransactionbyid",
       {
-        method:"POST",
+        method: "POST",
         body:
           JSON.stringify({
-            value:txid
+            value: txid
           })
       }
     );
 
 
-  if(
+  if (
     !transaction ||
     !transaction.txID
-  ){
+  ) {
 
     throw new Error(
       "Transaction was not found."
@@ -1482,16 +1499,16 @@ async function findConfirmedUSDTTransfer(
     await tronFetch(
       "/walletsolidity/gettransactioninfobyid",
       {
-        method:"POST",
+        method: "POST",
         body:
           JSON.stringify({
-            value:txid
+            value: txid
           })
       }
     );
 
 
-  if(
+  if (
     info &&
     info.receipt &&
     info.receipt.result &&
@@ -1499,7 +1516,7 @@ async function findConfirmedUSDTTransfer(
       info.receipt.result
     ).toUpperCase() !==
     "SUCCESS"
-  ){
+  ) {
 
     throw new Error(
       "Transaction failed on TRON."
@@ -1525,11 +1542,11 @@ async function findConfirmedUSDTTransfer(
     );
 
 
-  if(
+  if (
     contract &&
     contract.parameter &&
     contract.parameter.value
-  ){
+  ) {
 
     const value =
       contract.parameter.value;
@@ -1561,10 +1578,10 @@ async function findConfirmedUSDTTransfer(
       .toLowerCase();
 
 
-    if(
+    if (
       actualContractHex ===
       contractHex
-    ){
+    ) {
 
       const decoded =
         decodeTransferInput(
@@ -1572,11 +1589,11 @@ async function findConfirmedUSDTTransfer(
         );
 
 
-      if(
+      if (
         decoded &&
         decoded.recipient ===
         DEPOSIT_ADDRESS
-      ){
+      ) {
 
         return {
 
@@ -1595,7 +1612,7 @@ async function findConfirmedUSDTTransfer(
           amount:
             decoded.amount,
 
-          confirmed:true
+          confirmed: true
 
         };
       }
@@ -1638,9 +1655,9 @@ async function findConfirmedUSDTTransfer(
     );
 
 
-  if(
+  if (
     matches.length === 0
-  ){
+  ) {
 
     throw new Error(
       "No confirmed USDT transfer to the deposit address was found."
@@ -1648,9 +1665,9 @@ async function findConfirmedUSDTTransfer(
   }
 
 
-  if(
+  if (
     matches.length > 1
-  ){
+  ) {
 
     throw new Error(
       "Multiple matching transfers were found. Please contact admin."
@@ -1675,7 +1692,7 @@ async function findConfirmedUSDTTransfer(
   let amount;
 
 
-  try{
+  try {
 
     amount =
       Number(
@@ -1688,7 +1705,7 @@ async function findConfirmedUSDTTransfer(
         USDT_DECIMALS
       );
 
-  }catch{
+  } catch {
 
     amount =
       Number(rawValue) /
@@ -1715,7 +1732,7 @@ async function findConfirmedUSDTTransfer(
 
     amount,
 
-    confirmed:true
+    confirmed: true
 
   };
 }
@@ -1729,17 +1746,19 @@ CONFIG
 
 app.get(
   "/",
-  (req,res) => {
+  (req, res) => {
 
     res.json({
 
-      ok:true,
+      ok: true,
 
-      app:"Big Money",
+      app: "Big Money",
 
-      network:"TRON TRC20",
+      network:
+        "TRON TRC20",
 
-      token:"USDT"
+      token:
+        "USDT"
 
     });
 
@@ -1749,17 +1768,20 @@ app.get(
 
 app.get(
   "/api/config",
-  (req,res) => {
+  (req, res) => {
 
     res.json({
 
-      ok:true,
+      ok: true,
 
-      network:"TRON",
+      network:
+        "TRON",
 
-      token:"USDT",
+      token:
+        "USDT",
 
-      standard:"TRC20",
+      standard:
+        "TRC20",
 
       depositAddress:
         DEPOSIT_ADDRESS,
@@ -1767,11 +1789,24 @@ app.get(
       qualifyingDeposit:
         QUALIFYING_DEPOSIT,
 
+      /*
+      Kept for compatibility.
+      Referral reward is now zero.
+      */
+
       referralRewardPoints:
-        REFERRAL_REWARD_POINTS,
+        0,
+
+      /*
+      Old field kept for compatibility.
+      Daily reward is no longer points.
+      */
 
       dailyRewardPoints:
-        DAILY_REWARD_POINTS,
+        0,
+
+      dailyRewardUSDT:
+        DAILY_REWARD_USDT,
 
       requiredReferrals:
         REQUIRED_REFERRALS,
@@ -1794,7 +1829,7 @@ ACCOUNT
 app.get(
   "/api/account/:telegramUserId",
   telegramAuth,
-  (req,res) => {
+  (req, res) => {
 
     const requestedId =
       String(
@@ -1808,15 +1843,15 @@ app.get(
       );
 
 
-    if(
+    if (
       requestedId !==
       authenticatedId
-    ){
+    ) {
 
       return res
         .status(403)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Telegram user mismatch."
         });
@@ -1833,9 +1868,9 @@ app.get(
 
     res.json({
 
-      ok:true,
+      ok: true,
 
-      user:{
+      user: {
 
         telegramUserId:
           user.telegramUserId,
@@ -1880,7 +1915,7 @@ app.get(
 
       },
 
-      referral:{
+      referral: {
 
         referralLink,
 
@@ -1917,7 +1952,7 @@ REFERRAL
 app.get(
   "/api/referral/:telegramUserId",
   telegramAuth,
-  (req,res) => {
+  (req, res) => {
 
     const requestedId =
       String(
@@ -1931,15 +1966,15 @@ app.get(
       );
 
 
-    if(
+    if (
       requestedId !==
       authenticatedId
-    ){
+    ) {
 
       return res
         .status(403)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Telegram user mismatch."
         });
@@ -1956,9 +1991,9 @@ app.get(
 
     res.json({
 
-      ok:true,
+      ok: true,
 
-      referral:{
+      referral: {
 
         referralLink,
 
@@ -1995,9 +2030,9 @@ POINTS -> USDT
 app.post(
   "/api/points/convert",
   telegramAuth,
-  (req,res) => {
+  (req, res) => {
 
-    try{
+    try {
 
       let points =
         Number(
@@ -2005,16 +2040,16 @@ app.post(
         );
 
 
-      if(
+      if (
         !Number.isFinite(
           points
         )
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               "Enter a valid number of points."
           });
@@ -2028,14 +2063,14 @@ app.post(
         );
 
 
-      if(
+      if (
         points <= 0
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               "Points must be greater than 0."
           });
@@ -2055,15 +2090,15 @@ app.post(
         );
 
 
-      if(
+      if (
         points >
         availablePoints
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               `You only have ${availablePoints} points.`
           });
@@ -2130,7 +2165,7 @@ app.post(
 
       return res.json({
 
-        ok:true,
+        ok: true,
 
         message:
           "Points converted successfully.",
@@ -2152,7 +2187,7 @@ app.post(
 
       });
 
-    }catch(error){
+    } catch (error) {
 
       console.error(
         "Point conversion error:",
@@ -2162,7 +2197,7 @@ app.post(
       return res
         .status(500)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Point conversion failed."
         });
@@ -2181,7 +2216,7 @@ POINT HISTORY
 app.get(
   "/api/points/history",
   telegramAuth,
-  (req,res) => {
+  (req, res) => {
 
     const userId =
       String(
@@ -2198,7 +2233,7 @@ app.get(
             ) === userId
         )
         .sort(
-          (a,b) =>
+          (a, b) =>
             new Date(b.createdAt) -
             new Date(a.createdAt)
         )
@@ -2210,7 +2245,7 @@ app.get(
 
     res.json({
 
-      ok:true,
+      ok: true,
 
       conversions:
         history
@@ -2230,9 +2265,9 @@ DEPOSIT CHECK
 app.get(
   "/api/deposits/check",
   telegramAuth,
-  async (req,res) => {
+  async (req, res) => {
 
-    try{
+    try {
 
       const data =
         await tronFetch(
@@ -2261,7 +2296,7 @@ app.get(
               let amount;
 
 
-              try{
+              try {
 
                 amount =
                   Number(
@@ -2274,7 +2309,7 @@ app.get(
                     USDT_DECIMALS
                   );
 
-              }catch{
+              } catch {
 
                 amount =
                   Number(rawValue) /
@@ -2300,7 +2335,7 @@ app.get(
                 to:
                   item.to || "",
 
-                confirmed:true
+                confirmed: true
 
               };
 
@@ -2310,19 +2345,19 @@ app.get(
             x =>
               x.txid &&
               x.to ===
-                DEPOSIT_ADDRESS
+              DEPOSIT_ADDRESS
           );
 
 
       return res.json({
 
-        ok:true,
+        ok: true,
 
         deposits
 
       });
 
-    }catch(error){
+    } catch (error) {
 
       console.error(
         "Deposit check error:",
@@ -2332,7 +2367,7 @@ app.get(
       return res
         .status(500)
         .json({
-          ok:false,
+          ok: false,
           message:
             error.message
         });
@@ -2351,7 +2386,7 @@ DEPOSIT REQUEST
 app.post(
   "/api/deposits/request",
   telegramAuth,
-  (req,res) => {
+  (req, res) => {
 
     const user =
       req.appUser;
@@ -2359,7 +2394,7 @@ app.post(
 
     res.json({
 
-      ok:true,
+      ok: true,
 
       telegramUserId:
         user.telegramUserId,
@@ -2382,9 +2417,9 @@ DEPOSIT VERIFY
 app.post(
   "/api/deposits/verify",
   telegramAuth,
-  async (req,res) => {
+  async (req, res) => {
 
-    try{
+    try {
 
       const user =
         req.appUser;
@@ -2403,33 +2438,33 @@ app.post(
         );
 
 
-      if(
+      if (
         !/^[a-fA-F0-9]{64}$/.test(
           txid
         )
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               "Invalid 64-character TRON TXID."
           });
       }
 
 
-      if(
+      if (
         !Number.isFinite(
           amount
         ) ||
         amount <= 0
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               "Invalid deposit amount."
           });
@@ -2446,12 +2481,12 @@ app.post(
         );
 
 
-      if(used){
+      if (used) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               "This TXID has already been used."
           });
@@ -2464,37 +2499,37 @@ app.post(
         );
 
 
-      if(
+      if (
         !transfer ||
         !transfer.confirmed
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               "Confirmed USDT transfer not found."
           });
       }
 
 
-      if(
+      if (
         transfer.to !==
         DEPOSIT_ADDRESS
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               "This transaction was not sent to the Big Money deposit address."
           });
       }
 
 
-      if(
+      if (
         Math.abs(
           Number(
             transfer.amount
@@ -2502,12 +2537,12 @@ app.post(
           amount
         ) >
         0.000001
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               `Amount mismatch. Blockchain shows ${Number(
                 transfer.amount
@@ -2515,6 +2550,10 @@ app.post(
           });
       }
 
+
+      /*
+      Deposit amount is added first.
+      */
 
       user.balance =
         roundNumber(
@@ -2555,7 +2594,7 @@ app.post(
         to:
           transfer.to,
 
-        confirmed:true,
+        confirmed: true,
 
         createdAt:
           nowISO()
@@ -2582,16 +2621,29 @@ app.post(
       let dailyReward = 0;
 
 
-      if(
+      /*
+      Only deposits >= 10 USDT qualify.
+      */
+
+      if (
         amount >=
         QUALIFYING_DEPOSIT
-      ){
+      ) {
+
+        /*
+        Successful referral is counted.
+        No referral points are given.
+        */
 
         referralReward =
           applyReferralReward(
             user
           );
 
+
+        /*
+        5 USDT goes directly to balance.
+        */
 
         dailyReward =
           applyDailyReward(
@@ -2605,7 +2657,7 @@ app.post(
 
       return res.json({
 
-        ok:true,
+        ok: true,
 
         credited:
           amount,
@@ -2624,7 +2676,7 @@ app.post(
 
       });
 
-    }catch(error){
+    } catch (error) {
 
       console.error(
         "Deposit verify error:",
@@ -2634,7 +2686,7 @@ app.post(
       return res
         .status(500)
         .json({
-          ok:false,
+          ok: false,
           message:
             error.message ||
             "Deposit verification failed."
@@ -2654,9 +2706,9 @@ WITHDRAWAL REQUEST
 app.post(
   "/api/withdrawals/request",
   telegramAuth,
-  (req,res) => {
+  (req, res) => {
 
-    try{
+    try {
 
       const user =
         req.appUser;
@@ -2675,33 +2727,33 @@ app.post(
         );
 
 
-      if(
+      if (
         !/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(
           address
         )
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               "Invalid TRON TRC20 address."
           });
       }
 
 
-      if(
+      if (
         !Number.isFinite(
           amount
         ) ||
         amount <= 0
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               "Invalid withdrawal amount."
           });
@@ -2714,32 +2766,32 @@ app.post(
         );
 
 
-      if(
+      if (
         successful <
         REQUIRED_REFERRALS
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               `You need ${REQUIRED_REFERRALS} successful referrals before withdrawal. You currently have ${successful}.`
           });
       }
 
 
-      if(
+      if (
         Number(
           user.balance || 0
         ) <
         amount
-      ){
+      ) {
 
         return res
           .status(400)
           .json({
-            ok:false,
+            ok: false,
             message:
               "Insufficient balance."
           });
@@ -2807,7 +2859,7 @@ app.post(
 
       return res.json({
 
-        ok:true,
+        ok: true,
 
         withdrawalId:
           withdrawal.id,
@@ -2819,7 +2871,7 @@ app.post(
 
       });
 
-    }catch(error){
+    } catch (error) {
 
       console.error(
         "Withdrawal request error:",
@@ -2829,7 +2881,7 @@ app.post(
       return res
         .status(500)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Could not submit withdrawal."
         });
@@ -2848,7 +2900,7 @@ USER WITHDRAWAL HISTORY
 app.get(
   "/api/withdrawals/me",
   telegramAuth,
-  (req,res) => {
+  (req, res) => {
 
     const userId =
       String(
@@ -2865,7 +2917,7 @@ app.get(
             ) === userId
         )
         .sort(
-          (a,b) =>
+          (a, b) =>
             new Date(b.createdAt) -
             new Date(a.createdAt)
         );
@@ -2873,7 +2925,7 @@ app.get(
 
     res.json({
 
-      ok:true,
+      ok: true,
 
       withdrawals
 
@@ -2893,20 +2945,20 @@ function adminAuth(
   req,
   res,
   next
-){
+) {
 
   const telegramUser =
     req.telegramUser;
 
 
-  if(
+  if (
     !telegramUser
-  ){
+  ) {
 
     return res
       .status(401)
       .json({
-        ok:false,
+        ok: false,
         message:
           "Telegram authentication required."
       });
@@ -2919,16 +2971,16 @@ function adminAuth(
     );
 
 
-  if(
+  if (
     !ADMIN_TELEGRAM_IDS.includes(
       id
     )
-  ){
+  ) {
 
     return res
       .status(403)
       .json({
-        ok:false,
+        ok: false,
         message:
           "Admin access denied."
       });
@@ -2951,12 +3003,12 @@ app.get(
   "/api/admin/withdrawals",
   telegramAuth,
   adminAuth,
-  (req,res) => {
+  (req, res) => {
 
     const withdrawals =
       [...db.withdrawals]
         .sort(
-          (a,b) =>
+          (a, b) =>
             new Date(b.createdAt) -
             new Date(a.createdAt)
         );
@@ -2964,9 +3016,222 @@ app.get(
 
     res.json({
 
-      ok:true,
+      ok: true,
 
       withdrawals
+
+    });
+
+  }
+);
+
+
+/*
+=========================================================
+ADMIN TEST CREDIT
+=========================================================
+Adds 10 USDT to a user's balance.
+ONLY ADMIN CAN USE THIS.
+Does NOT create a blockchain deposit.
+Does NOT give daily reward.
+Does NOT count as referral deposit.
+=========================================================
+*/
+
+app.post(
+  "/api/admin/test-credit",
+  telegramAuth,
+  adminAuth,
+  (req, res) => {
+
+    try {
+
+      const targetTelegramUserId =
+        String(
+          req.body?.telegramUserId ||
+          req.body?.userId ||
+          req.body?.targetUserId ||
+          ""
+        ).trim();
+
+
+      if (
+        !targetTelegramUserId
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            ok: false,
+            message:
+              "Target Telegram user ID is required."
+          });
+      }
+
+
+      const user =
+        db.users.find(
+          x =>
+            String(
+              x.telegramUserId
+            ) ===
+            targetTelegramUserId
+        );
+
+
+      if (!user) {
+
+        return res
+          .status(404)
+          .json({
+            ok: false,
+            message:
+              "Target user was not found."
+          });
+      }
+
+
+      const oldBalance =
+        roundNumber(
+          Number(
+            user.balance || 0
+          ),
+          6
+        );
+
+
+      user.balance =
+        roundNumber(
+          oldBalance +
+          TEST_CREDIT_USDT,
+          6
+        );
+
+
+      user.updatedAt =
+        nowISO();
+
+
+      saveDB();
+
+
+      return res.json({
+
+        ok: true,
+
+        message:
+          `Test ${TEST_CREDIT_USDT} USDT added successfully.`,
+
+        telegramUserId:
+          user.telegramUserId,
+
+        username:
+          user.username || "",
+
+        credited:
+          TEST_CREDIT_USDT,
+
+        oldBalance,
+
+        balance:
+          user.balance
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Admin test credit error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          ok: false,
+          message:
+            "Test credit failed."
+        });
+    }
+
+  }
+);
+
+
+/*
+=========================================================
+ADMIN USER BALANCE
+=========================================================
+*/
+
+app.get(
+  "/api/admin/user/:telegramUserId",
+  telegramAuth,
+  adminAuth,
+  (req, res) => {
+
+    const id =
+      String(
+        req.params.telegramUserId
+      );
+
+
+    const user =
+      db.users.find(
+        x =>
+          String(
+            x.telegramUserId
+          ) === id
+      );
+
+
+    if (!user) {
+
+      return res
+        .status(404)
+        .json({
+          ok: false,
+          message:
+            "User not found."
+        });
+    }
+
+
+    return res.json({
+
+      ok: true,
+
+      user: {
+
+        telegramUserId:
+          user.telegramUserId,
+
+        username:
+          user.username || "",
+
+        balance:
+          roundNumber(
+            user.balance || 0,
+            6
+          ),
+
+        points:
+          roundNumber(
+            user.points || 0,
+            2
+          ),
+
+        successfulReferrals:
+          Number(
+            user.successfulReferrals || 0
+          ),
+
+        totalInvited:
+          Number(
+            user.totalInvited || 0
+          )
+
+      }
 
     });
 
@@ -2984,7 +3249,7 @@ app.post(
   "/api/admin/withdrawals/:id/approve",
   telegramAuth,
   adminAuth,
-  (req,res) => {
+  (req, res) => {
 
     const withdrawal =
       db.withdrawals.find(
@@ -2994,27 +3259,27 @@ app.post(
       );
 
 
-    if(!withdrawal){
+    if (!withdrawal) {
 
       return res
         .status(404)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Withdrawal not found."
         });
     }
 
 
-    if(
+    if (
       withdrawal.status !==
       "pending"
-    ){
+    ) {
 
       return res
         .status(400)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Only pending withdrawals can be approved."
         });
@@ -3028,17 +3293,17 @@ app.post(
       ).trim();
 
 
-    if(
+    if (
       paymentTxid &&
       !/^[a-fA-F0-9]{64}$/.test(
         paymentTxid
       )
-    ){
+    ) {
 
       return res
         .status(400)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Invalid payment TXID."
         });
@@ -3062,7 +3327,7 @@ app.post(
 
     res.json({
 
-      ok:true,
+      ok: true,
 
       withdrawal
 
@@ -3082,7 +3347,7 @@ app.post(
   "/api/admin/withdrawals/:id/reject",
   telegramAuth,
   adminAuth,
-  (req,res) => {
+  (req, res) => {
 
     const withdrawal =
       db.withdrawals.find(
@@ -3092,27 +3357,27 @@ app.post(
       );
 
 
-    if(!withdrawal){
+    if (!withdrawal) {
 
       return res
         .status(404)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Withdrawal not found."
         });
     }
 
 
-    if(
+    if (
       withdrawal.status !==
       "pending"
-    ){
+    ) {
 
       return res
         .status(400)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Only pending withdrawals can be rejected."
         });
@@ -3150,7 +3415,7 @@ app.post(
       );
 
 
-    if(user){
+    if (user) {
 
       user.balance =
         roundNumber(
@@ -3174,7 +3439,7 @@ app.post(
 
     res.json({
 
-      ok:true,
+      ok: true,
 
       withdrawal,
 
@@ -3197,7 +3462,7 @@ app.post(
   "/api/admin/withdrawals/:id/txid",
   telegramAuth,
   adminAuth,
-  (req,res) => {
+  (req, res) => {
 
     const withdrawal =
       db.withdrawals.find(
@@ -3207,12 +3472,12 @@ app.post(
       );
 
 
-    if(!withdrawal){
+    if (!withdrawal) {
 
       return res
         .status(404)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Withdrawal not found."
         });
@@ -3226,16 +3491,16 @@ app.post(
       ).trim();
 
 
-    if(
+    if (
       !/^[a-fA-F0-9]{64}$/.test(
         paymentTxid
       )
-    ){
+    ) {
 
       return res
         .status(400)
         .json({
-          ok:false,
+          ok: false,
           message:
             "Invalid payment TXID."
         });
@@ -3246,10 +3511,10 @@ app.post(
       paymentTxid;
 
 
-    if(
+    if (
       withdrawal.status ===
       "pending"
-    ){
+    ) {
 
       withdrawal.status =
         "approved";
@@ -3265,7 +3530,7 @@ app.post(
 
     res.json({
 
-      ok:true,
+      ok: true,
 
       withdrawal
 
@@ -3298,7 +3563,7 @@ app.use(
     res
       .status(500)
       .json({
-        ok:false,
+        ok: false,
         message:
           "Internal server error."
       });
@@ -3322,8 +3587,33 @@ app.listen(
     );
 
     console.log(
+      "Daily reward:",
+      `${DAILY_REWARD_USDT} USDT`
+    );
+
+    console.log(
+      "Qualifying deposit:",
+      `${QUALIFYING_DEPOSIT} USDT`
+    );
+
+    console.log(
+      "Required successful referrals:",
+      REQUIRED_REFERRALS
+    );
+
+    console.log(
+      "Referral points:",
+      REFERRAL_REWARD_POINTS
+    );
+
+    console.log(
       "Point conversion:",
       `1 Point = ${POINT_USDT_RATE} USDT`
+    );
+
+    console.log(
+      "Admin test credit:",
+      `${TEST_CREDIT_USDT} USDT`
     );
 
   }

@@ -1831,118 +1831,175 @@ app.get(
   telegramAuth,
   (req, res) => {
 
-    const requestedId =
-      String(
-        req.params.telegramUserId
+    try {
+
+      const requestedId =
+        String(req.params.telegramUserId || "").trim();
+
+      const authenticatedId =
+        String(req.telegramUser.telegramUserId || "").trim();
+
+      console.log(
+        "ACCOUNT REQUEST:",
+        {
+          requestedId,
+          authenticatedId
+        }
       );
 
-
-    const authenticatedId =
-      String(
-        req.telegramUser.telegramUserId
-      );
-
-
-    if (
-      requestedId !==
-      authenticatedId
-    ) {
-
-      return res
-        .status(403)
-        .json({
+      if (!requestedId) {
+        return res.status(400).json({
           ok: false,
-          message:
-            "Telegram user mismatch."
+          message: "Telegram user ID is missing."
         });
-    }
-
-
-    const user =
-      req.appUser;
-
-
-    const referralLink =
-      `https://t.me/bigmoney2026bot?start=ref_${user.telegramUserId}`;
-
-
-    res.json({
-
-      ok: true,
-
-      user: {
-
-        telegramUserId:
-          user.telegramUserId,
-
-        username:
-          user.username || "",
-
-        balance:
-          roundNumber(
-            user.balance || 0,
-            6
-          ),
-
-        points:
-          roundNumber(
-            user.points || 0,
-            2
-          ),
-
-        referrals:
-          Array.isArray(
-            user.referrals
-          )
-            ? user.referrals.length
-            : 0,
-
-        totalInvited:
-          Number(
-            user.totalInvited || 0
-          ),
-
-        successfulReferrals:
-          Number(
-            user.successfulReferrals || 0
-          ),
-
-        referredBy:
-          user.referredBy ||
-          null,
-
-        referralLink
-
-      },
-
-      referral: {
-
-        referralLink,
-
-        invited:
-          Number(
-            user.totalInvited || 0
-          ),
-
-        successful:
-          Number(
-            user.successfulReferrals || 0
-          ),
-
-        points:
-          roundNumber(
-            user.points || 0,
-            2
-          )
-
       }
 
-    });
+      if (requestedId !== authenticatedId) {
+        return res.status(403).json({
+          ok: false,
+          message: "Telegram user mismatch."
+        });
+      }
+
+      const user = req.appUser;
+
+      if (!user) {
+        return res.status(404).json({
+          ok: false,
+          message: "User account was not found."
+        });
+      }
+
+      /*
+      Make sure old accounts also have valid values.
+      */
+
+      const balance =
+        roundNumber(
+          Number(user.balance || 0),
+          6
+        );
+
+      const points =
+        roundNumber(
+          Number(user.points || 0),
+          2
+        );
+
+      const successfulReferrals =
+        Number(
+          user.successfulReferrals || 0
+        );
+
+      const totalInvited =
+        Number(
+          user.totalInvited || 0
+        );
+
+      const referralLink =
+        `https://t.me/bigmoney2026bot?start=ref_${user.telegramUserId}`;
+
+      /*
+      Save normalized values.
+      */
+
+      user.balance = balance;
+      user.points = points;
+      user.successfulReferrals =
+        successfulReferrals;
+      user.totalInvited =
+        totalInvited;
+      user.updatedAt =
+        nowISO();
+
+      saveDB();
+
+      console.log(
+        "ACCOUNT BALANCE:",
+        {
+          telegramUserId:
+            user.telegramUserId,
+          balance,
+          points,
+          successfulReferrals
+        }
+      );
+
+      return res.json({
+
+        ok: true,
+
+        user: {
+
+          telegramUserId:
+            String(user.telegramUserId),
+
+          username:
+            user.username || "",
+
+          firstName:
+            user.firstName || "",
+
+          lastName:
+            user.lastName || "",
+
+          balance,
+
+          points,
+
+          referrals:
+            Array.isArray(user.referrals)
+              ? user.referrals.length
+              : 0,
+
+          totalInvited,
+
+          successfulReferrals,
+
+          referredBy:
+            user.referredBy || null,
+
+          referralLink
+
+        },
+
+        referral: {
+
+          referralLink,
+
+          invited:
+            totalInvited,
+
+          successful:
+            successfulReferrals,
+
+          points
+
+        }
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "ACCOUNT ERROR:",
+        error
+      );
+
+      return res.status(500).json({
+
+        ok: false,
+
+        message:
+          error.message ||
+          "Could not load account."
+
+      });
+
+    }
 
   }
 );
-
-
 /*
 =========================================================
 REFERRAL

@@ -1524,12 +1524,31 @@ async function loadAccount(){
 
   try{
 
-    const data = await apiFetch(
-      "/api/account/" +
-      encodeURIComponent(
-        tg.initDataUnsafe.user.id
-      )
-    );
+  const telegramId =
+  tg?.initDataUnsafe?.user?.id;
+
+if(!telegramId){
+  throw new Error(
+    "Telegram user ID is not available."
+  );
+}
+
+console.log(
+  "Telegram ID:",
+  telegramId
+);
+
+const data = await apiFetch(
+  "/api/account/" +
+  encodeURIComponent(
+    telegramId
+  )
+);
+
+console.log(
+  "ACCOUNT RESPONSE:",
+  data
+);
 
     currentUser = data.user || null;
     currentReferral = data.referral || null;

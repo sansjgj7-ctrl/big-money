@@ -243,15 +243,25 @@ async function supabaseGetDatabase() {
     `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}` +
     `?id=eq.1&select=id,data,updated_at`;
 
-  const response =
-    await fetch(url, {
-      method: "GET",
-      headers:
-        supabaseHeaders()
-    });
+  let response;
 
-  const text =
-    await response.text();
+try {
+  response = await fetch(url, {
+    method: "GET",
+    headers: supabaseHeaders()
+  });
+} catch (error) {
+  throw new Error(
+    `Supabase GET connection failed: ${error?.message || String(error)}`
+  );
+}
+
+    });
+} catch (error) {
+  throw new Error(
+    `Supabase SAVE connection failed: ${error?.message || String(error)}`
+  );
+}
 
   if (!response.ok) {
     throw new Error(
@@ -292,8 +302,10 @@ async function supabaseSaveDatabase(data) {
   const url =
     `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`;
 
-  const response =
-    await fetch(url, {
+  let response;
+
+try {
+  response = await fetch(url, {
       method: "POST",
 
       headers: {

@@ -7,7 +7,7 @@ const crypto = require("crypto");
 const app = express();
 
 /* =========================================================
-   BASIC SETTINGS
+   CONFIG
 ========================================================= */
 
 const PORT = Number(process.env.PORT || 10000);
@@ -33,7 +33,7 @@ const TELEGRAM_AUTH_MAX_AGE =
 
 
 /* =========================================================
-   DEPOSIT / REWARD SETTINGS
+   BIG MONEY SETTINGS
 ========================================================= */
 
 const MIN_DEPOSIT =
@@ -72,9 +72,6 @@ const USDT_CONTRACT =
   process.env.USDT_CONTRACT ||
   "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
 
-const WITHDRAWAL_SOURCE_ADDRESS =
-  process.env.WITHDRAWAL_SOURCE_ADDRESS || "";
-
 const ADMIN_TELEGRAM_IDS =
   String(process.env.ADMIN_TELEGRAM_IDS || "")
     .split(",")
@@ -88,7 +85,7 @@ const ADMIN_TELEGRAM_IDS =
 
 app.use(
   cors({
-    origin: function(origin, callback) {
+    origin: function (origin, callback) {
 
       if (!origin) {
         return callback(null, true);
@@ -141,21 +138,47 @@ const DATA_FILE =
   path.join(DATA_DIR, "big-money-data.json");
 
 if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(
-    DATA_DIR,
-    {
-      recursive: true
-    }
-  );
+  fs.mkdirSync(DATA_DIR, {
+    recursive: true
+  });
 }
 
 function emptyStore() {
-
   return {
     users: {},
     deposits: [],
     withdrawals: [],
     referrals: []
+  };
+}
+
+function normalizeStore(data) {
+
+  if (!data || typeof data !== "object") {
+    return emptyStore();
+  }
+
+  return {
+    users:
+      data.users &&
+      typeof data.users === "object"
+        ? data.users
+        : {},
+
+    deposits:
+      Array.isArray(data.deposits)
+        ? data.deposits
+        : [],
+
+    withdrawals:
+      Array.isArray(data.withdrawals)
+        ? data.withdrawals
+        : [],
+
+    referrals:
+      Array.isArray(data.referrals)
+        ? data.referrals
+        : []
   };
 }
 
@@ -177,28 +200,9 @@ function loadLocalStore() {
       return emptyStore();
     }
 
-    const parsed =
-      JSON.parse(raw);
-
-    return {
-      users:
-        parsed.users || {},
-
-      deposits:
-        Array.isArray(parsed.deposits)
-          ? parsed.deposits
-          : [],
-
-      withdrawals:
-        Array.isArray(parsed.withdrawals)
-          ? parsed.withdrawals
-          : [],
-
-      referrals:
-        Array.isArray(parsed.referrals)
-          ? parsed.referrals
-          : []
-    };
+    return normalizeStore(
+      JSON.parse(raw)
+    );
 
   } catch (error) {
 
@@ -219,7 +223,7 @@ let storeLock =
 
 function saveLocalStore() {
 
-  storeLock =
+  const job =
     storeLock.then(
       async () => {
 
@@ -241,9 +245,11 @@ function saveLocalStore() {
           DATA_FILE
         );
       }
-    ).catch(
-      error => {
+    );
 
+  storeLock =
+    job.catch(
+      error => {
         console.error(
           "LOCAL DB SAVE ERROR:",
           error.message
@@ -251,7 +257,7 @@ function saveLocalStore() {
       }
     );
 
-  return storeLock;
+  return job;
 }
 
 
@@ -304,7 +310,6 @@ async function supabaseRequest(
         {
           method,
           headers,
-
           body:
             body === null
               ? undefined
@@ -364,75 +369,60 @@ async function loadFromSupabase() {
     const data =
       await supabaseRequest(
         "GET",
-        `/rest/v1/${SUPABASE_TABLE}?select=*`
+        `/rest/v1/${SUPABASE_TABLE}?select=*&limit=1`
       );
 
     if (
       !Array.isArray(data) ||
       data.length === 0
     ) {
+      console.log(
+        "Supabase has no stored data yet."
+      );
       return;
     }
 
     const row =
       data[0];
 
-    if (row && row.store_data) {
+    if (!row || !row.store_data) {
+      return;
+    }
 
-      let remoteStore =
-        row.store_data;
+    let remoteStore =
+      row.store_data;
 
-      if (
-        typeof remoteStore ===
-        "string"
-      ) {
+    if (
+      typeof remoteStore ===
+      "string"
+    ) {
 
-        try {
-          remoteStore =
-            JSON.parse(
-              remoteStore
-            );
-        } catch {}
+      try {
+        remoteStore =
+          JSON.parse(
+            remoteStore
+          );
+      } catch {
+        return;
       }
+    }
 
-      if (
-        remoteStore &&
-        typeof remoteStore ===
-        "object"
-      ) {
+    if (
+      remoteStore &&
+      typeof remoteStore ===
+      "object"
+    ) {
 
-        store = {
-          users:
-            remoteStore.users || {},
-
-          deposits:
-            Array.isArray(
-              remoteStore.deposits
-            )
-              ? remoteStore.deposits
-              : [],
-
-          withdrawals:
-            Array.isArray(
-              remoteStore.withdrawals
-            )
-              ? remoteStore.withdrawals
-              : [],
-
-          referrals:
-            Array.isArray(
-              remoteStore.referrals
-            )
-              ? remoteStore.referrals
-              : []
-        };
-
-        await saveLocalStore();
-
-        console.log(
-          "Supabase store loaded."
+      store =
+        normalizeStore(
+          remoteStore
         );
-      }
+
+      await saveLocalStore();
+
+      console.log(
+        "Supabase store loaded."
+      );
     }
 
   } catch (error) {
@@ -453,10 +443,6 @@ async function saveToSupabase() {
     return;
   }
 
-  const body = {
-    store_data: store
-  };
-
   try {
 
     const existing =
@@ -464,6 +450,10 @@ async function saveToSupabase() {
         "GET",
         `/rest/v1/${SUPABASE_TABLE}?select=id&limit=1`
       );
+
+    const body = {
+      store_data: store
+    };
 
     if (
       Array.isArray(existing) &&
@@ -533,6 +523,13 @@ function makeId(prefix = "id") {
 
 function roundUsdt(value) {
 
+  const number =
+    Number(value);
+
+  if (!Number.isFinite(number)) {
+    return 0;
+  }
+
   const factor =
     Math.pow(
       10,
@@ -541,8 +538,7 @@ function roundUsdt(value) {
 
   return (
     Math.round(
-      Number(value) *
-      factor
+      number * factor
     ) / factor
   );
 }
@@ -560,8 +556,7 @@ function normalizeTxid(txid) {
 
   return String(
     txid || ""
-  )
-    .trim();
+  ).trim();
 }
 
 function isValidTxid(txid) {
@@ -571,12 +566,85 @@ function isValidTxid(txid) {
   );
 }
 
+function parseRawUsdtValue(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return 0;
+  }
+
+  const str =
+    String(value).trim();
+
+  if (!str) {
+    return 0;
+  }
+
+  /*
+    Raw TRC20 USDT normally comes as
+    an integer string such as 10000000.
+  */
+
+  if (/^\d+$/.test(str)) {
+
+    try {
+
+      const raw =
+        BigInt(str);
+
+      const divisor =
+        BigInt(
+          10 ** USDT_DECIMALS
+        );
+
+      const whole =
+        raw / divisor;
+
+      const fraction =
+        raw % divisor;
+
+      return Number(
+        whole
+      ) +
+      Number(
+        fraction
+      ) /
+      Number(
+        divisor
+      );
+
+    } catch {
+      return 0;
+    }
+  }
+
+  /*
+    If TronGrid returns an already
+    decimal amount such as 10.5.
+  */
+
+  const decimal =
+    Number(str);
+
+  if (
+    Number.isFinite(decimal)
+  ) {
+    return decimal;
+  }
+
+  return 0;
+}
+
 
 /* =========================================================
    TELEGRAM AUTH
 ========================================================= */
 
-function parseTelegramInitData(initData) {
+function parseTelegramInitData(
+  initData
+) {
 
   const params =
     new URLSearchParams(
@@ -595,7 +663,9 @@ function parseTelegramInitData(initData) {
   return data;
 }
 
-function validateTelegramInitData(initData) {
+function validateTelegramInitData(
+  initData
+) {
 
   if (!TELEGRAM_BOT_TOKEN) {
 
@@ -790,7 +860,7 @@ function validateTelegramInitData(initData) {
 
 
 /* =========================================================
-   USER MANAGEMENT
+   USERS
 ========================================================= */
 
 function getOrCreateUser(
@@ -847,6 +917,9 @@ function getOrCreateUser(
       referralCount:
         0,
 
+      successfulReferrals:
+        0,
+
       createdAt:
         nowIso(),
 
@@ -861,6 +934,11 @@ function getOrCreateUser(
       user;
 
   } else {
+
+    user.telegramId =
+      user.telegramId ||
+      user.id ||
+      userId;
 
     user.username =
       telegramUser.username ||
@@ -895,6 +973,11 @@ function getOrCreateUser(
     user.referralCount =
       Number(
         user.referralCount || 0
+      );
+
+    user.successfulReferrals =
+      Number(
+        user.successfulReferrals || 0
       );
 
     user.updatedAt =
@@ -1029,7 +1112,8 @@ function authMiddleware(
 
     return res.status(401).json({
 
-      ok: false,
+      ok:
+        false,
 
       error:
         result.error
@@ -1076,7 +1160,8 @@ function adminMiddleware(
 
     return res.status(403).json({
 
-      ok: false,
+      ok:
+        false,
 
       error:
         "Admin access required"
@@ -1088,7 +1173,7 @@ function adminMiddleware(
 
 
 /* =========================================================
-   TRONGRID REQUEST
+   TRONGRID
 ========================================================= */
 
 async function tronGridRequest(
@@ -1164,7 +1249,7 @@ async function tronGridRequest(
 
 
 /* =========================================================
-   GET TRANSACTION
+   TRON TRANSACTION
 ========================================================= */
 
 async function getTransaction(
@@ -1175,7 +1260,6 @@ async function getTransaction(
     `/wallet/gettransactionbyid`,
     {
       method: "POST",
-
       body:
         JSON.stringify({
           value: txid
@@ -1183,11 +1267,6 @@ async function getTransaction(
     }
   );
 }
-
-
-/* =========================================================
-   GET TRANSACTION INFO / RECEIPT
-========================================================= */
 
 async function getTransactionInfo(
   txid
@@ -1197,7 +1276,6 @@ async function getTransactionInfo(
     `/wallet/gettransactioninfobyid`,
     {
       method: "POST",
-
       body:
         JSON.stringify({
           value: txid
@@ -1215,10 +1293,6 @@ async function getConfirmedUsdtTransfers(
   txid
 ) {
 
-  /*
-    First check the transaction itself.
-  */
-
   let transaction;
 
   try {
@@ -1231,17 +1305,12 @@ async function getConfirmedUsdtTransfers(
   } catch (error) {
 
     console.error(
-      "TRANSACTION READ ERROR:",
+      "TRANSACTION ERROR:",
       error.message
     );
 
     return [];
   }
-
-
-  /*
-    Transaction must exist.
-  */
 
   if (
     !transaction ||
@@ -1250,12 +1319,29 @@ async function getConfirmedUsdtTransfers(
     return [];
   }
 
-
   /*
-    Check transaction info / receipt.
+    Check transaction result.
   */
 
-  let transactionInfo;
+  const contractRet =
+    transaction?.ret?.[0]?.contractRet;
+
+  if (
+    contractRet &&
+    String(
+      contractRet
+    ).toUpperCase() !==
+    "SUCCESS"
+  ) {
+
+    return [];
+  }
+
+  /*
+    Check receipt.
+  */
+
+  let transactionInfo = null;
 
   try {
 
@@ -1270,15 +1356,7 @@ async function getConfirmedUsdtTransfers(
       "TRANSACTION INFO ERROR:",
       error.message
     );
-
-    transactionInfo = null;
   }
-
-
-  /*
-    If receipt exists and contract result
-    is not successful, reject.
-  */
 
   const receiptResult =
     transactionInfo?.receipt?.result;
@@ -1293,7 +1371,6 @@ async function getConfirmedUsdtTransfers(
 
     return [];
   }
-
 
   /*
     Read confirmed events.
@@ -1315,13 +1392,12 @@ async function getConfirmedUsdtTransfers(
   } catch (error) {
 
     console.error(
-      "EVENT READ ERROR:",
+      "EVENT ERROR:",
       error.message
     );
 
     return [];
   }
-
 
   const events =
     Array.isArray(data?.data)
@@ -1330,10 +1406,8 @@ async function getConfirmedUsdtTransfers(
 
   const transfers = [];
 
-
   for (
-    const event
-    of events
+    const event of events
   ) {
 
     if (
@@ -1345,18 +1419,11 @@ async function getConfirmedUsdtTransfers(
       continue;
     }
 
-
-    /*
-      TronGrid can expose the contract
-      address in different fields.
-    */
-
     const contract =
       event?.address ||
       event?.contract_address ||
       event?.result?.contract_address ||
       "";
-
 
     if (
       normalizeAddress(
@@ -1369,82 +1436,37 @@ async function getConfirmedUsdtTransfers(
       continue;
     }
 
-
     const result =
       event.result || {};
-
 
     const from =
       result.from ||
       event.from ||
       "";
 
-
     const to =
       result.to ||
       event.to ||
       "";
 
-
-    /*
-      USDT has 6 decimals.
-    */
-
-    let rawValue =
+    const rawValue =
       result.value ??
       event.value ??
       0;
 
-
-    /*
-      Some TronGrid responses can
-      return the value as a decimal string.
-    */
-
-    let numericRaw;
-
+    const amount =
+      roundUsdt(
+        parseRawUsdtValue(
+          rawValue
+        )
+      );
 
     if (
-      typeof rawValue ===
-      "string" &&
-      rawValue.includes(".")
-    ) {
-
-      numericRaw =
-        Number(
-          rawValue
-        ) *
-        Math.pow(
-          10,
-          USDT_DECIMALS
-        );
-
-    } else {
-
-      numericRaw =
-        Number(
-          rawValue
-        );
-    }
-
-
-    if (
-      !Number.isFinite(
-        numericRaw
-      ) ||
-      numericRaw <= 0
+      !Number.isFinite(amount) ||
+      amount <= 0
     ) {
       continue;
     }
-
-
-    const amount =
-      numericRaw /
-      Math.pow(
-        10,
-        USDT_DECIMALS
-      );
-
 
     transfers.push({
 
@@ -1455,22 +1477,18 @@ async function getConfirmedUsdtTransfers(
       to,
 
       rawValue:
-        numericRaw,
+        String(rawValue),
 
-      amount:
-        roundUsdt(
-          amount
-        )
+      amount
     });
   }
-
 
   return transfers;
 }
 
 
 /* =========================================================
-   VERIFY TXID
+   VERIFY BLOCKCHAIN TXID
 ========================================================= */
 
 async function verifyTransaction(
@@ -1482,7 +1500,6 @@ async function verifyTransaction(
       txid
     );
 
-
   if (
     !isValidTxid(
       txid
@@ -1491,13 +1508,13 @@ async function verifyTransaction(
 
     return {
 
-      ok: false,
+      ok:
+        false,
 
       error:
         "TXID must contain 64 hexadecimal characters"
     };
   }
-
 
   let transfers;
 
@@ -1517,18 +1534,13 @@ async function verifyTransaction(
 
     return {
 
-      ok: false,
+      ok:
+        false,
 
       error:
         "Could not read blockchain transaction"
     };
   }
-
-
-  /*
-    Only transfers TO Big Money deposit
-    address are accepted.
-  */
 
   const matchingTransfers =
     transfers.filter(
@@ -1541,7 +1553,6 @@ async function verifyTransaction(
         )
     );
 
-
   if (
     matchingTransfers.length ===
     0
@@ -1549,36 +1560,26 @@ async function verifyTransaction(
 
     return {
 
-      ok: false,
+      ok:
+        false,
 
       error:
         "No confirmed USDT transfer to the Big Money deposit address was found"
     };
   }
 
-
-  /*
-    Calculate actual blockchain amount.
-  */
-
   const amount =
     roundUsdt(
 
       matchingTransfers.reduce(
-        (sum, transfer) => {
-
-          return (
-            sum +
-            Number(
-              transfer.amount || 0
-            )
-          );
-
-        },
+        (sum, transfer) =>
+          sum +
+          Number(
+            transfer.amount || 0
+          ),
         0
       )
     );
-
 
   if (
     !Number.isFinite(amount) ||
@@ -1588,7 +1589,8 @@ async function verifyTransaction(
 
     return {
 
-      ok: false,
+      ok:
+        false,
 
       error:
         `Deposit amount is below minimum ${MIN_DEPOSIT} USDT`,
@@ -1597,10 +1599,10 @@ async function verifyTransaction(
     };
   }
 
-
   return {
 
-    ok: true,
+    ok:
+      true,
 
     txid,
 
@@ -1623,27 +1625,21 @@ function getConfirmedDepositTotal(
   return roundUsdt(
 
     store.deposits
-
       .filter(
         deposit =>
-
           String(
             deposit.userId
           ) ===
           String(userId) &&
-
           deposit.status ===
           "confirmed"
       )
-
       .reduce(
         (sum, deposit) =>
-
           sum +
           Number(
             deposit.amount || 0
           ),
-
         0
       )
   );
@@ -1671,7 +1667,6 @@ function getDailyRewardStatus(
         total
       )
     );
-
 
   if (
     total <
@@ -1709,14 +1704,12 @@ function getDailyRewardStatus(
     };
   }
 
-
   const last =
     user.lastDailyRewardAt
       ? new Date(
           user.lastDailyRewardAt
         ).getTime()
       : 0;
-
 
   if (!last) {
 
@@ -1751,11 +1744,9 @@ function getDailyRewardStatus(
     };
   }
 
-
   const next =
     last +
     DAILY_REWARD_INTERVAL_MS;
-
 
   const remainingMs =
     Math.max(
@@ -1763,7 +1754,6 @@ function getDailyRewardStatus(
       next -
       Date.now()
     );
-
 
   return {
 
@@ -1802,7 +1792,7 @@ function getDailyRewardStatus(
 
 
 /* =========================================================
-   ACCOUNT DATA
+   ACCOUNT
 ========================================================= */
 
 function accountData(
@@ -1814,18 +1804,30 @@ function accountData(
       user.id
     );
 
-  const reward =
+  const dailyReward =
     getDailyRewardStatus(
       user
+    );
+
+  const balance =
+    roundUsdt(
+      Number(
+        user.balance || 0
+      )
     );
 
   return {
 
     id:
-      user.id,
+      String(
+        user.id
+      ),
 
     telegramId:
-      user.telegramId,
+      String(
+        user.telegramId ||
+        user.id
+      ),
 
     username:
       user.username || "",
@@ -1836,12 +1838,7 @@ function accountData(
     lastName:
       user.lastName || "",
 
-    balance:
-      roundUsdt(
-        Number(
-          user.balance || 0
-        )
-      ),
+    balance,
 
     points:
       Number(
@@ -1856,6 +1853,11 @@ function accountData(
         user.referralCount || 0
       ),
 
+    successfulReferrals:
+      Number(
+        user.successfulReferrals || 0
+      ),
+
     referredBy:
       user.referredBy,
 
@@ -1865,10 +1867,9 @@ function accountData(
       QUALIFYING_DEPOSIT,
 
     remainingToQualify:
-      reward.remainingToQualify,
+      dailyReward.remainingToQualify,
 
-    dailyReward:
-      reward
+    dailyReward
   };
 }
 
@@ -1893,7 +1894,7 @@ app.get(
         "TRON TRC20",
 
       version:
-        "deposit-txid-v7",
+        "deposit-txid-v8",
 
       minDeposit:
         MIN_DEPOSIT,
@@ -1931,7 +1932,7 @@ app.get(
         "TRON TRC20",
 
       version:
-        "deposit-txid-v7",
+        "deposit-txid-v8",
 
       minDeposit:
         MIN_DEPOSIT,
@@ -1949,7 +1950,13 @@ app.get(
         DEPOSIT_ADDRESS,
 
       usdtContract:
-        USDT_CONTRACT
+        USDT_CONTRACT,
+
+      supabase:
+        Boolean(
+          SUPABASE_URL &&
+          SUPABASE_SECRET_KEY
+        )
     });
   }
 );
@@ -2009,7 +2016,7 @@ app.get(
 
 
 /* =========================================================
-   ACCOUNT
+   ACCOUNT RESPONSE
 ========================================================= */
 
 async function sendAccountResponse(
@@ -2034,6 +2041,9 @@ async function sendAccountResponse(
       });
     }
 
+    /*
+      Normalize stored values.
+    */
 
     user.balance =
       roundUsdt(
@@ -2052,18 +2062,22 @@ async function sendAccountResponse(
         user.referralCount || 0
       );
 
-    user.updatedAt =
-      nowIso();
-
-
-    await saveStore();
-
+    user.successfulReferrals =
+      Number(
+        user.successfulReferrals || 0
+      );
 
     const account =
       accountData(
         user
       );
 
+    await saveStore();
+
+    /*
+      Return balance in several places
+      so frontend can read any standard form.
+    */
 
     return res.json({
 
@@ -2071,6 +2085,8 @@ async function sendAccountResponse(
         true,
 
       account,
+
+      user: account,
 
       balance:
         account.balance,
@@ -2082,9 +2098,7 @@ async function sendAccountResponse(
         account.referralCount,
 
       successfulReferrals:
-        Number(
-          user.successfulReferrals || 0
-        ),
+        account.successfulReferrals,
 
       totalDeposited:
         account.totalDeposited,
@@ -2141,7 +2155,9 @@ app.get(
       profile: {
 
         telegramId:
-          req.user.telegramId,
+          String(
+            req.user.telegramId
+          ),
 
         username:
           req.user.username || "",
@@ -2160,10 +2176,14 @@ app.get(
           `?start=${req.user.referralCode}`,
 
         referralCount:
-          req.user.referralCount || 0,
+          Number(
+            req.user.referralCount || 0
+          ),
 
         points:
-          req.user.points || 0
+          Number(
+            req.user.points || 0
+          )
       }
     });
   }
@@ -2239,11 +2259,9 @@ app.post(
 
     req.user.balance =
       roundUsdt(
-
         Number(
           req.user.balance || 0
         ) +
-
         DAILY_REWARD_USDT
       );
 
@@ -2312,6 +2330,12 @@ app.post(
       });
     }
 
+    /*
+      IMPORTANT:
+      This endpoint NEVER increases balance.
+      Only TXID verification can increase balance.
+    */
+
     const deposit = {
 
       id:
@@ -2321,9 +2345,7 @@ app.post(
         req.user.id,
 
       amount:
-        roundUsdt(
-          requestedAmount
-        ),
+        0,
 
       requestedAmount:
         roundUsdt(
@@ -2360,10 +2382,13 @@ app.post(
           deposit.id,
 
         amount:
-          deposit.amount,
+          0,
+
+        requestedAmount:
+          deposit.requestedAmount,
 
         status:
-          deposit.status,
+          "pending",
 
         depositAddress:
           DEPOSIT_ADDRESS
@@ -2371,6 +2396,32 @@ app.post(
     });
   }
 );
+
+
+/* =========================================================
+   DEPOSIT LOCK
+========================================================= */
+
+let depositProcessingLock =
+  Promise.resolve();
+
+function withDepositLock(
+  task
+) {
+
+  const job =
+    depositProcessingLock.then(
+      task,
+      task
+    );
+
+  depositProcessingLock =
+    job.catch(
+      () => {}
+    );
+
+  return job;
+}
 
 
 /* =========================================================
@@ -2394,7 +2445,6 @@ async function processDeposit(
       amount
     );
 
-
   if (
     !isValidTxid(
       txid
@@ -2410,7 +2460,6 @@ async function processDeposit(
         "Invalid TXID"
     };
   }
-
 
   if (
     !Number.isFinite(
@@ -2430,9 +2479,8 @@ async function processDeposit(
     };
   }
 
-
   /*
-    NEVER credit the same TXID twice.
+    Check TXID before doing anything.
   */
 
   const existing =
@@ -2444,8 +2492,11 @@ async function processDeposit(
         txid.toLowerCase()
     );
 
-
   if (existing) {
+
+    /*
+      TXID already belongs to another user.
+    */
 
     if (
       String(
@@ -2464,52 +2515,58 @@ async function processDeposit(
       };
     }
 
+    /*
+      Already credited.
+    */
 
-    return {
+    if (
+      existing.status ===
+      "confirmed"
+    ) {
 
-      ok:
-        true,
+      return {
 
-      alreadyProcessed:
-        true,
+        ok:
+          true,
 
-      amount:
-        roundUsdt(
-          existing.amount
-        ),
+        alreadyProcessed:
+          true,
 
-      balance:
-        roundUsdt(
-          user.balance
-        ),
+        amount:
+          roundUsdt(
+            existing.amount
+          ),
 
-      deposit:
-        existing
-    };
+        balance:
+          roundUsdt(
+            user.balance
+          ),
+
+        deposit:
+          existing
+      };
+    }
   }
 
-
   /*
-    Find user's pending deposit.
+    Find an existing pending deposit
+    belonging to this user.
   */
 
   let deposit =
+    existing ||
     store.deposits.find(
       d =>
-
         String(
           d.userId
         ) ===
         String(
           user.id
         ) &&
-
         d.status ===
         "pending" &&
-
         !d.txid
     );
-
 
   if (!deposit) {
 
@@ -2545,17 +2602,17 @@ async function processDeposit(
     );
   }
 
-
   /*
-    ACTUAL blockchain amount.
+    Actual amount from blockchain.
   */
 
   deposit.amount =
     amount;
 
   deposit.requestedAmount =
-    deposit.requestedAmount ||
-    amount;
+    Number(
+      deposit.requestedAmount || amount
+    );
 
   deposit.txid =
     txid;
@@ -2573,47 +2630,54 @@ async function processDeposit(
     blockchainData ||
     null;
 
-
   /*
-    THIS IS WHERE BALANCE INCREASES.
+    Increase balance exactly once.
   */
 
   user.balance =
     roundUsdt(
-
       Number(
         user.balance || 0
       ) +
-
       amount
     );
 
   user.updatedAt =
     nowIso();
 
-
-  /*
-    SAVE IMMEDIATELY.
-  */
-
   await saveStore();
 
-
   console.log(
-    "DEPOSIT CREDITED:",
-    JSON.stringify({
-      userId:
-        user.id,
-
-      txid,
-
-      amount,
-
-      balance:
-        user.balance
-    })
+    "======================================"
   );
 
+  console.log(
+    "DEPOSIT CREDITED"
+  );
+
+  console.log(
+    "USER ID:",
+    user.id
+  );
+
+  console.log(
+    "TXID:",
+    txid
+  );
+
+  console.log(
+    "AMOUNT:",
+    amount
+  );
+
+  console.log(
+    "NEW BALANCE:",
+    user.balance
+  );
+
+  console.log(
+    "======================================"
+  );
 
   return {
 
@@ -2636,7 +2700,7 @@ async function processDeposit(
 
 
 /* =========================================================
-   VERIFY DEPOSIT BY TXID
+   VERIFY DEPOSIT
 ========================================================= */
 
 app.post(
@@ -2644,154 +2708,172 @@ app.post(
   authMiddleware,
   async (req, res) => {
 
-    const txid =
-      normalizeTxid(
-        req.body?.txid
-      );
+    try {
 
+      const txid =
+        normalizeTxid(
+          req.body?.txid
+        );
 
-    if (!txid) {
+      if (!txid) {
 
-      return res.status(400).json({
+        return res.status(400).json({
 
-        ok:
-          false,
+          ok:
+            false,
 
-        error:
-          "Please enter TXID"
-      });
-    }
+          error:
+            "Please enter TXID"
+        });
+      }
 
+      if (
+        !isValidTxid(
+          txid
+        )
+      ) {
 
-    if (
-      !isValidTxid(
-        txid
-      )
-    ) {
+        return res.status(400).json({
 
-      return res.status(400).json({
+          ok:
+            false,
 
-        ok:
-          false,
-
-        error:
-          "TXID must contain 64 hexadecimal characters"
-      });
-    }
-
-
-    console.log(
-      "VERIFYING TXID:",
-      txid
-    );
-
-
-    const verification =
-      await verifyTransaction(
-        txid
-      );
-
-
-    if (!verification.ok) {
+          error:
+            "TXID must contain 64 hexadecimal characters"
+        });
+      }
 
       console.log(
-        "TXID REJECTED:",
-        txid,
-        verification.error
+        "VERIFYING TXID:",
+        txid
       );
 
-      return res.status(400).json({
+      /*
+        Verify blockchain first.
+      */
+
+      const verification =
+        await verifyTransaction(
+          txid
+        );
+
+      if (!verification.ok) {
+
+        console.log(
+          "TXID REJECTED:",
+          txid,
+          verification.error
+        );
+
+        return res.status(400).json({
+
+          ok:
+            false,
+
+          error:
+            verification.error,
+
+          amount:
+            verification.amount ||
+            0
+        });
+      }
+
+      /*
+        Lock prevents two simultaneous
+        requests from crediting the same TXID.
+      */
+
+      const result =
+        await withDepositLock(
+          () =>
+            processDeposit(
+              req.user,
+              txid,
+              verification.amount,
+              {
+                transfers:
+                  verification.transfers,
+
+                verifiedAt:
+                  nowIso()
+              }
+            )
+        );
+
+      if (!result.ok) {
+
+        return res.status(400).json({
+
+          ok:
+            false,
+
+          error:
+            result.error
+        });
+      }
+
+      const rewardStatus =
+        getDailyRewardStatus(
+          req.user
+        );
+
+      return res.json({
 
         ok:
-          false,
+          true,
 
-        error:
-          verification.error,
+        message:
+
+          result.alreadyProcessed
+            ? "This deposit was already processed"
+            : "Deposit confirmed successfully",
+
+        txid,
 
         amount:
-          verification.amount ||
-          0
+          result.amount,
+
+        balance:
+          result.balance,
+
+        accountBalance:
+          result.balance,
+
+        totalDeposited:
+          getConfirmedDepositTotal(
+            req.user.id
+          ),
+
+        dailyReward:
+          rewardStatus,
+
+        deposit:
+          result.deposit
       });
-    }
 
+    } catch (error) {
 
-    const result =
-      await processDeposit(
-
-        req.user,
-
-        txid,
-
-        verification.amount,
-
-        {
-
-          transfers:
-            verification.transfers,
-
-          verifiedAt:
-            nowIso()
-        }
+      console.error(
+        "DEPOSIT VERIFY ERROR:",
+        error.message
       );
 
-
-    if (!result.ok) {
-
-      return res.status(400).json({
+      return res.status(500).json({
 
         ok:
           false,
 
         error:
-          result.error
+          "Deposit verification failed"
       });
     }
-
-
-    const rewardStatus =
-      getDailyRewardStatus(
-        req.user
-      );
-
-
-    res.json({
-
-      ok:
-        true,
-
-      message:
-
-        result.alreadyProcessed
-
-          ? "This deposit was already processed"
-
-          : "Deposit confirmed successfully",
-
-      txid,
-
-      amount:
-        result.amount,
-
-      balance:
-        result.balance,
-
-      totalDeposited:
-        getConfirmedDepositTotal(
-          req.user.id
-        ),
-
-      dailyReward:
-        rewardStatus,
-
-      deposit:
-        result.deposit
-    });
   }
 );
 
 
 /* =========================================================
-   CHECK STORED DEPOSITS
+   CHECK DEPOSITS
 ========================================================= */
 
 app.get(
@@ -2830,6 +2912,11 @@ app.get(
       totalDeposited:
         getConfirmedDepositTotal(
           req.user.id
+        ),
+
+      balance:
+        roundUsdt(
+          req.user.balance
         )
     });
   }
@@ -2882,7 +2969,6 @@ app.get(
           })
         );
 
-
     const withdrawals =
       store.withdrawals
         .filter(
@@ -2924,13 +3010,9 @@ app.get(
           })
         );
 
-
     const transactions = [
-
       ...deposits,
-
       ...withdrawals
-
     ].sort(
       (a, b) =>
         new Date(
@@ -2940,7 +3022,6 @@ app.get(
           a.createdAt
         )
     );
-
 
     res.json({
 
@@ -2974,7 +3055,6 @@ app.post(
         req.body?.address || ""
       ).trim();
 
-
     if (
       !Number.isFinite(
         amount
@@ -2993,7 +3073,6 @@ app.post(
       });
     }
 
-
     if (!address) {
 
       return res.status(400).json({
@@ -3005,7 +3084,6 @@ app.post(
           "Withdrawal address is required"
       });
     }
-
 
     if (
       Number(
@@ -3024,20 +3102,16 @@ app.post(
       });
     }
 
-
     req.user.balance =
       roundUsdt(
-
         Number(
           req.user.balance
         ) -
         amount
       );
 
-
     req.user.updatedAt =
       nowIso();
-
 
     const withdrawal = {
 
@@ -3064,14 +3138,11 @@ app.post(
         nowIso()
     };
 
-
     store.withdrawals.push(
       withdrawal
     );
 
-
     await saveStore();
-
 
     res.json({
 
@@ -3093,7 +3164,7 @@ app.post(
 
 
 /* =========================================================
-   ADMIN
+   ADMIN USERS
 ========================================================= */
 
 app.get(
@@ -3115,6 +3186,11 @@ app.get(
   }
 );
 
+
+/* =========================================================
+   ADMIN DEPOSITS
+========================================================= */
+
 app.get(
   "/api/admin/deposits",
   authMiddleware,
@@ -3131,6 +3207,11 @@ app.get(
     });
   }
 );
+
+
+/* =========================================================
+   ADMIN WITHDRAWALS
+========================================================= */
 
 app.get(
   "/api/admin/withdrawals",
@@ -3246,7 +3327,6 @@ app.post(
       });
     }
 
-
     if (
       withdrawal.status ===
       "pending"
@@ -3263,11 +3343,9 @@ app.post(
 
         user.balance =
           roundUsdt(
-
             Number(
               user.balance || 0
             ) +
-
             Number(
               withdrawal.amount || 0
             )
@@ -3278,7 +3356,6 @@ app.post(
       }
     }
 
-
     withdrawal.status =
       "rejected";
 
@@ -3288,9 +3365,7 @@ app.post(
     withdrawal.rejectedAt =
       nowIso();
 
-
     await saveStore();
-
 
     res.json({
 
@@ -3317,20 +3392,16 @@ async function scanPendingDeposits() {
         d.txid
     );
 
-
   if (!pending.length) {
     return;
   }
-
 
   console.log(
     `Checking ${pending.length} pending deposits...`
   );
 
-
   for (
-    const deposit
-    of pending
+    const deposit of pending
   ) {
 
     try {
@@ -3340,13 +3411,11 @@ async function scanPendingDeposits() {
           deposit.txid
         );
 
-
       if (
         !verification.ok
       ) {
         continue;
       }
-
 
       const user =
         store.users[
@@ -3355,38 +3424,27 @@ async function scanPendingDeposits() {
           )
         ];
 
-
       if (!user) {
         continue;
       }
 
+      await withDepositLock(
+        () =>
+          processDeposit(
+            user,
+            deposit.txid,
+            verification.amount,
+            {
+              transfers:
+                verification.transfers,
 
-      await processDeposit(
+              scanner:
+                true,
 
-        user,
-
-        deposit.txid,
-
-        verification.amount,
-
-        {
-
-          transfers:
-            verification.transfers,
-
-          scanner:
-            true,
-
-          verifiedAt:
-            nowIso()
-        }
-      );
-
-
-      console.log(
-        "Pending deposit confirmed:",
-        deposit.txid,
-        verification.amount
+              verifiedAt:
+                nowIso()
+            }
+          )
       );
 
     } catch (error) {
@@ -3401,13 +3459,12 @@ async function scanPendingDeposits() {
 
 
 /* =========================================================
-   START SERVER
+   START
 ========================================================= */
 
 async function startServer() {
 
   await loadFromSupabase();
-
 
   app.listen(
     PORT,
@@ -3450,10 +3507,6 @@ async function startServer() {
       );
 
       console.log(
-        "DAILY REWARD INTERVAL: 24 HOURS"
-      );
-
-      console.log(
         `SUPABASE: ${
           SUPABASE_URL
             ? "ENABLED"
@@ -3466,7 +3519,6 @@ async function startServer() {
       );
     }
   );
-
 
   /*
     Check pending TXID deposits
@@ -3491,6 +3543,5 @@ async function startServer() {
     15000
   );
 }
-
 
 startServer();

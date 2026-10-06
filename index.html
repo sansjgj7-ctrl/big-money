@@ -245,10 +245,7 @@ color:#79ffa9;font-size:9px;font-weight:900
 .divider{height:1px;background:rgba(100,255,150,.06);margin:14px 0}
 
 .profile-header{
-display:flex;
-align-items:center;
-gap:14px;
-padding:4px 0 8px
+display:flex;align-items:center;gap:14px;padding:4px 0 8px
 }
 
 .profile-avatar{
@@ -272,7 +269,6 @@ gap:15px;padding:12px 0;border-bottom:1px solid rgba(100,255,150,.06)
 }
 
 .info-row:last-child{border-bottom:0}
-
 .info-label{color:#82998b;font-size:11px}
 
 .info-value{
@@ -282,6 +278,13 @@ text-align:right;word-break:break-all
 
 .ref-code-box{display:flex;gap:8px;align-items:center}
 .ref-code-box input{margin:0;font-size:11px}
+
+.txid-box{
+padding:12px;border-radius:14px;
+background:rgba(5,20,12,.65);
+border:1px solid rgba(108,255,157,.08);
+margin-top:10px
+}
 
 @media(max-width:370px){
 .balance{font-size:33px}
@@ -520,9 +523,8 @@ alt="Deposit QR">
 
 Send <b class="green">USDT only on TRON TRC20</b>.
 
-A confirmed deposit of at least
-<b class="green">10 USDT</b>
-also qualifies for the daily reward condition.
+After sending, paste your <b class="green">TXID</b> below.
+The blockchain amount will be detected automatically.
 
 </div>
 
@@ -534,43 +536,49 @@ Transaction ID (TXID)
 id="txid"
 type="text"
 maxlength="64"
-placeholder="64-character TRON TXID"
-autocomplete="off">
+placeholder="Paste your 64-character TRON TXID"
+autocomplete="off"
+spellcheck="false">
 
 <button
 id="verifyBtn"
 class="primary"
 onclick="verifyDeposit()">
-Verify Deposit
+Verify Blockchain Deposit
 </button>
 
 <button
 class="secondary"
 style="margin-top:9px"
 onclick="checkBlockchain()">
-Check Blockchain
+Check My Deposits
 </button>
+
+<div
+id="depositResult"
+class="txid-box hidden">
+</div>
 
 </div>
 
 <div class="card">
 
 <div class="section-title">
-Deposit Rules
+How Deposit Verification Works
 </div>
 
 <div class="feature" style="margin-bottom:14px">
 
-<div class="feature-icon">💵</div>
+<div class="feature-icon">1</div>
 
 <div>
 
 <div class="feature-title">
-Minimum: 5 USDT
+Send USDT
 </div>
 
 <div class="feature-text">
-Deposits from 5 USDT can be submitted for blockchain verification.
+Send USDT using the TRON TRC20 network to the address shown above.
 </div>
 
 </div>
@@ -579,16 +587,34 @@ Deposits from 5 USDT can be submitted for blockchain verification.
 
 <div class="feature" style="margin-bottom:14px">
 
-<div class="feature-icon">🎁</div>
+<div class="feature-icon">2</div>
 
 <div>
 
 <div class="feature-title">
-Reward threshold: 10 USDT
+Paste TXID
 </div>
 
 <div class="feature-text">
-A confirmed deposit of 10 USDT or more qualifies for the daily reward condition.
+Copy the transaction ID from your wallet and paste it into the TXID box.
+</div>
+
+</div>
+
+</div>
+
+<div class="feature" style="margin-bottom:14px">
+
+<div class="feature-icon">3</div>
+
+<div>
+
+<div class="feature-title">
+Blockchain Verification
+</div>
+
+<div class="feature-text">
+Big Money checks the confirmed TRON blockchain transaction and the official USDT contract.
 </div>
 
 </div>
@@ -597,17 +623,16 @@ A confirmed deposit of 10 USDT or more qualifies for the daily reward condition.
 
 <div class="feature">
 
-<div class="feature-icon">🛡️</div>
+<div class="feature-icon">4</div>
 
 <div>
 
 <div class="feature-title">
-Verify before crediting
+Automatic Credit
 </div>
 
 <div class="feature-text">
-The server checks the official USDT contract, recipient address,
-transaction status and Transfer event.
+The actual USDT amount found on the blockchain is credited to your Big Money balance.
 </div>
 
 </div>
@@ -1162,10 +1187,7 @@ id="nav-home"
 class="nav-btn active"
 onclick="showPage('home')">
 
-<span class="nav-icon">
-🏠
-</span>
-
+<span class="nav-icon">🏠</span>
 Home
 
 </button>
@@ -1175,10 +1197,7 @@ id="nav-deposit"
 class="nav-btn"
 onclick="showPage('deposit')">
 
-<span class="nav-icon">
-💰
-</span>
-
+<span class="nav-icon">💰</span>
 Deposit
 
 </button>
@@ -1188,10 +1207,7 @@ id="nav-withdraw"
 class="nav-btn"
 onclick="showPage('withdraw')">
 
-<span class="nav-icon">
-↗️
-</span>
-
+<span class="nav-icon">↗️</span>
 Withdraw
 
 </button>
@@ -1201,10 +1217,7 @@ id="nav-referral"
 class="nav-btn"
 onclick="showPage('referral')">
 
-<span class="nav-icon">
-👥
-</span>
-
+<span class="nav-icon">👥</span>
 Referral
 
 </button>
@@ -1214,10 +1227,7 @@ id="nav-profile"
 class="nav-btn"
 onclick="showPage('profile')">
 
-<span class="nav-icon">
-👤
-</span>
-
+<span class="nav-icon">👤</span>
 Profile
 
 </button>
@@ -1233,8 +1243,7 @@ Profile
 
 const API="https://big-money.onrender.com";
 
-const tg=
-window.Telegram?.WebApp || null;
+const tg=window.Telegram?.WebApp || null;
 
 let currentUser=null;
 let currentReferral=null;
@@ -1245,123 +1254,83 @@ let dailyRewardNextAt=null;
 let dailyRewardTimer=null;
 
 
-/* =========================================================
-   TELEGRAM
-========================================================= */
+/* ================= TELEGRAM ================= */
 
 function telegramInitData(){
 
   if(!tg || !tg.initData){
-
-    throw new Error(
-      "Please open Big Money inside Telegram."
-    );
-
+    throw new Error("Please open Big Money inside Telegram.");
   }
 
   return tg.initData;
-
 }
-
 
 if(tg){
 
   try{
-
     tg.ready();
     tg.expand();
-
   }catch(e){
-
     console.log(e);
-
   }
 
 }
 
 
-/* =========================================================
-   GET TELEGRAM USER
-========================================================= */
-
 function getTelegramUser(){
 
-  const user=
-    tg?.initDataUnsafe?.user || null;
+  const user=tg?.initDataUnsafe?.user || null;
 
-  if(
-    user &&
-    user.id
-  ){
-
+  if(user && user.id){
     return user;
-
   }
 
   return null;
-
 }
 
 
 function normalizeUsername(username){
 
   if(
-    username === undefined ||
-    username === null ||
+    username===undefined ||
+    username===null ||
     String(username).trim()===""
   ){
-
     return "";
-
   }
 
-  let value=
-    String(username).trim();
+  let value=String(username).trim();
 
   if(!value.startsWith("@")){
-
     value="@"+value;
-
   }
 
   return value;
-
 }
 
 
-/* =========================================================
-   TOAST
-========================================================= */
+/* ================= TOAST ================= */
 
 function showToast(message){
 
-  const el=
-    document.getElementById(
-      "toast"
-    );
+  const el=document.getElementById("toast");
 
-  el.textContent=
-    message;
+  if(!el)return;
+
+  el.textContent=message;
 
   el.classList.add("show");
 
-  clearTimeout(
-    window.__toastTimer
-  );
+  clearTimeout(window.__toastTimer);
 
-  window.__toastTimer=
-    setTimeout(()=>{
-
-      el.classList.remove("show");
-
-    },3200);
+  window.__toastTimer=setTimeout(()=>{
+    el.classList.remove("show");
+  },3500);
 
 }
 
 
-/* =========================================================
-   FORMAT
-========================================================= */
+/* ================= FORMAT ================= */
 
 function formatNumber(v){
 
@@ -1401,51 +1370,29 @@ function escapeHtml(v){
 }
 
 
-/* =========================================================
-   NAVIGATION
-========================================================= */
+/* ================= NAVIGATION ================= */
 
 function showPage(page){
 
-  document
-    .querySelectorAll(".page")
-    .forEach(x=>{
-      x.classList.remove("active");
-    });
+  document.querySelectorAll(".page").forEach(x=>{
+    x.classList.remove("active");
+  });
 
-
-  const target=
-    document.getElementById(
-      "page-"+page
-    );
-
+  const target=document.getElementById("page-"+page);
 
   if(target){
-
     target.classList.add("active");
-
   }
 
+  document.querySelectorAll(".nav-btn").forEach(x=>{
+    x.classList.remove("active");
+  });
 
-  document
-    .querySelectorAll(".nav-btn")
-    .forEach(x=>{
-      x.classList.remove("active");
-    });
-
-
-  const nav=
-    document.getElementById(
-      "nav-"+page
-    );
-
+  const nav=document.getElementById("nav-"+page);
 
   if(nav){
-
     nav.classList.add("active");
-
   }
-
 
   window.scrollTo({
     top:0,
@@ -1455,64 +1402,38 @@ function showPage(page){
 }
 
 
-/* =========================================================
-   API
-========================================================= */
+/* ================= API ================= */
 
-async function apiFetch(
-  path,
-  options={}
-){
+async function apiFetch(path,options={}){
 
-  const initData=
-    telegramInitData();
-
+  const initData=telegramInitData();
 
   const headers={
     "X-Telegram-Init-Data":initData,
     ...(options.headers||{})
   };
 
-
   if(options.body!==undefined){
-
-    headers["Content-Type"]=
-      "application/json";
-
+    headers["Content-Type"]="application/json";
   }
 
-
-  const response=
-    await fetch(
-      API+path,
-      {
-        ...options,
-        headers
-      }
-    );
-
+  const response=await fetch(
+    API+path,
+    {
+      ...options,
+      headers
+    }
+  );
 
   let data;
 
-
   try{
-
-    data=
-      await response.json();
-
+    data=await response.json();
   }catch(e){
-
-    throw new Error(
-      "Server returned an invalid response."
-    );
-
+    throw new Error("Server returned an invalid response.");
   }
 
-
-  if(
-    !response.ok ||
-    data?.ok===false
-  ){
+  if(!response.ok || data?.ok===false){
 
     throw new Error(
       data?.message ||
@@ -1521,7 +1442,6 @@ async function apiFetch(
     );
 
   }
-
 
   return data;
 
@@ -1530,31 +1450,17 @@ async function apiFetch(
 
 async function publicFetch(path){
 
-  const response=
-    await fetch(API+path);
-
+  const response=await fetch(API+path);
 
   let data;
 
-
   try{
-
-    data=
-      await response.json();
-
+    data=await response.json();
   }catch(e){
-
-    throw new Error(
-      "Server returned an invalid response."
-    );
-
+    throw new Error("Server returned an invalid response.");
   }
 
-
-  if(
-    !response.ok ||
-    data?.ok===false
-  ){
+  if(!response.ok || data?.ok===false){
 
     throw new Error(
       data?.message ||
@@ -1564,47 +1470,30 @@ async function publicFetch(path){
 
   }
 
-
   return data;
 
 }
 
 
-/* =========================================================
-   CONFIG
-========================================================= */
+/* ================= CONFIG ================= */
 
 async function loadConfig(){
 
   try{
 
-    appConfig=
-      await publicFetch(
-        "/api/config"
-      );
+    appConfig=await publicFetch("/api/config");
 
+    const address=appConfig.depositAddress || "";
 
-    const address=
-      appConfig.depositAddress || "";
-
-
-    document.getElementById(
-      "depositAddress"
-    ).value=
+    document.getElementById("depositAddress").value=
       address || "Unavailable";
 
-
-    document.getElementById(
-      "profileNetwork"
-    ).textContent=
+    document.getElementById("profileNetwork").textContent=
       `${appConfig.network||"TRON"} ${appConfig.standard||"TRC20"}`;
-
 
     if(address){
 
-      document.getElementById(
-        "qrImage"
-      ).src=
+      document.getElementById("qrImage").src=
         "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+
         encodeURIComponent(address);
 
@@ -1614,47 +1503,30 @@ async function loadConfig(){
 
     console.error(e);
 
-
-    document.getElementById(
-      "depositAddress"
-    ).value=
+    document.getElementById("depositAddress").value=
       "Unable to load";
 
-
-    showToast(
-      "Could not load server configuration."
-    );
+    showToast("Could not load server configuration.");
 
   }
 
 }
 
 
-/* =========================================================
-   ACCOUNT
-========================================================= */
+/* ================= ACCOUNT ================= */
 
 async function loadAccount(){
 
   try{
 
-    /*
-      IMPORTANT:
-      Backend /api/account uses GET.
-    */
+    const data=await apiFetch(
+      "/api/account",
+      {
+        method:"GET"
+      }
+    );
 
-    const data=
-      await apiFetch(
-        "/api/account",
-        {
-          method:"GET"
-        }
-      );
-
-
-    currentUser=
-      data.user || data;
-
+    currentUser=data.user || data;
 
     currentUser.balance=
       Number(
@@ -1663,14 +1535,12 @@ async function loadAccount(){
         0
       );
 
-
     currentUser.points=
       Number(
         data.points ??
         currentUser.points ??
         0
       );
-
 
     currentUser.successfulReferrals=
       Number(
@@ -1681,7 +1551,6 @@ async function loadAccount(){
         0
       );
 
-
     currentUser.totalInvited=
       Number(
         data.totalInvited ??
@@ -1690,21 +1559,12 @@ async function loadAccount(){
         0
       );
 
-
     currentUser.dailyReward=
       data.dailyReward ||
       currentUser.dailyReward ||
       null;
 
-
-    /*
-      Get the real Telegram profile directly
-      from Telegram WebApp data.
-    */
-
-    const tgUser=
-      getTelegramUser();
-
+    const tgUser=getTelegramUser();
 
     if(tgUser){
 
@@ -1731,74 +1591,38 @@ async function loadAccount(){
 
     }
 
-
     updateAccountUI();
-
 
     updateDailyRewardUI(
       currentUser.dailyReward
     );
 
-
   }catch(e){
 
-    console.error(
-      "LOAD ACCOUNT ERROR:",
-      e
-    );
+    console.error("LOAD ACCOUNT ERROR:",e);
 
-
-    /*
-      Even if the backend request fails,
-      Telegram profile information can still
-      be displayed.
-    */
-
-    const tgUser=
-      getTelegramUser();
-
+    const tgUser=getTelegramUser();
 
     if(tgUser){
 
       currentUser={
-        ...(currentUser || {}),
+        ...(currentUser||{}),
 
-        telegramId:
-          tgUser.id,
+        telegramId:tgUser.id,
+        username:tgUser.username||"",
+        firstName:tgUser.first_name||"",
+        lastName:tgUser.last_name||"",
 
-        username:
-          tgUser.username || "",
-
-        firstName:
-          tgUser.first_name || "",
-
-        lastName:
-          tgUser.last_name || "",
-
-        balance:
-          Number(
-            currentUser?.balance || 0
-          ),
-
-        points:
-          Number(
-            currentUser?.points || 0
-          )
-
+        balance:Number(currentUser?.balance||0),
+        points:Number(currentUser?.points||0)
       };
-
 
       updateAccountUI();
 
     }
 
-
-    document.getElementById(
-      "userLine"
-    ).textContent=
-      e.message ||
-      "Unable to load account.";
-
+    document.getElementById("userLine").textContent=
+      e.message || "Unable to load account.";
 
     showToast(
       e.message ||
@@ -1810,44 +1634,25 @@ async function loadAccount(){
 }
 
 
-/* =========================================================
-   TELEGRAM USER + PROFILE
-========================================================= */
+/* ================= ACCOUNT UI ================= */
 
 function updateAccountUI(){
 
   if(!currentUser)return;
 
+  const balance=Number(currentUser.balance||0);
 
-  const balance=
-    Number(
-      currentUser.balance || 0
-    );
+  const points=Number(currentUser.points||0);
 
+  const refs=Number(
+    currentUser.successfulReferrals ??
+    currentUser.successfulReferralCount ??
+    currentUser.referrals ??
+    currentUser.referralCount ??
+    0
+  );
 
-  const points=
-    Number(
-      currentUser.points || 0
-    );
-
-
-  const refs=
-    Number(
-      currentUser.successfulReferrals ??
-      currentUser.successfulReferralCount ??
-      currentUser.referrals ??
-      currentUser.referralCount ??
-      0
-    );
-
-
-  const tgUser=
-    getTelegramUser();
-
-
-  /*
-    Telegram ID
-  */
+  const tgUser=getTelegramUser();
 
   const telegramId=
     tgUser?.id ??
@@ -1856,16 +1661,10 @@ function updateAccountUI(){
     currentUser.id ??
     "";
 
-
-  /*
-    Username
-  */
-
   const telegramUsername=
     normalizeUsername(
       tgUser?.username
     );
-
 
   const backendUsername=
     normalizeUsername(
@@ -1874,16 +1673,10 @@ function updateAccountUI(){
       currentUser.telegram_username
     );
 
-
   const username=
     telegramUsername ||
     backendUsername ||
     "No username";
-
-
-  /*
-    First Name
-  */
 
   const firstName=
     tgUser?.first_name ||
@@ -1891,21 +1684,11 @@ function updateAccountUI(){
     currentUser.first_name ||
     "Telegram User";
 
-
-  /*
-    Last Name
-  */
-
   const lastName=
     tgUser?.last_name ||
     currentUser.lastName ||
     currentUser.last_name ||
     "";
-
-
-  /*
-    Full Name
-  */
 
   const fullName=
     [firstName,lastName]
@@ -1913,11 +1696,6 @@ function updateAccountUI(){
       .join(" ")
       .trim() ||
     "Telegram User";
-
-
-  /*
-    Referral Code
-  */
 
   const referralCode=
     currentUser.referralCode ||
@@ -1928,276 +1706,136 @@ function updateAccountUI(){
     );
 
 
-  /*
-    HOME
-  */
+  /* HOME */
 
-  const balanceEl=
-    document.getElementById(
-      "balance"
-    );
+  const balanceEl=document.getElementById("balance");
 
   if(balanceEl){
-
-    balanceEl.textContent=
-      formatNumber(balance);
-
+    balanceEl.textContent=formatNumber(balance);
   }
 
-
-  const pointsEl=
-    document.getElementById(
-      "points"
-    );
+  const pointsEl=document.getElementById("points");
 
   if(pointsEl){
-
-    pointsEl.textContent=
-      formatAmount(points);
-
+    pointsEl.textContent=formatAmount(points);
   }
 
-
-  const refCountEl=
-    document.getElementById(
-      "refCount"
-    );
+  const refCountEl=document.getElementById("refCount");
 
   if(refCountEl){
-
-    refCountEl.textContent=
-      refs;
-
+    refCountEl.textContent=refs;
   }
-
 
   const withdrawRefCountEl=
-    document.getElementById(
-      "withdrawRefCount"
-    );
+    document.getElementById("withdrawRefCount");
 
   if(withdrawRefCountEl){
-
-    withdrawRefCountEl.textContent=
-      refs;
-
+    withdrawRefCountEl.textContent=refs;
   }
-
 
   const refPageCountEl=
-    document.getElementById(
-      "refPageCount"
-    );
+    document.getElementById("refPageCount");
 
   if(refPageCountEl){
-
-    refPageCountEl.textContent=
-      refs;
-
+    refPageCountEl.textContent=refs;
   }
 
 
-  const userLine=
-    document.getElementById(
-      "userLine"
-    );
-
+  const userLine=document.getElementById("userLine");
 
   if(userLine){
 
     if(username!=="No username"){
-
-      userLine.textContent=
-        username;
-
+      userLine.textContent=username;
     }else{
-
-      userLine.textContent=
-        fullName;
-
+      userLine.textContent=fullName;
     }
 
   }
 
 
-  /*
-    PROFILE HEADER
-  */
+  /* PROFILE HEADER */
 
   const profileFirstName=
-    document.getElementById(
-      "profileFirstName"
-    );
-
+    document.getElementById("profileFirstName");
 
   if(profileFirstName){
-
-    profileFirstName.textContent=
-      fullName;
-
+    profileFirstName.textContent=fullName;
   }
-
 
   const profileUsername=
-    document.getElementById(
-      "profileUsername"
-    );
-
+    document.getElementById("profileUsername");
 
   if(profileUsername){
-
-    profileUsername.textContent=
-      username;
-
+    profileUsername.textContent=username;
   }
 
-
-  /*
-    PROFILE TELEGRAM ID
-  */
 
   const profileTelegramId=
-    document.getElementById(
-      "profileTelegramId"
-    );
-
+    document.getElementById("profileTelegramId");
 
   if(profileTelegramId){
-
-    profileTelegramId.textContent=
-      telegramId || "—";
-
+    profileTelegramId.textContent=telegramId||"—";
   }
 
-
-  /*
-    PROFILE USERNAME
-  */
 
   const profileUsernameInfo=
-    document.getElementById(
-      "profileUsernameInfo"
-    );
-
+    document.getElementById("profileUsernameInfo");
 
   if(profileUsernameInfo){
-
-    profileUsernameInfo.textContent=
-      username;
-
+    profileUsernameInfo.textContent=username;
   }
 
-
-  /*
-    PROFILE FIRST NAME
-  */
 
   const profileFirstNameInfo=
-    document.getElementById(
-      "profileFirstNameInfo"
-    );
-
+    document.getElementById("profileFirstNameInfo");
 
   if(profileFirstNameInfo){
-
-    profileFirstNameInfo.textContent=
-      firstName;
-
+    profileFirstNameInfo.textContent=firstName;
   }
 
-
-  /*
-    PROFILE LAST NAME
-  */
 
   const profileLastNameInfo=
-    document.getElementById(
-      "profileLastNameInfo"
-    );
-
+    document.getElementById("profileLastNameInfo");
 
   if(profileLastNameInfo){
-
-    profileLastNameInfo.textContent=
-      lastName || "—";
-
+    profileLastNameInfo.textContent=lastName||"—";
   }
 
-
-  /*
-    PROFILE REFERRAL CODE
-  */
 
   const profileReferralCode=
-    document.getElementById(
-      "profileReferralCode"
-    );
-
+    document.getElementById("profileReferralCode");
 
   if(profileReferralCode){
-
-    profileReferralCode.value=
-      referralCode;
-
+    profileReferralCode.value=referralCode;
   }
 
 
-  /*
-    BALANCE
-  */
-
   const profileBalance=
-    document.getElementById(
-      "profileBalance"
-    );
-
+    document.getElementById("profileBalance");
 
   if(profileBalance){
-
-    profileBalance.textContent=
-      formatNumber(balance);
-
+    profileBalance.textContent=formatNumber(balance);
   }
 
 
   const profilePoints=
-    document.getElementById(
-      "profilePoints"
-    );
-
+    document.getElementById("profilePoints");
 
   if(profilePoints){
-
-    profilePoints.textContent=
-      formatAmount(points);
-
+    profilePoints.textContent=formatAmount(points);
   }
 
 
   const profileReferrals=
-    document.getElementById(
-      "profileReferrals"
-    );
-
+    document.getElementById("profileReferrals");
 
   if(profileReferrals){
-
-    profileReferrals.textContent=
-      refs;
-
+    profileReferrals.textContent=refs;
   }
 
 
-  /*
-    REFERRAL PROGRESS
-  */
-
-  const pct=
-    Math.min(
-      100,
-      (refs/5)*100
-    );
-
+  const pct=Math.min(100,(refs/5)*100);
 
   [
     "homeRefBar",
@@ -2205,72 +1843,40 @@ function updateAccountUI(){
     "refBar"
   ].forEach(id=>{
 
-    const el=
-      document.getElementById(id);
+    const el=document.getElementById(id);
 
     if(el){
-
-      el.style.width=
-        pct+"%";
-
+      el.style.width=pct+"%";
     }
 
   });
 
 
-  const hp=
-    document.getElementById(
-      "homeRefProgress"
-    );
-
+  const hp=document.getElementById("homeRefProgress");
 
   if(hp){
-
-    hp.textContent=
-      Math.min(refs,5);
-
+    hp.textContent=Math.min(refs,5);
   }
-
-
-  console.log(
-    "BIG MONEY TELEGRAM USER",
-    {
-      telegramUser:tgUser,
-      telegramId:telegramId,
-      username:username,
-      firstName:firstName,
-      lastName:lastName,
-      referralCode:referralCode
-    }
-  );
 
 }
 
 
-/* =========================================================
-   REFERRAL
-========================================================= */
+/* ================= REFERRAL ================= */
 
 async function loadReferral(){
 
   try{
 
-    const data=
-      await apiFetch(
-        "/api/referrals",
-        {
-          method:"GET"
-        }
-      );
+    const data=await apiFetch(
+      "/api/referrals",
+      {
+        method:"GET"
+      }
+    );
 
+    currentReferral=data;
 
-    currentReferral=
-      data;
-
-
-    const tgUser=
-      getTelegramUser();
-
+    const tgUser=getTelegramUser();
 
     const userId=
       tgUser?.id ||
@@ -2278,7 +1884,6 @@ async function loadReferral(){
       currentUser?.telegram_id ||
       currentUser?.id ||
       "";
-
 
     const link=
       data.referralLink ||
@@ -2288,21 +1893,15 @@ async function loadReferral(){
           : ""
       );
 
-
-    document.getElementById(
-      "referralLink"
-    ).value=
+    document.getElementById("referralLink").value=
       link || "Unavailable";
 
-
-    const count=
-      Number(
-        data.successfulReferrals ??
-        currentUser?.successfulReferrals ??
-        currentUser?.successfulReferralCount ??
-        0
-      );
-
+    const count=Number(
+      data.successfulReferrals ??
+      currentUser?.successfulReferrals ??
+      currentUser?.successfulReferralCount ??
+      0
+    );
 
     [
       "refCount",
@@ -2311,25 +1910,15 @@ async function loadReferral(){
       "profileReferrals"
     ].forEach(id=>{
 
-      const el=
-        document.getElementById(id);
+      const el=document.getElementById(id);
 
       if(el){
-
-        el.textContent=
-          count;
-
+        el.textContent=count;
       }
 
     });
 
-
-    const pct=
-      Math.min(
-        100,
-        (count/5)*100
-      );
-
+    const pct=Math.min(100,(count/5)*100);
 
     [
       "homeRefBar",
@@ -2337,40 +1926,25 @@ async function loadReferral(){
       "refBar"
     ].forEach(id=>{
 
-      const el=
-        document.getElementById(id);
+      const el=document.getElementById(id);
 
       if(el){
-
-        el.style.width=
-          pct+"%";
-
+        el.style.width=pct+"%";
       }
 
     });
 
-
-    const hp=
-      document.getElementById(
-        "homeRefProgress"
-      );
-
+    const hp=document.getElementById("homeRefProgress");
 
     if(hp){
-
-      hp.textContent=
-        Math.min(count,5);
-
+      hp.textContent=Math.min(count,5);
     }
 
   }catch(e){
 
     console.error(e);
 
-
-    const tgUser=
-      getTelegramUser();
-
+    const tgUser=getTelegramUser();
 
     const userId=
       tgUser?.id ||
@@ -2379,12 +1953,9 @@ async function loadReferral(){
       currentUser?.id ||
       "";
 
-
     if(userId){
 
-      document.getElementById(
-        "referralLink"
-      ).value=
+      document.getElementById("referralLink").value=
         "https://t.me/bigmoney2026bot?startapp=ref_"+userId;
 
     }
@@ -2397,54 +1968,32 @@ async function loadReferral(){
 function copyProfileReferralCode(){
 
   const input=
-    document.getElementById(
-      "profileReferralCode"
-    );
+    document.getElementById("profileReferralCode");
 
-
-  const value=
-    input?.value || "";
-
+  const value=input?.value||"";
 
   if(!value){
-
-    showToast(
-      "Referral code is not ready."
-    );
-
+    showToast("Referral code is not ready.");
     return;
-
   }
-
 
   copyText(value);
 
 }
 
 
-/* =========================================================
-   DAILY REWARD
-========================================================= */
+/* ================= DAILY REWARD ================= */
 
 function updateDailyRewardUI(status){
 
   const statusEl=
-    document.getElementById(
-      "dailyRewardStatus"
-    );
-
+    document.getElementById("dailyRewardStatus");
 
   const btn=
-    document.getElementById(
-      "dailyRewardBtn"
-    );
-
+    document.getElementById("dailyRewardBtn");
 
   const countdown=
-    document.getElementById(
-      "dailyRewardCountdown"
-    );
-
+    document.getElementById("dailyRewardCountdown");
 
   if(!status){
 
@@ -2456,9 +2005,7 @@ function updateDailyRewardUI(status){
     countdown.textContent="";
 
     return;
-
   }
-
 
   if(!status.eligible){
 
@@ -2472,13 +2019,11 @@ function updateDailyRewardUI(status){
     countdown.textContent="";
 
     return;
-
   }
 
-
   dailyRewardNextAt=
-    status.nextRewardAt || null;
-
+    status.nextRewardAt ||
+    null;
 
   if(
     status.canClaim ||
@@ -2510,32 +2055,19 @@ function updateDailyRewardUI(status){
 function renderDailyCountdown(){
 
   const countdown=
-    document.getElementById(
-      "dailyRewardCountdown"
-    );
-
+    document.getElementById("dailyRewardCountdown");
 
   const btn=
-    document.getElementById(
-      "dailyRewardBtn"
-    );
-
+    document.getElementById("dailyRewardBtn");
 
   const statusEl=
-    document.getElementById(
-      "dailyRewardStatus"
-    );
-
+    document.getElementById("dailyRewardStatus");
 
   if(!dailyRewardNextAt)return;
 
-
   const ms=
-    new Date(
-      dailyRewardNextAt
-    ).getTime() -
+    new Date(dailyRewardNextAt).getTime()-
     Date.now();
-
 
   if(ms<=0){
 
@@ -2550,27 +2082,15 @@ function renderDailyCountdown(){
     countdown.textContent="";
 
     return;
-
   }
 
+  const total=Math.ceil(ms/1000);
 
-  const total=
-    Math.ceil(ms/1000);
+  const h=Math.floor(total/3600);
 
+  const m=Math.floor((total%3600)/60);
 
-  const h=
-    Math.floor(total/3600);
-
-
-  const m=
-    Math.floor(
-      (total%3600)/60
-    );
-
-
-  const s=
-    total%60;
-
+  const s=total%60;
 
   countdown.textContent=
     `Next reward in ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
@@ -2578,24 +2098,19 @@ function renderDailyCountdown(){
 }
 
 
-dailyRewardTimer=
-  setInterval(
-    renderDailyCountdown,
-    1000
-  );
+dailyRewardTimer=setInterval(
+  renderDailyCountdown,
+  1000
+);
 
 
 async function claimDailyReward(){
 
   const btn=
-    document.getElementById(
-      "dailyRewardBtn"
-    );
-
+    document.getElementById("dailyRewardBtn");
 
   btn.disabled=true;
   btn.textContent="Claiming...";
-
 
   try{
 
@@ -2608,7 +2123,6 @@ async function claimDailyReward(){
         }
       );
 
-
     showToast(
       data.awarded
         ? "+5 USDT added to your balance."
@@ -2617,7 +2131,6 @@ async function claimDailyReward(){
           "Reward is not available yet."
         )
     );
-
 
     await loadAccount();
 
@@ -2628,7 +2141,6 @@ async function claimDailyReward(){
       "Daily reward failed."
     );
 
-
     await loadAccount();
 
   }
@@ -2636,16 +2148,11 @@ async function claimDailyReward(){
 }
 
 
-/* =========================================================
-   DEPOSIT
-========================================================= */
+/* ================= DEPOSIT ================= */
 
 function setDepositAmount(amount){
 
-  document.getElementById(
-    "depAmount"
-  ).value=
-    amount;
+  document.getElementById("depAmount").value=amount;
 
 }
 
@@ -2658,11 +2165,7 @@ async function copyText(text){
 
   }catch(e){
 
-    const temp=
-      document.createElement(
-        "textarea"
-      );
-
+    const temp=document.createElement("textarea");
 
     temp.value=text;
 
@@ -2676,10 +2179,7 @@ async function copyText(text){
 
   }
 
-
-  showToast(
-    "Copied successfully."
-  );
+  showToast("Copied successfully.");
 
 }
 
@@ -2687,25 +2187,19 @@ async function copyText(text){
 function copyDepositAddress(){
 
   const v=
-    document.getElementById(
-      "depositAddress"
-    ).value;
-
+    document.getElementById("depositAddress").value;
 
   if(
     !v ||
     v==="Loading..." ||
-    v==="Unable to load"
+    v==="Unable to load" ||
+    v==="Unavailable"
   ){
 
-    showToast(
-      "Deposit address is not ready."
-    );
+    showToast("Deposit address is not ready.");
 
     return;
-
   }
-
 
   copyText(v);
 
@@ -2715,24 +2209,18 @@ function copyDepositAddress(){
 function copyReferralLink(){
 
   const v=
-    document.getElementById(
-      "referralLink"
-    ).value;
-
+    document.getElementById("referralLink").value;
 
   if(
     !v ||
-    v==="Loading..."
+    v==="Loading..." ||
+    v==="Unavailable"
   ){
 
-    showToast(
-      "Referral link is not ready."
-    );
+    showToast("Referral link is not ready.");
 
     return;
-
   }
-
 
   copyText(v);
 
@@ -2742,24 +2230,18 @@ function copyReferralLink(){
 function shareReferral(){
 
   const link=
-    document.getElementById(
-      "referralLink"
-    ).value;
-
+    document.getElementById("referralLink").value;
 
   if(
     !link ||
-    link==="Loading..."
+    link==="Loading..." ||
+    link==="Unavailable"
   ){
 
-    showToast(
-      "Referral link is not ready."
-    );
+    showToast("Referral link is not ready.");
 
     return;
-
   }
-
 
   const url=
     "https://t.me/share/url?url="+
@@ -2769,7 +2251,6 @@ function shareReferral(){
       "Join Big Money and start using the app."
     );
 
-
   try{
 
     if(tg?.openTelegramLink){
@@ -2778,79 +2259,80 @@ function shareReferral(){
 
     }else{
 
-      window.open(
-        url,
-        "_blank"
-      );
+      window.open(url,"_blank");
 
     }
 
   }catch(e){
 
-    window.open(
-      url,
-      "_blank"
-    );
+    window.open(url,"_blank");
 
   }
 
 }
 
 
+/*
+=========================================================
+NEW AUTOMATIC BLOCKCHAIN DEPOSIT VERIFICATION
+=========================================================
+*/
+
 async function verifyDeposit(){
 
-  const amount=
-    Number(
-      document.getElementById(
-        "depAmount"
-      ).value
-    );
-
-
   const txid=
-    document.getElementById(
-      "txid"
-    ).value.trim();
+    document.getElementById("txid").value.trim();
 
+  /*
+    IMPORTANT:
+    We intentionally do NOT require the user to enter
+    the deposit amount.
 
-  if(
-    !Number.isFinite(amount) ||
-    amount<5
-  ){
+    The backend reads the REAL amount from TRON blockchain.
+  */
 
-    showToast(
-      "Minimum deposit amount is 5 USDT."
-    );
+  if(!txid){
+
+    showToast("Please paste your transaction TXID.");
 
     return;
-
   }
 
-
-  if(
-    !/^[a-fA-F0-9]{64}$/.test(txid)
-  ){
+  if(!/^[a-fA-F0-9]{64}$/.test(txid)){
 
     showToast(
       "TXID must be exactly 64 hexadecimal characters."
     );
 
     return;
-
   }
 
-
   const button=
-    document.getElementById(
-      "verifyBtn"
-    );
+    document.getElementById("verifyBtn");
 
+  const result=
+    document.getElementById("depositResult");
 
   button.disabled=true;
-  button.textContent="Verifying...";
+  button.textContent="Checking Blockchain...";
 
+  result.classList.remove("hidden");
+
+  result.innerHTML=
+    '<div class="feature">'+
+      '<div class="feature-icon">🔍</div>'+
+      '<div>'+
+        '<div class="feature-title">Checking blockchain...</div>'+
+        '<div class="feature-text">Please wait while Big Money verifies your TRON transaction.</div>'+
+      '</div>'+
+    '</div>';
 
   try{
+
+    /*
+      Only TXID is sent.
+      The server determines the real amount.
+    */
 
     const data=
       await apiFetch(
@@ -2858,17 +2340,67 @@ async function verifyDeposit(){
         {
           method:"POST",
           body:JSON.stringify({
-            amount,
-            txid
+            txid:txid
           })
         }
       );
 
+    /*
+      Try several possible response locations
+      so the frontend works with the revised backend.
+    */
+
+    const verifiedAmount=
+      Number(
+        data.amount ??
+        data.deposit?.amount ??
+        data.transfer?.amount ??
+        data.deposit?.transfer?.amount ??
+        0
+      );
 
     let message=
       data.message ||
       "Deposit verified successfully.";
 
+    if(verifiedAmount>0){
+
+      message=
+        `Deposit verified: +${formatAmount(verifiedAmount)} USDT added to your balance.`;
+
+      result.innerHTML=
+        '<div class="feature">'+
+          '<div class="feature-icon">✅</div>'+
+          '<div style="flex:1">'+
+            '<div class="feature-title">Deposit Confirmed</div>'+
+            '<div class="feature-text">'+
+              'Blockchain amount: <b class="green">'+
+              escapeHtml(formatAmount(verifiedAmount))+
+              ' USDT</b><br>'+
+              'Your balance has been updated.'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+
+    }else{
+
+      result.innerHTML=
+        '<div class="feature">'+
+          '<div class="feature-icon">✅</div>'+
+          '<div>'+
+            '<div class="feature-title">Transaction Verified</div>'+
+            '<div class="feature-text">'+
+              escapeHtml(message)+
+            '</div>'+
+          '</div>'+
+        '</div>';
+
+    }
+
+
+    /*
+      Daily reward information
+    */
 
     const daily=
       Number(
@@ -2877,15 +2409,6 @@ async function verifyDeposit(){
         0
       );
 
-
-    const referral=
-      Number(
-        data.referralReward?.points ||
-        data.referralReward ||
-        0
-      );
-
-
     if(daily>0){
 
       message+=
@@ -2893,6 +2416,17 @@ async function verifyDeposit(){
 
     }
 
+
+    /*
+      Referral reward information
+    */
+
+    const referral=
+      Number(
+        data.referralReward?.points ||
+        data.referralReward ||
+        0
+      );
 
     if(referral>0){
 
@@ -2904,41 +2438,60 @@ async function verifyDeposit(){
 
     showToast(message);
 
-
-    document.getElementById(
-      "txid"
-    ).value="";
-
+    document.getElementById("txid").value="";
 
     await loadAccount();
     await loadReferral();
     await loadTransactions();
 
-
   }catch(e){
 
-    console.error(e);
+    console.error(
+      "DEPOSIT VERIFY ERROR:",
+      e
+    );
 
+    result.classList.remove("hidden");
+
+    result.innerHTML=
+      '<div class="feature">'+
+        '<div class="feature-icon">⚠️</div>'+
+        '<div>'+
+          '<div class="feature-title">Verification Failed</div>'+
+          '<div class="feature-text">'+
+            escapeHtml(
+              e.message ||
+              "Deposit verification failed."
+            )+
+          '</div>'+
+        '</div>'+
+      '</div>';
 
     showToast(
       e.message ||
       "Deposit verification failed."
     );
 
-
   }finally{
 
     button.disabled=false;
-    button.textContent="Verify Deposit";
+    button.textContent="Verify Blockchain Deposit";
 
   }
 
 }
 
 
+/*
+  This button loads already confirmed deposits
+  belonging to the current Telegram user.
+*/
+
 async function checkBlockchain(){
 
   try{
+
+    showToast("Checking your confirmed deposits...");
 
     const data=
       await apiFetch(
@@ -2948,12 +2501,10 @@ async function checkBlockchain(){
         }
       );
 
-
     const deposits=
       Array.isArray(data.deposits)
         ? data.deposits
         : [];
-
 
     if(!deposits.length){
 
@@ -2962,24 +2513,23 @@ async function checkBlockchain(){
       );
 
       return;
-
     }
-
 
     const latest=
       deposits[deposits.length-1];
-
 
     showToast(
       `Latest confirmed deposit: ${formatAmount(latest.amount)} USDT`
     );
 
+    await loadAccount();
+    await loadTransactions();
 
   }catch(e){
 
     showToast(
       e.message ||
-      "Could not check blockchain."
+      "Could not check deposits."
     );
 
   }
@@ -2987,25 +2537,17 @@ async function checkBlockchain(){
 }
 
 
-/* =========================================================
-   WITHDRAW
-========================================================= */
+/* ================= WITHDRAW ================= */
 
 async function requestWithdrawal(){
 
   const address=
-    document.getElementById(
-      "withdrawAddress"
-    ).value.trim();
-
+    document.getElementById("withdrawAddress").value.trim();
 
   const amount=
     Number(
-      document.getElementById(
-        "withdrawAmount"
-      ).value
+      document.getElementById("withdrawAmount").value
     );
-
 
   const refs=
     Number(
@@ -3014,7 +2556,6 @@ async function requestWithdrawal(){
       0
     );
 
-
   if(refs<5){
 
     showToast(
@@ -3022,9 +2563,7 @@ async function requestWithdrawal(){
     );
 
     return;
-
   }
-
 
   if(
     !/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)
@@ -3035,9 +2574,7 @@ async function requestWithdrawal(){
     );
 
     return;
-
   }
-
 
   if(
     !Number.isFinite(amount) ||
@@ -3049,15 +2586,11 @@ async function requestWithdrawal(){
     );
 
     return;
-
   }
 
-
   if(
-    amount >
-    Number(
-      currentUser?.balance || 0
-    )
+    amount>
+    Number(currentUser?.balance||0)
   ){
 
     showToast(
@@ -3065,19 +2598,13 @@ async function requestWithdrawal(){
     );
 
     return;
-
   }
 
-
   const btn=
-    document.getElementById(
-      "withdrawBtn"
-    );
-
+    document.getElementById("withdrawBtn");
 
   btn.disabled=true;
   btn.textContent="Submitting...";
-
 
   try{
 
@@ -3093,26 +2620,21 @@ async function requestWithdrawal(){
         }
       );
 
-
     showToast(
       data.message ||
       "Withdrawal request submitted."
     );
 
-
     document.getElementById(
       "withdrawAddress"
     ).value="";
-
 
     document.getElementById(
       "withdrawAmount"
     ).value="";
 
-
     await loadAccount();
     await loadWithdrawals();
-
 
   }catch(e){
 
@@ -3120,7 +2642,6 @@ async function requestWithdrawal(){
       e.message ||
       "Withdrawal request failed."
     );
-
 
   }finally{
 
@@ -3132,9 +2653,7 @@ async function requestWithdrawal(){
 }
 
 
-/* =========================================================
-   WITHDRAWAL HISTORY
-========================================================= */
+/* ================= WITHDRAWAL HISTORY ================= */
 
 async function loadWithdrawals(){
 
@@ -3148,15 +2667,12 @@ async function loadWithdrawals(){
         }
       );
 
-
     withdrawalData=
       Array.isArray(data.withdrawals)
         ? data.withdrawals
         : [];
 
-
     renderWithdrawals();
-
 
   }catch(e){
 
@@ -3173,40 +2689,27 @@ async function loadWithdrawals(){
 function statusClass(status){
 
   const s=
-    String(
-      status || ""
-    ).toLowerCase();
-
+    String(status||"").toLowerCase();
 
   if(
     s==="approved" ||
     s==="paid"
   ){
-
     return "approved";
-
   }
-
 
   if(s==="rejected"){
-
     return "rejected";
-
   }
 
-
   return "pending";
-
 }
 
 
 function renderWithdrawals(){
 
   const c=
-    document.getElementById(
-      "withdrawalHistory"
-    );
-
+    document.getElementById("withdrawalHistory");
 
   if(!withdrawalData.length){
 
@@ -3214,18 +2717,15 @@ function renderWithdrawals(){
       '<div class="empty">No withdrawal requests yet.</div>';
 
     return;
-
   }
-
 
   c.innerHTML=
     withdrawalData.map(w=>{
 
       const status=
         escapeHtml(
-          w.status || "Pending"
+          w.status||"Pending"
         );
-
 
       const date=
         w.createdAt
@@ -3234,12 +2734,10 @@ function renderWithdrawals(){
             ).toLocaleString()
           : "—";
 
-
       const txid=
         w.paymentTxid
           ? `<div class="tx-meta">Payment TXID: ${escapeHtml(w.paymentTxid)}</div>`
           : "";
-
 
       return `
       <div class="tx">
@@ -3282,25 +2780,17 @@ function renderWithdrawals(){
 }
 
 
-/* =========================================================
-   POINTS
-========================================================= */
+/* ================= POINTS ================= */
 
 async function convertPoints(){
 
   const amount=
     Number(
-      document.getElementById(
-        "convertPoints"
-      ).value
+      document.getElementById("convertPoints").value
     );
-
 
   const points=
-    Number(
-      currentUser?.points || 0
-    );
-
+    Number(currentUser?.points||0);
 
   if(
     !Number.isFinite(amount) ||
@@ -3312,9 +2802,7 @@ async function convertPoints(){
     );
 
     return;
-
   }
-
 
   if(amount>points){
 
@@ -3323,9 +2811,7 @@ async function convertPoints(){
     );
 
     return;
-
   }
-
 
   try{
 
@@ -3340,20 +2826,16 @@ async function convertPoints(){
         }
       );
 
-
     showToast(
       data.message ||
       `Converted ${formatAmount(amount)} points to USDT.`
     );
 
-
     document.getElementById(
       "convertPoints"
     ).value="";
 
-
     await loadAccount();
-
 
   }catch(e){
 
@@ -3367,9 +2849,7 @@ async function convertPoints(){
 }
 
 
-/* =========================================================
-   ADMIN
-========================================================= */
+/* ================= ADMIN ================= */
 
 async function checkAdmin(){
 
@@ -3383,14 +2863,11 @@ async function checkAdmin(){
         }
       );
 
-
     isAdmin=true;
-
 
     document.getElementById(
       "adminCard"
     ).classList.remove("hidden");
-
 
     renderAdminWithdrawals(
       Array.isArray(data.withdrawals)
@@ -3398,11 +2875,9 @@ async function checkAdmin(){
         : []
     );
 
-
   }catch(e){
 
     isAdmin=false;
-
 
     document.getElementById(
       "adminCard"
@@ -3417,7 +2892,6 @@ async function loadAdminWithdrawals(){
 
   if(!isAdmin)return;
 
-
   try{
 
     const data=
@@ -3428,13 +2902,11 @@ async function loadAdminWithdrawals(){
         }
       );
 
-
     renderAdminWithdrawals(
       Array.isArray(data.withdrawals)
         ? data.withdrawals
         : []
     );
-
 
   }catch(e){
 
@@ -3451,10 +2923,7 @@ async function loadAdminWithdrawals(){
 function renderAdminWithdrawals(withdrawals){
 
   const c=
-    document.getElementById(
-      "adminWithdrawals"
-    );
-
+    document.getElementById("adminWithdrawals");
 
   if(!withdrawals.length){
 
@@ -3462,30 +2931,21 @@ function renderAdminWithdrawals(withdrawals){
       '<div class="empty">No withdrawal requests.</div>';
 
     return;
-
   }
-
 
   c.innerHTML=
     withdrawals.map(w=>{
 
       const id=
-        escapeHtml(
-          w.id || ""
-        );
-
+        escapeHtml(w.id||"");
 
       const st=
-        String(
-          w.status || ""
-        ).toLowerCase();
-
+        String(w.status||"").toLowerCase();
 
       const txid=
         w.paymentTxid
           ? `<div class="tx-meta" style="margin-top:7px">Payment TXID: ${escapeHtml(w.paymentTxid)}</div>`
           : "";
-
 
       return `
       <div class="admin-item">
@@ -3528,7 +2988,7 @@ function renderAdminWithdrawals(withdrawals){
 
             <span class="status ${statusClass(w.status)}">
               ${escapeHtml(
-                w.status || "Pending"
+                w.status||"Pending"
               )}
             </span>
 
@@ -3541,7 +3001,7 @@ function renderAdminWithdrawals(withdrawals){
           style="margin-top:10px">
 
           ${escapeHtml(
-            w.address || "—"
+            w.address||"—"
           )}
 
         </div>
@@ -3612,11 +3072,8 @@ async function adminApprove(id){
       "Approve this withdrawal request?"
     )
   ){
-
     return;
-
   }
-
 
   try{
 
@@ -3630,14 +3087,11 @@ async function adminApprove(id){
       }
     );
 
-
     showToast(
       "Withdrawal approved."
     );
 
-
     await loadAdminWithdrawals();
-
 
   }catch(e){
 
@@ -3655,15 +3109,12 @@ async function adminReject(id){
 
   if(!id)return;
 
-
   const reason=
     prompt(
       "Enter rejection reason:"
     );
 
-
   if(reason===null)return;
-
 
   try{
 
@@ -3679,14 +3130,11 @@ async function adminReject(id){
       }
     );
 
-
     showToast(
       "Withdrawal rejected."
     );
 
-
     await loadAdminWithdrawals();
-
 
   }catch(e){
 
@@ -3707,13 +3155,10 @@ async function adminSetTxid(id){
       "admin-txid-"+id
     );
 
-
   if(!input)return;
-
 
   const txid=
     input.value.trim();
-
 
   if(
     !/^[a-fA-F0-9]{64}$/.test(txid)
@@ -3724,9 +3169,7 @@ async function adminSetTxid(id){
     );
 
     return;
-
   }
-
 
   try{
 
@@ -3742,14 +3185,11 @@ async function adminSetTxid(id){
       }
     );
 
-
     showToast(
       "Payment TXID saved."
     );
 
-
     await loadAdminWithdrawals();
-
 
   }catch(e){
 
@@ -3763,9 +3203,7 @@ async function adminSetTxid(id){
 }
 
 
-/* =========================================================
-   TRANSACTIONS
-========================================================= */
+/* ================= TRANSACTIONS ================= */
 
 async function loadTransactions(){
 
@@ -3779,13 +3217,11 @@ async function loadTransactions(){
         }
       );
 
-
     renderTransactions(
       Array.isArray(data.deposits)
         ? data.deposits
         : []
     );
-
 
   }catch(e){
 
@@ -3799,10 +3235,7 @@ async function loadTransactions(){
 function renderTransactions(deposits){
 
   const c=
-    document.getElementById(
-      "homeTransactions"
-    );
-
+    document.getElementById("homeTransactions");
 
   if(!deposits.length){
 
@@ -3810,9 +3243,7 @@ function renderTransactions(deposits){
       '<div class="empty">No confirmed deposits yet.</div>';
 
     return;
-
   }
-
 
   c.innerHTML=
     deposits
@@ -3821,16 +3252,12 @@ function renderTransactions(deposits){
       .map(d=>{
 
         const tx=
-          escapeHtml(
-            d.txid || ""
-          );
-
+          escapeHtml(d.txid||"");
 
         const short=
           tx
             ? tx.slice(0,10)+"..."+tx.slice(-8)
             : "Confirmed deposit";
-
 
         return `
         <div class="tx">
@@ -3875,9 +3302,7 @@ function renderTransactions(deposits){
 }
 
 
-/* =========================================================
-   INITIALIZE
-========================================================= */
+/* ================= INITIALIZE ================= */
 
 async function initialize(){
 
@@ -3886,25 +3311,17 @@ async function initialize(){
     !tg.initData
   ){
 
-    document.getElementById(
-      "userLine"
-    ).textContent=
+    document.getElementById("userLine").textContent=
       "Open Big Money inside Telegram";
-
 
     showToast(
       "Please open Big Money inside Telegram."
     );
 
-
     return;
-
   }
 
-
-  const telegramUser=
-    getTelegramUser();
-
+  const telegramUser=getTelegramUser();
 
   if(!telegramUser){
 
@@ -3921,7 +3338,6 @@ async function initialize(){
 
   }
 
-
   try{
 
     await loadConfig();
@@ -3936,11 +3352,9 @@ async function initialize(){
 
     await checkAdmin();
 
-
   }catch(e){
 
     console.error(e);
-
 
     showToast(
       e.message ||

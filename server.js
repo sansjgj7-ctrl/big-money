@@ -1,4 +1,15 @@
-
+// ============================================================
+// BIG MONEY BACKEND
+// Telegram Mini App + USDT TRC20
+//
+// RULES:
+// 1. Minimum individual deposit = 5 USDT
+// 2. Daily reward requires total confirmed deposits >= 10 USDT
+// 3. Daily reward = 5 USDT
+// 4. Daily reward cooldown = exactly 24 hours
+// 5. Deposit amount is read from blockchain using TXID
+// 6. A TXID cannot be credited twice
+// ============================================================
 
 const express = require("express");
 const cors = require("cors");
@@ -35,9 +46,7 @@ const ALLOWED_ORIGIN =
   "https://sansjgj7-ctrl.github.io";
 
 const TELEGRAM_AUTH_MAX_AGE =
-  Number(
-    process.env.TELEGRAM_AUTH_MAX_AGE || 3600
-  );
+  Number(process.env.TELEGRAM_AUTH_MAX_AGE || 3600);
 
 // ============================================================
 // TRON / USDT
@@ -52,22 +61,23 @@ const USDT_CONTRACT =
   "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
 
 const USDT_DECIMALS =
-  Number(
-    process.env.USDT_DECIMALS || 6
-  );
+  Number(process.env.USDT_DECIMALS || 6);
 
 // ============================================================
 // MONEY RULES
 // ============================================================
 
+// Minimum individual deposit.
+// IMPORTANT: 5 USDT is accepted.
+const MIN_DEPOSIT =
+  Number(process.env.MIN_DEPOSIT || 5);
+
 // User must have at least 10 USDT
 // in CONFIRMED deposits to receive daily reward.
 const QUALIFYING_DEPOSIT =
-  Number(
-    process.env.QUALIFYING_DEPOSIT || 10
-  );
+  Number(process.env.QUALIFYING_DEPOSIT || 10);
 
-// Daily reward is exactly 5 USDT.
+// Daily reward = 5 USDT.
 const DAILY_REWARD_USDT =
   Number(
     process.env.DAILY_REWARD_USDT ||
@@ -79,64 +89,44 @@ const DAILY_REWARD_USDT =
 const DAILY_REWARD_INTERVAL_MS =
   24 * 60 * 60 * 1000;
 
-// Minimum individual deposit.
-const MIN_DEPOSIT =
-  Number(
-    process.env.MIN_DEPOSIT ||
-    10
-  );
-
 const MIN_WITHDRAWAL =
-  Number(
-    process.env.MIN_WITHDRAWAL ||
-    1
-  );
+  Number(process.env.MIN_WITHDRAWAL || 1);
 
 // ============================================================
 // REFERRAL
 // ============================================================
 
 const REQUIRED_REFERRALS =
-  Number(
-    process.env.REQUIRED_REFERRALS || 5
-  );
+  Number(process.env.REQUIRED_REFERRALS || 5);
 
 const REFERRAL_REWARD =
-  Number(
-    process.env.REFERRAL_REWARD || 3
-  );
+  Number(process.env.REFERRAL_REWARD || 3);
 
 // ============================================================
 // ADMIN
 // ============================================================
 
 const ADMIN_TELEGRAM_IDS =
-  String(
-    process.env.ADMIN_TELEGRAM_IDS || ""
-  )
+  String(process.env.ADMIN_TELEGRAM_IDS || "")
     .split(",")
     .map((x) => x.trim())
     .filter(Boolean);
 
 const WITHDRAWAL_SOURCE_ADDRESS =
-  process.env.WITHDRAWAL_SOURCE_ADDRESS ||
-  "";
+  process.env.WITHDRAWAL_SOURCE_ADDRESS || "";
 
 // ============================================================
 // SUPABASE
 // ============================================================
 
 const SUPABASE_URL =
-  process.env.SUPABASE_URL ||
-  "";
+  process.env.SUPABASE_URL || "";
 
 const SUPABASE_SECRET_KEY =
-  process.env.SUPABASE_SECRET_KEY ||
-  "";
+  process.env.SUPABASE_SECRET_KEY || "";
 
 const SUPABASE_TABLE =
-  process.env.SUPABASE_TABLE ||
-  "big_money_store";
+  process.env.SUPABASE_TABLE || "big_money_store";
 
 // ============================================================
 // LOCAL JSON DATABASE
@@ -146,16 +136,10 @@ const DATA_DIR =
   path.join(__dirname, "data");
 
 const DATA_FILE =
-  path.join(
-    DATA_DIR,
-    "big-money-data.json"
-  );
+  path.join(DATA_DIR, "big-money-data.json");
 
 if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(
-    DATA_DIR,
-    { recursive: true }
-  );
+  fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
 function emptyStore() {
@@ -174,10 +158,7 @@ function loadLocalStore() {
     }
 
     const raw =
-      fs.readFileSync(
-        DATA_FILE,
-        "utf8"
-      );
+      fs.readFileSync(DATA_FILE, "utf8");
 
     if (!raw.trim()) {
       return emptyStore();
@@ -187,17 +168,10 @@ function loadLocalStore() {
       JSON.parse(raw);
 
     return {
-      users:
-        parsed.users || {},
-
-      deposits:
-        parsed.deposits || {},
-
-      withdrawals:
-        parsed.withdrawals || {},
-
-      referrals:
-        parsed.referrals || {}
+      users: parsed.users || {},
+      deposits: parsed.deposits || {},
+      withdrawals: parsed.withdrawals || {},
+      referrals: parsed.referrals || {}
     };
   } catch (error) {
     console.error(
@@ -209,11 +183,9 @@ function loadLocalStore() {
   }
 }
 
-let store =
-  loadLocalStore();
+let store = loadLocalStore();
 
-let storeLock =
-  Promise.resolve();
+let storeLock = Promise.resolve();
 
 function saveLocalStore() {
   const tempFile =
@@ -221,11 +193,7 @@ function saveLocalStore() {
 
   fs.writeFileSync(
     tempFile,
-    JSON.stringify(
-      store,
-      null,
-      2
-    ),
+    JSON.stringify(store, null, 2),
     "utf8"
   );
 
@@ -237,11 +205,9 @@ function saveLocalStore() {
 
 function withStoreLock(fn) {
   const run =
-    storeLock.then(
-      async () => {
-        return await fn();
-      }
-    );
+    storeLock.then(async () => {
+      return await fn();
+    });
 
   storeLock =
     run.catch(() => {});
@@ -253,10 +219,7 @@ function withStoreLock(fn) {
 // SUPABASE
 // ============================================================
 
-async function supabaseRequest(
-  method,
-  body
-) {
+async function supabaseRequest(method, body) {
   if (
     !SUPABASE_URL ||
     !SUPABASE_SECRET_KEY
@@ -265,14 +228,11 @@ async function supabaseRequest(
   }
 
   const url =
-    `${SUPABASE_URL.replace(
-      /\/$/,
-      ""
-    )}/rest/v1/${SUPABASE_TABLE}`;
+    `${SUPABASE_URL.replace(/\/$/, "")}` +
+    `/rest/v1/${SUPABASE_TABLE}`;
 
   const headers = {
-    "Content-Type":
-      "application/json",
+    "Content-Type": "application/json",
 
     "apikey":
       SUPABASE_SECRET_KEY,
@@ -287,17 +247,14 @@ async function supabaseRequest(
   }
 
   const response =
-    await fetch(
-      url,
-      {
-        method,
-        headers,
-        body:
-          body
-            ? JSON.stringify(body)
-            : undefined
-      }
-    );
+    await fetch(url, {
+      method,
+      headers,
+      body:
+        body
+          ? JSON.stringify(body)
+          : undefined
+    });
 
   const text =
     await response.text();
@@ -356,25 +313,20 @@ async function loadSupabaseStore() {
 
   try {
     const url =
-      `${SUPABASE_URL.replace(
-        /\/$/,
-        ""
-      )}/rest/v1/${SUPABASE_TABLE}` +
+      `${SUPABASE_URL.replace(/\/$/, "")}` +
+      `/rest/v1/${SUPABASE_TABLE}` +
       `?id=eq.main&select=data&limit=1`;
 
     const response =
-      await fetch(
-        url,
-        {
-          headers: {
-            "apikey":
-              SUPABASE_SECRET_KEY,
+      await fetch(url, {
+        headers: {
+          "apikey":
+            SUPABASE_SECRET_KEY,
 
-            "Authorization":
-              `Bearer ${SUPABASE_SECRET_KEY}`
-          }
+          "Authorization":
+            `Bearer ${SUPABASE_SECRET_KEY}`
         }
-      );
+      });
 
     if (!response.ok) {
       console.error(
@@ -429,15 +381,9 @@ async function loadSupabaseStore() {
 
 app.use(
   cors({
-    origin: function (
-      origin,
-      callback
-    ) {
+    origin: function(origin, callback) {
       if (!origin) {
-        return callback(
-          null,
-          true
-        );
+        return callback(null, true);
       }
 
       const allowed = [
@@ -446,19 +392,11 @@ app.use(
         "https://safikhanzada437-eng.github.io"
       ];
 
-      if (
-        allowed.includes(origin)
-      ) {
-        return callback(
-          null,
-          true
-        );
+      if (allowed.includes(origin)) {
+        return callback(null, true);
       }
 
-      return callback(
-        null,
-        false
-      );
+      return callback(null, false);
     },
 
     methods: [
@@ -485,32 +423,25 @@ app.use(
 // ============================================================
 
 function roundMoney(value) {
-  const n =
-    Number(value);
+  const n = Number(value);
 
-  if (
-    !Number.isFinite(n)
-  ) {
+  if (!Number.isFinite(n)) {
     return 0;
   }
 
   return (
     Math.round(
-      (n + Number.EPSILON) *
-        1000000
+      (n + Number.EPSILON) * 1000000
     ) / 1000000
   );
 }
 
 function formatMoney(value) {
-  return roundMoney(
-    value
-  ).toFixed(6);
+  return roundMoney(value).toFixed(6);
 }
 
 function nowIso() {
-  return new Date()
-    .toISOString();
+  return new Date().toISOString();
 }
 
 function isValidTxid(txid) {
@@ -519,9 +450,7 @@ function isValidTxid(txid) {
   );
 }
 
-function isValidTronAddress(
-  address
-) {
+function isValidTronAddress(address) {
   return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(
     String(address || "").trim()
   );
@@ -531,13 +460,9 @@ function isValidTronAddress(
 // USER
 // ============================================================
 
-function ensureUser(
-  telegramUser
-) {
+function ensureUser(telegramUser) {
   const id =
-    String(
-      telegramUser.id
-    );
+    String(telegramUser.id);
 
   if (!store.users[id]) {
     store.users[id] = {
@@ -563,16 +488,13 @@ function ensureUser(
 
       referralCount: 0,
 
-      // Exact successful daily reward time.
       lastDailyRewardAt: null,
 
       dailyRewardCount: 0,
 
-      createdAt:
-        nowIso(),
+      createdAt: nowIso(),
 
-      updatedAt:
-        nowIso()
+      updatedAt: nowIso()
     };
 
     return store.users[id];
@@ -597,24 +519,16 @@ function ensureUser(
     "";
 
   user.balance =
-    Number(
-      user.balance || 0
-    );
+    Number(user.balance || 0);
 
   user.points =
-    Number(
-      user.points || 0
-    );
+    Number(user.points || 0);
 
   user.referralCount =
-    Number(
-      user.referralCount || 0
-    );
+    Number(user.referralCount || 0);
 
   user.dailyRewardCount =
-    Number(
-      user.dailyRewardCount || 0
-    );
+    Number(user.dailyRewardCount || 0);
 
   if (!user.referralCode) {
     user.referralCode =
@@ -627,8 +541,7 @@ function ensureUser(
       "lastDailyRewardAt"
     )
   ) {
-    user.lastDailyRewardAt =
-      null;
+    user.lastDailyRewardAt = null;
   }
 
   user.updatedAt =
@@ -641,23 +554,16 @@ function ensureUser(
 // TELEGRAM AUTH
 // ============================================================
 
-function parseQueryString(
-  queryString
-) {
+function parseQueryString(queryString) {
   const params =
     new URLSearchParams(
-      String(
-        queryString || ""
-      )
+      String(queryString || "")
     );
 
   const result = {};
 
   for (
-    const [
-      key,
-      value
-    ] of params.entries()
+    const [key, value] of params.entries()
   ) {
     result[key] = value;
   }
@@ -665,9 +571,7 @@ function parseQueryString(
   return result;
 }
 
-function validateTelegramInitData(
-  initData
-) {
+function validateTelegramInitData(initData) {
   if (!TELEGRAM_BOT_TOKEN) {
     throw new Error(
       "TELEGRAM_BOT_TOKEN is not configured."
@@ -681,9 +585,7 @@ function validateTelegramInitData(
   }
 
   const params =
-    new URLSearchParams(
-      initData
-    );
+    new URLSearchParams(initData);
 
   const hash =
     params.get("hash");
@@ -731,9 +633,7 @@ function validateTelegramInitData(
       .digest("hex");
 
   const received =
-    String(
-      hash
-    ).toLowerCase();
+    String(hash).toLowerCase();
 
   if (
     received.length !==
@@ -746,12 +646,8 @@ function validateTelegramInitData(
 
   const valid =
     crypto.timingSafeEqual(
-      Buffer.from(
-        received
-      ),
-      Buffer.from(
-        calculatedHash
-      )
+      Buffer.from(received),
+      Buffer.from(calculatedHash)
     );
 
   if (!valid) {
@@ -762,9 +658,7 @@ function validateTelegramInitData(
 
   const authDate =
     Number(
-      params.get(
-        "auth_date"
-      ) || 0
+      params.get("auth_date") || 0
     );
 
   if (!authDate) {
@@ -774,16 +668,14 @@ function validateTelegramInitData(
   }
 
   const age =
-    Math.floor(
-      Date.now() / 1000
-    ) - authDate;
+    Math.floor(Date.now() / 1000) -
+    authDate;
 
   if (
     TELEGRAM_AUTH_MAX_AGE > 0 &&
     (
       age < -60 ||
-      age >
-        TELEGRAM_AUTH_MAX_AGE
+      age > TELEGRAM_AUTH_MAX_AGE
     )
   ) {
     throw new Error(
@@ -792,9 +684,7 @@ function validateTelegramInitData(
   }
 
   const userRaw =
-    params.get(
-      "user"
-    );
+    params.get("user");
 
   if (!userRaw) {
     throw new Error(
@@ -806,19 +696,14 @@ function validateTelegramInitData(
 
   try {
     user =
-      JSON.parse(
-        userRaw
-      );
+      JSON.parse(userRaw);
   } catch {
     throw new Error(
       "Invalid Telegram user data."
     );
   }
 
-  if (
-    !user ||
-    !user.id
-  ) {
+  if (!user || !user.id) {
     throw new Error(
       "Telegram user ID is missing."
     );
@@ -828,9 +713,7 @@ function validateTelegramInitData(
     user,
 
     params:
-      parseQueryString(
-        initData
-      )
+      parseQueryString(initData)
   };
 }
 
@@ -838,11 +721,7 @@ function validateTelegramInitData(
 // AUTH MIDDLEWARE
 // ============================================================
 
-async function telegramAuth(
-  req,
-  res,
-  next
-) {
+async function telegramAuth(req, res, next) {
   try {
     const initData =
       req.headers[
@@ -881,8 +760,7 @@ async function telegramAuth(
       .status(401)
       .json({
         ok: false,
-        error:
-          error.message
+        error: error.message
       });
   }
 }
@@ -891,11 +769,7 @@ async function telegramAuth(
 // ADMIN
 // ============================================================
 
-function adminAuth(
-  req,
-  res,
-  next
-) {
+function adminAuth(req, res, next) {
   if (!req.telegramUser) {
     return res
       .status(401)
@@ -907,14 +781,10 @@ function adminAuth(
   }
 
   const id =
-    String(
-      req.telegramUser.id
-    );
+    String(req.telegramUser.id);
 
   if (
-    !ADMIN_TELEGRAM_IDS.includes(
-      id
-    )
+    !ADMIN_TELEGRAM_IDS.includes(id)
   ) {
     return res
       .status(403)
@@ -932,14 +802,9 @@ function adminAuth(
 // TRONGRID
 // ============================================================
 
-async function tronRequest(
-  url,
-  options = {}
-) {
+async function tronRequest(url, options = {}) {
   const headers = {
-    Accept:
-      "application/json",
-
+    Accept: "application/json",
     ...(options.headers || {})
   };
 
@@ -951,13 +816,10 @@ async function tronRequest(
   }
 
   const response =
-    await fetch(
-      url,
-      {
-        ...options,
-        headers
-      }
-    );
+    await fetch(url, {
+      ...options,
+      headers
+    });
 
   const text =
     await response.text();
@@ -988,9 +850,7 @@ async function tronRequest(
 // BLOCKCHAIN TRANSFERS
 // ============================================================
 
-async function getConfirmedUsdtTransfers(
-  txid
-) {
+async function getConfirmedUsdtTransfers(txid) {
   if (!isValidTxid(txid)) {
     throw new Error(
       "Invalid TXID."
@@ -998,17 +858,12 @@ async function getConfirmedUsdtTransfers(
   }
 
   const url =
-    `${TRONGRID_URL.replace(
-      /\/$/,
-      ""
-    )}` +
+    `${TRONGRID_URL.replace(/\/$/, "")}` +
     `/v1/transactions/${txid}/events` +
     `?only_confirmed=true&limit=200`;
 
   const data =
-    await tronRequest(
-      url
-    );
+    await tronRequest(url);
 
   const events =
     Array.isArray(data.data)
@@ -1062,14 +917,10 @@ async function getConfirmedUsdtTransfers(
       "0";
 
     const rawNumber =
-      Number(
-        rawValue
-      );
+      Number(rawValue);
 
     if (
-      !Number.isFinite(
-        rawNumber
-      ) ||
+      !Number.isFinite(rawNumber) ||
       rawNumber <= 0
     ) {
       continue;
@@ -1078,10 +929,10 @@ async function getConfirmedUsdtTransfers(
     const amount =
       roundMoney(
         rawNumber /
-          Math.pow(
-            10,
-            USDT_DECIMALS
-          )
+        Math.pow(
+          10,
+          USDT_DECIMALS
+        )
       );
 
     transfers.push({
@@ -1094,9 +945,7 @@ async function getConfirmedUsdtTransfers(
       amount,
 
       rawAmount:
-        String(
-          rawValue
-        ),
+        String(rawValue),
 
       contract:
         USDT_CONTRACT,
@@ -1116,9 +965,7 @@ async function getConfirmedUsdtTransfers(
 // VERIFY TRANSACTION
 // ============================================================
 
-async function verifyTransaction(
-  txid
-) {
+async function verifyTransaction(txid) {
   const transfers =
     await getConfirmedUsdtTransfers(
       txid
@@ -1145,19 +992,17 @@ async function verifyTransaction(
   const totalAmount =
     roundMoney(
       matching.reduce(
-        (
-          sum,
-          transfer
-        ) =>
+        (sum, transfer) =>
           sum +
           Number(
-            transfer.amount ||
-              0
+            transfer.amount || 0
           ),
         0
       )
     );
 
+  // IMPORTANT:
+  // Minimum is now 5 USDT.
   if (
     totalAmount <
     MIN_DEPOSIT
@@ -1196,9 +1041,7 @@ async function verifyTransaction(
 // USER CONFIRMED DEPOSIT TOTAL
 // ============================================================
 
-function getConfirmedDepositTotal(
-  userId
-) {
+function getConfirmedDepositTotal(userId) {
   const id =
     String(userId);
 
@@ -1232,14 +1075,10 @@ function getConfirmedDepositTotal(
       );
   }
 
-  return roundMoney(
-    total
-  );
+  return roundMoney(total);
 }
 
-function isUserQualifiedForDailyReward(
-  userId
-) {
+function isUserQualifiedForDailyReward(userId) {
   const total =
     getConfirmedDepositTotal(
       userId
@@ -1255,9 +1094,7 @@ function isUserQualifiedForDailyReward(
 // DAILY REWARD STATUS
 // ============================================================
 
-function getDailyRewardStatus(
-  user
-) {
+function getDailyRewardStatus(user) {
   const confirmedDepositTotal =
     getConfirmedDepositTotal(
       user.telegramId
@@ -1354,9 +1191,7 @@ function getDailyRewardStatus(
 
     nextClaimAt:
       remaining > 0
-        ? new Date(
-            next
-          ).toISOString()
+        ? new Date(next).toISOString()
         : null,
 
     reason:
@@ -1375,19 +1210,13 @@ function processReferral(
   startParam
 ) {
   const value =
-    String(
-      startParam || ""
-    ).trim();
+    String(startParam || "").trim();
 
   if (!value) {
     return null;
   }
 
-  if (
-    !value.startsWith(
-      "ref_"
-    )
-  ) {
+  if (!value.startsWith("ref_")) {
     return null;
   }
 
@@ -1399,12 +1228,8 @@ function processReferral(
   }
 
   if (
-    String(
-      inviterId
-    ) ===
-    String(
-      newUserId
-    )
+    String(inviterId) ===
+    String(newUserId)
   ) {
     return null;
   }
@@ -1419,37 +1244,28 @@ function processReferral(
       String(inviterId)
     ];
 
-  if (
-    !newUser ||
-    !inviter
-  ) {
+  if (!newUser || !inviter) {
     return null;
   }
 
-  if (
-    newUser.referredBy
-  ) {
+  if (newUser.referredBy) {
     return null;
   }
 
   newUser.referredBy =
-    String(
-      inviterId
-    );
+    String(inviterId);
 
   inviter.referralCount =
     Number(
-      inviter.referralCount ||
-        0
+      inviter.referralCount || 0
     ) + 1;
 
   inviter.points =
     roundMoney(
       Number(
-        inviter.points ||
-          0
+        inviter.points || 0
       ) +
-        REFERRAL_REWARD
+      REFERRAL_REWARD
     );
 
   const referralId =
@@ -1462,14 +1278,10 @@ function processReferral(
       referralId,
 
     inviterId:
-      String(
-        inviterId
-      ),
+      String(inviterId),
 
     invitedUserId:
-      String(
-        newUserId
-      ),
+      String(newUserId),
 
     reward:
       REFERRAL_REWARD,
@@ -1480,14 +1292,10 @@ function processReferral(
 
   return {
     inviterId:
-      String(
-        inviterId
-      ),
+      String(inviterId),
 
     invitedUserId:
-      String(
-        newUserId
-      ),
+      String(newUserId),
 
     reward:
       REFERRAL_REWARD
@@ -1498,122 +1306,115 @@ function processReferral(
 // HEALTH
 // ============================================================
 
-app.get(
-  "/",
-  (req, res) => {
-    res.json({
-      ok: true,
+app.get("/", (req, res) => {
+  res.json({
+    ok: true,
 
-      name:
-        "Big Money Backend",
+    name:
+      "Big Money Backend",
 
-      network:
-        "TRON TRC20",
+    network:
+      "TRON TRC20",
 
-      version:
-        "daily-reward-5usdt-qualified-v1",
+    version:
+      "deposit-5usdt-daily-10-qualified-v2",
 
-      dailyReward:
-        DAILY_REWARD_USDT,
+    dailyReward:
+      DAILY_REWARD_USDT,
 
-      dailyRewardCooldownHours:
-        24,
+    dailyRewardCooldownHours:
+      24,
 
-      qualifyingDeposit:
-        QUALIFYING_DEPOSIT,
+    qualifyingDeposit:
+      QUALIFYING_DEPOSIT,
 
-      minDeposit:
-        MIN_DEPOSIT,
+    minDeposit:
+      MIN_DEPOSIT,
 
-      depositVerification:
-        "TXID blockchain amount",
+    depositVerification:
+      "TXID blockchain amount",
 
-      time:
-        nowIso()
-    });
-  }
-);
+    time:
+      nowIso()
+  });
+});
 
-app.get(
-  "/health",
-  (req, res) => {
-    res.json({
-      ok: true,
+app.get("/health", (req, res) => {
+  res.json({
+    ok: true,
 
-      name:
-        "Big Money Backend",
+    name:
+      "Big Money Backend",
 
-      network:
-        "TRON TRC20",
+    network:
+      "TRON TRC20",
 
-      version:
-        "daily-reward-5usdt-qualified-v1",
+    version:
+      "deposit-5usdt-daily-10-qualified-v2",
 
-      dailyReward:
-        DAILY_REWARD_USDT,
+    dailyReward:
+      DAILY_REWARD_USDT,
 
-      dailyRewardCooldownHours:
-        24,
+    dailyRewardCooldownHours:
+      24,
 
-      qualifyingDeposit:
-        QUALIFYING_DEPOSIT,
+    qualifyingDeposit:
+      QUALIFYING_DEPOSIT,
 
-      minDeposit:
-        MIN_DEPOSIT
-    });
-  }
-);
+    minDeposit:
+      MIN_DEPOSIT
+  });
+});
 
 // ============================================================
 // CONFIG
 // ============================================================
 
-app.get(
-  "/api/config",
-  (req, res) => {
-    res.json({
-      ok: true,
+app.get("/api/config", (req, res) => {
+  res.json({
+    ok: true,
 
-      name:
-        "Big Money",
+    name:
+      "Big Money",
 
-      network:
-        "TRON TRC20",
+    network:
+      "TRON TRC20",
 
-      depositAddress:
-        DEPOSIT_ADDRESS,
+    depositAddress:
+      DEPOSIT_ADDRESS,
 
-      usdtContract:
-        USDT_CONTRACT,
+    usdtContract:
+      USDT_CONTRACT,
 
-      minDeposit:
-        MIN_DEPOSIT,
+    // Minimum individual deposit = 5
+    minDeposit:
+      MIN_DEPOSIT,
 
-      qualifyingDeposit:
-        QUALIFYING_DEPOSIT,
+    // Daily reward qualification = 10
+    qualifyingDeposit:
+      QUALIFYING_DEPOSIT,
 
-      minWithdrawal:
-        MIN_WITHDRAWAL,
+    minWithdrawal:
+      MIN_WITHDRAWAL,
 
-      dailyReward:
-        DAILY_REWARD_USDT,
+    dailyReward:
+      DAILY_REWARD_USDT,
 
-      dailyRewardCooldownHours:
-        24,
+    dailyRewardCooldownHours:
+      24,
 
-      requiredReferrals:
-        REQUIRED_REFERRALS,
+    requiredReferrals:
+      REQUIRED_REFERRALS,
 
-      referralReward:
-        REFERRAL_REWARD,
+    referralReward:
+      REFERRAL_REWARD,
 
-      botUsername:
-        TELEGRAM_BOT_USERNAME,
+    botUsername:
+      TELEGRAM_BOT_USERNAME,
 
-      transfers: []
-    });
-  }
-);
+    transfers: []
+  });
+});
 
 // ============================================================
 // ACCOUNT
@@ -1622,10 +1423,7 @@ app.get(
 app.get(
   "/api/account",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       let account;
 
@@ -1692,14 +1490,12 @@ app.get(
 
             referralCount:
               Number(
-                user.referralCount ||
-                  0
+                user.referralCount || 0
               ),
 
             dailyRewardCount:
               Number(
-                user.dailyRewardCount ||
-                  0
+                user.dailyRewardCount || 0
               ),
 
             lastDailyRewardAt:
@@ -1739,6 +1535,7 @@ app.get(
         .status(500)
         .json({
           ok: false,
+
           error:
             "Could not load account."
         });
@@ -1753,10 +1550,7 @@ app.get(
 app.get(
   "/api/profile",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const user =
         store.users[
@@ -1801,8 +1595,7 @@ app.get(
 
           referralCount:
             Number(
-              user.referralCount ||
-                0
+              user.referralCount || 0
             ),
 
           confirmedDepositTotal,
@@ -1827,6 +1620,7 @@ app.get(
         .status(500)
         .json({
           ok: false,
+
           error:
             "Could not load profile."
         });
@@ -1841,10 +1635,7 @@ app.get(
 app.get(
   "/api/daily-reward/status",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const user =
         store.users[
@@ -1890,8 +1681,7 @@ app.get(
 
         claimCount:
           Number(
-            user.dailyRewardCount ||
-              0
+            user.dailyRewardCount || 0
           ),
 
         reason:
@@ -1902,6 +1692,7 @@ app.get(
         .status(500)
         .json({
           ok: false,
+
           error:
             "Could not load daily reward status."
         });
@@ -1916,10 +1707,7 @@ app.get(
 app.post(
   "/api/daily-reward/claim",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       let result;
 
@@ -1930,15 +1718,14 @@ app.post(
               req.telegramUser
             );
 
-          // ==================================================
-          // STEP 1:
-          // CHECK CONFIRMED DEPOSITS
-          // ==================================================
-
           const confirmedDepositTotal =
             getConfirmedDepositTotal(
               user.telegramId
             );
+
+          // ==================================================
+          // REQUIRE TOTAL 10 USDT
+          // ==================================================
 
           if (
             confirmedDepositTotal <
@@ -1978,8 +1765,7 @@ app.post(
           }
 
           // ==================================================
-          // STEP 2:
-          // CHECK EXACT 24 HOURS
+          // CHECK 24 HOURS
           // ==================================================
 
           const status =
@@ -1987,33 +1773,26 @@ app.post(
               user
             );
 
-          if (
-            !status.available
-          ) {
+          if (!status.available) {
             const totalSeconds =
               Math.ceil(
                 status.remainingMs /
-                  1000
+                1000
               );
 
             const hours =
               Math.floor(
-                totalSeconds /
-                  3600
+                totalSeconds / 3600
               );
 
             const minutes =
               Math.floor(
-                (
-                  totalSeconds %
-                  3600
-                ) /
-                  60
+                (totalSeconds % 3600) /
+                60
               );
 
             const seconds =
-              totalSeconds %
-              60;
+              totalSeconds % 60;
 
             result = {
               ok: false,
@@ -2046,8 +1825,7 @@ app.post(
           }
 
           // ==================================================
-          // STEP 3:
-          // ADD EXACTLY 5 USDT
+          // ADD 5 USDT
           // ==================================================
 
           const reward =
@@ -2058,19 +1836,15 @@ app.post(
               Number(
                 user.balance || 0
               ) +
-                reward
+              reward
             );
 
-          // IMPORTANT:
-          // Save the exact successful claim time.
-          // This is what creates the 24-hour cooldown.
           user.lastDailyRewardAt =
             nowIso();
 
           user.dailyRewardCount =
             Number(
-              user.dailyRewardCount ||
-                0
+              user.dailyRewardCount || 0
             ) + 1;
 
           user.updatedAt =
@@ -2129,24 +1903,17 @@ app.post(
         }
       );
 
-      if (
-        !result.ok
-      ) {
+      if (!result.ok) {
         return res
           .status(
-            result.code ===
-              "COOLDOWN"
+            result.code === "COOLDOWN"
               ? 429
               : 400
           )
-          .json(
-            result
-          );
+          .json(result);
       }
 
-      return res.json(
-        result
-      );
+      return res.json(result);
     } catch (error) {
       console.error(
         "DAILY REWARD ERROR:",
@@ -2165,14 +1932,14 @@ app.post(
   }
 );
 
-// Compatibility endpoint.
+// ============================================================
+// COMPATIBILITY DAILY REWARD
+// ============================================================
+
 app.get(
   "/api/daily-reward",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const user =
         store.users[
@@ -2218,6 +1985,7 @@ app.get(
         .status(500)
         .json({
           ok: false,
+
           error:
             "Could not load daily reward."
         });
@@ -2232,10 +2000,7 @@ app.get(
 app.get(
   "/api/referrals",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const user =
         store.users[
@@ -2267,41 +2032,36 @@ app.get(
                 user.telegramId
               )
           )
-          .map(
-            (r) => {
-              const invited =
-                store.users[
-                  String(
-                    r.invitedUserId
-                  )
-                ];
+          .map((r) => {
+            const invited =
+              store.users[
+                String(
+                  r.invitedUserId
+                )
+              ];
 
-              return {
-                id:
-                  r.id,
+            return {
+              id:
+                r.id,
 
-                telegramId:
-                  r.invitedUserId,
+              telegramId:
+                r.invitedUserId,
 
-                username:
-                  invited?.username ||
-                  "",
+              username:
+                invited?.username || "",
 
-                firstName:
-                  invited?.firstName ||
-                  "",
+              firstName:
+                invited?.firstName || "",
 
-                reward:
-                  Number(
-                    r.reward ||
-                      0
-                  ),
+              reward:
+                Number(
+                  r.reward || 0
+                ),
 
-                createdAt:
-                  r.createdAt
-              };
-            }
-          );
+              createdAt:
+                r.createdAt
+            };
+          });
 
       return res.json({
         ok: true,
@@ -2312,8 +2072,7 @@ app.get(
 
         referralCount:
           Number(
-            user.referralCount ||
-              0
+            user.referralCount || 0
           ),
 
         points:
@@ -2339,6 +2098,7 @@ app.get(
         .status(500)
         .json({
           ok: false,
+
           error:
             "Could not load referrals."
         });
@@ -2346,14 +2106,14 @@ app.get(
   }
 );
 
-// Compatibility endpoint.
+// ============================================================
+// COMPATIBILITY REFERRAL
+// ============================================================
+
 app.get(
   "/api/referral",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     const user =
       store.users[
         String(
@@ -2380,8 +2140,7 @@ app.get(
 
       referralCount:
         Number(
-          user.referralCount ||
-            0
+          user.referralCount || 0
         ),
 
       points:
@@ -2405,10 +2164,7 @@ app.get(
 app.post(
   "/api/deposits/request",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const requestedAmount =
         Number(
@@ -2455,11 +2211,9 @@ app.post(
             requestedAmount
           ),
 
-        amount:
-          null,
+        amount: null,
 
-        txid:
-          null,
+        txid: null,
 
         status:
           "pending",
@@ -2500,6 +2254,7 @@ app.post(
         .status(500)
         .json({
           ok: false,
+
           error:
             "Could not create deposit request."
         });
@@ -2536,20 +2291,20 @@ async function processDeposit(
     );
 
   if (
-    !Number.isFinite(
-      amount
-    ) ||
+    !Number.isFinite(amount) ||
     amount <
       MIN_DEPOSIT
   ) {
     throw new Error(
-      "Deposit amount is below minimum."
+      `Deposit amount must be at least ${formatMoney(
+        MIN_DEPOSIT
+      )} USDT.`
     );
   }
 
-  // ----------------------------------------------------------
-  // DUPLICATE TXID PROTECTION
-  // ----------------------------------------------------------
+  // ==========================================================
+  // DUPLICATE TXID
+  // ==========================================================
 
   const alreadyCredited =
     Object.values(
@@ -2568,24 +2323,22 @@ async function processDeposit(
         "confirmed"
     );
 
-  if (
-    alreadyCredited
-  ) {
+  if (alreadyCredited) {
     throw new Error(
       "This TXID has already been credited."
     );
   }
 
-  // ----------------------------------------------------------
-  // CREDIT USER
-  // ----------------------------------------------------------
+  // ==========================================================
+  // CREDIT BALANCE
+  // ==========================================================
 
   user.balance =
     roundMoney(
       Number(
         user.balance || 0
       ) +
-        amount
+      amount
     );
 
   deposit.amount =
@@ -2628,22 +2381,14 @@ async function processDeposit(
 app.post(
   "/api/deposits/verify",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const txid =
         String(
-          req.body?.txid ||
-          ""
+          req.body?.txid || ""
         ).trim();
 
-      if (
-        !isValidTxid(
-          txid
-        )
-      ) {
+      if (!isValidTxid(txid)) {
         return res
           .status(400)
           .json({
@@ -2654,9 +2399,9 @@ app.post(
           });
       }
 
-      // ------------------------------------------------------
-      // CHECK IF TXID WAS ALREADY CREDITED
-      // ------------------------------------------------------
+      // ======================================================
+      // DUPLICATE CHECK
+      // ======================================================
 
       const existing =
         Object.values(
@@ -2684,18 +2429,16 @@ app.post(
           });
       }
 
-      // ------------------------------------------------------
+      // ======================================================
       // BLOCKCHAIN VERIFICATION
-      // ------------------------------------------------------
+      // ======================================================
 
       const verification =
         await verifyTransaction(
           txid
         );
 
-      if (
-        !verification.ok
-      ) {
+      if (!verification.ok) {
         return res
           .status(400)
           .json(
@@ -2703,6 +2446,8 @@ app.post(
           );
       }
 
+      // IMPORTANT:
+      // Use the real blockchain amount.
       const transfer =
         verification.transfer;
 
@@ -2742,9 +2487,9 @@ app.post(
             );
           }
 
-          // --------------------------------------------------
-          // USE EXISTING PENDING DEPOSIT IF AVAILABLE
-          // --------------------------------------------------
+          // ==================================================
+          // FIND PENDING DEPOSIT
+          // ==================================================
 
           let deposit =
             Object.values(
@@ -2762,9 +2507,9 @@ app.post(
                 !d.txid
             );
 
-          // --------------------------------------------------
-          // OTHERWISE CREATE NEW DEPOSIT
-          // --------------------------------------------------
+          // ==================================================
+          // CREATE IF NEEDED
+          // ==================================================
 
           if (!deposit) {
             const id =
@@ -2801,6 +2546,10 @@ app.post(
               deposit;
           }
 
+          // ==================================================
+          // CREDIT ACTUAL BLOCKCHAIN AMOUNT
+          // ==================================================
+
           const processed =
             await processDeposit(
               deposit,
@@ -2828,7 +2577,18 @@ app.post(
             txid,
 
             deposit:
-              processed.deposit
+              processed.deposit,
+
+            confirmedDepositTotal:
+              getConfirmedDepositTotal(
+                userId
+              ),
+
+            qualifiedForDailyReward:
+              getConfirmedDepositTotal(
+                userId
+              ) >=
+              QUALIFYING_DEPOSIT
           };
 
           saveLocalStore();
@@ -2837,9 +2597,8 @@ app.post(
         }
       );
 
-      return res.json(
-        result
-      );
+      return res.json(result);
+
     } catch (error) {
       console.error(
         "DEPOSIT VERIFY ERROR:",
@@ -2860,16 +2619,13 @@ app.post(
 );
 
 // ============================================================
-// CHECK BLOCKCHAIN
+// CHECK DEPOSITS
 // ============================================================
 
 app.get(
   "/api/deposits/check",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const userId =
         String(
@@ -2884,7 +2640,8 @@ app.get(
             (d) =>
               String(
                 d.userId
-              ) === userId
+              ) ===
+              userId
           )
           .sort(
             (a, b) =>
@@ -2908,14 +2665,10 @@ app.get(
       const total =
         roundMoney(
           confirmed.reduce(
-            (
-              sum,
-              d
-            ) =>
+            (sum, d) =>
               sum +
               Number(
-                d.amount ||
-                  0
+                d.amount || 0
               ),
             0
           )
@@ -2927,9 +2680,11 @@ app.get(
         depositAddress:
           DEPOSIT_ADDRESS,
 
+        // 5 USDT
         minDeposit:
           MIN_DEPOSIT,
 
+        // 10 USDT
         qualifyingDeposit:
           QUALIFYING_DEPOSIT,
 
@@ -2942,6 +2697,7 @@ app.get(
 
         deposits
       });
+
     } catch (error) {
       console.error(
         "DEPOSIT CHECK ERROR:",
@@ -2952,6 +2708,7 @@ app.get(
         .status(500)
         .json({
           ok: false,
+
           error:
             "Could not check deposits."
         });
@@ -2966,10 +2723,7 @@ app.get(
 app.get(
   "/api/transactions",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const userId =
         String(
@@ -2984,7 +2738,8 @@ app.get(
             (d) =>
               String(
                 d.userId
-              ) === userId
+              ) ===
+              userId
           )
           .map(
             (d) => ({
@@ -3022,7 +2777,8 @@ app.get(
             (w) =>
               String(
                 w.userId
-              ) === userId
+              ) ===
+              userId
           )
           .map(
             (w) => ({
@@ -3033,8 +2789,7 @@ app.get(
                 w.id,
 
               txid:
-                w.txid ||
-                null,
+                w.txid || null,
 
               amount:
                 Number(
@@ -3071,11 +2826,13 @@ app.get(
         transactions:
           all
       });
+
     } catch (error) {
       return res
         .status(500)
         .json({
           ok: false,
+
           error:
             "Could not load transactions."
         });
@@ -3084,16 +2841,13 @@ app.get(
 );
 
 // ============================================================
-// WITHDRAW REQUEST
+// WITHDRAW
 // ============================================================
 
 app.post(
   "/api/withdraw",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const amount =
         Number(
@@ -3102,14 +2856,11 @@ app.post(
 
       const address =
         String(
-          req.body?.address ||
-          ""
+          req.body?.address || ""
         ).trim();
 
       if (
-        !Number.isFinite(
-          amount
-        ) ||
+        !Number.isFinite(amount) ||
         amount <
           MIN_WITHDRAWAL
       ) {
@@ -3157,8 +2908,7 @@ app.post(
           if (
             Number(
               user.balance
-            ) <
-            amount
+            ) < amount
           ) {
             throw new Error(
               "Insufficient balance."
@@ -3167,8 +2917,7 @@ app.post(
 
           if (
             Number(
-              user.referralCount ||
-                0
+              user.referralCount || 0
             ) <
             REQUIRED_REFERRALS
           ) {
@@ -3182,7 +2931,7 @@ app.post(
               Number(
                 user.balance
               ) -
-                amount
+              amount
             );
 
           const id =
@@ -3216,9 +2965,7 @@ app.post(
               nowIso()
           };
 
-          store.withdrawals[
-            id
-          ] =
+          store.withdrawals[id] =
             withdrawal;
 
           user.updatedAt =
@@ -3238,6 +2985,7 @@ app.post(
 
         withdrawal
       });
+
     } catch (error) {
       console.error(
         "WITHDRAW ERROR:",
@@ -3257,17 +3005,14 @@ app.post(
   }
 );
 
-// Compatibility endpoint.
+// ============================================================
+// COMPATIBILITY WITHDRAWAL
+// ============================================================
+
 app.post(
   "/api/withdrawals/request",
   telegramAuth,
-  async (
-    req,
-    res
-  ) => {
-    req.url =
-      "/api/withdraw";
-
+  async (req, res) => {
     try {
       const amount =
         Number(
@@ -3276,14 +3021,11 @@ app.post(
 
       const address =
         String(
-          req.body?.address ||
-          ""
+          req.body?.address || ""
         ).trim();
 
       if (
-        !Number.isFinite(
-          amount
-        ) ||
+        !Number.isFinite(amount) ||
         amount <
           MIN_WITHDRAWAL
       ) {
@@ -3308,6 +3050,7 @@ app.post(
           .status(400)
           .json({
             ok: false,
+
             error:
               "Invalid TRON address."
           });
@@ -3330,8 +3073,7 @@ app.post(
           if (
             Number(
               user.balance
-            ) <
-            amount
+            ) < amount
           ) {
             throw new Error(
               "Insufficient balance."
@@ -3340,8 +3082,7 @@ app.post(
 
           if (
             Number(
-              user.referralCount ||
-                0
+              user.referralCount || 0
             ) <
             REQUIRED_REFERRALS
           ) {
@@ -3355,7 +3096,7 @@ app.post(
               Number(
                 user.balance
               ) -
-                amount
+              amount
             );
 
           const id =
@@ -3389,9 +3130,7 @@ app.post(
               nowIso()
           };
 
-          store.withdrawals[
-            id
-          ] =
+          store.withdrawals[id] =
             withdrawal;
 
           user.updatedAt =
@@ -3411,6 +3150,7 @@ app.post(
 
         withdrawal
       });
+
     } catch (error) {
       return res
         .status(400)
@@ -3432,10 +3172,7 @@ app.get(
   "/api/admin/users",
   telegramAuth,
   adminAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     const users =
       Object.values(
         store.users
@@ -3465,8 +3202,7 @@ app.get(
 
           referralCount:
             Number(
-              u.referralCount ||
-                0
+              u.referralCount || 0
             ),
 
           confirmedDepositTotal:
@@ -3476,8 +3212,7 @@ app.get(
 
           dailyRewardCount:
             Number(
-              u.dailyRewardCount ||
-                0
+              u.dailyRewardCount || 0
             ),
 
           lastDailyRewardAt:
@@ -3503,10 +3238,7 @@ app.get(
   "/api/admin/deposits",
   telegramAuth,
   adminAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     return res.json({
       ok: true,
 
@@ -3534,10 +3266,7 @@ app.get(
   "/api/admin/withdrawals",
   telegramAuth,
   adminAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     return res.json({
       ok: true,
 
@@ -3558,17 +3287,14 @@ app.get(
 );
 
 // ============================================================
-// ADMIN - CONFIRM WITHDRAWAL
+// ADMIN - COMPLETE WITHDRAWAL
 // ============================================================
 
 app.post(
   "/api/admin/withdrawals/:id/complete",
   telegramAuth,
   adminAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const id =
         String(
@@ -3577,16 +3303,13 @@ app.post(
 
       const txid =
         String(
-          req.body?.txid ||
-          ""
+          req.body?.txid || ""
         ).trim();
 
       await withStoreLock(
         async () => {
           const withdrawal =
-            store.withdrawals[
-              id
-            ];
+            store.withdrawals[id];
 
           if (!withdrawal) {
             throw new Error(
@@ -3618,6 +3341,7 @@ app.post(
         message:
           "Withdrawal marked as completed."
       });
+
     } catch (error) {
       return res
         .status(400)
@@ -3639,10 +3363,7 @@ app.post(
   "/api/admin/withdrawals/:id/reject",
   telegramAuth,
   adminAuth,
-  async (
-    req,
-    res
-  ) => {
+  async (req, res) => {
     try {
       const id =
         String(
@@ -3652,9 +3373,7 @@ app.post(
       await withStoreLock(
         async () => {
           const withdrawal =
-            store.withdrawals[
-              id
-            ];
+            store.withdrawals[id];
 
           if (!withdrawal) {
             throw new Error(
@@ -3691,13 +3410,11 @@ app.post(
             user.balance =
               roundMoney(
                 Number(
-                  user.balance ||
-                    0
+                  user.balance || 0
                 ) +
-                  Number(
-                    withdrawal.amount ||
-                      0
-                  )
+                Number(
+                  withdrawal.amount || 0
+                )
               );
 
             user.updatedAt =
@@ -3725,6 +3442,7 @@ app.post(
         message:
           "Withdrawal rejected and amount returned to user balance."
       });
+
     } catch (error) {
       return res
         .status(400)
@@ -3741,13 +3459,8 @@ app.post(
 // ============================================================
 // BACKGROUND DEPOSIT SCANNER
 // ============================================================
-//
-// If a pending deposit already has a TXID,
-// the server periodically checks it.
-// ============================================================
 
-let scannerRunning =
-  false;
+let scannerRunning = false;
 
 async function scanPendingDeposits() {
   if (scannerRunning) {
@@ -3767,14 +3480,9 @@ async function scanPendingDeposits() {
               d.status
             ).toLowerCase() ===
             "pending" &&
-            isValidTxid(
-              d.txid
-            )
+            isValidTxid(d.txid)
         )
-        .slice(
-          0,
-          20
-        );
+        .slice(0, 20);
 
     for (
       const deposit of pending
@@ -3785,9 +3493,7 @@ async function scanPendingDeposits() {
             deposit.txid
           );
 
-        if (
-          !verification.ok
-        ) {
+        if (!verification.ok) {
           continue;
         }
 
@@ -3820,8 +3526,10 @@ async function scanPendingDeposits() {
                   String(
                     deposit.txid
                   ).toLowerCase() &&
-                  d.status ===
-                    "confirmed"
+                  String(
+                    d.status || ""
+                  ).toLowerCase() ===
+                  "confirmed"
               );
 
             if (duplicate) {
@@ -3843,6 +3551,7 @@ async function scanPendingDeposits() {
             );
           }
         );
+
       } catch (error) {
         console.error(
           "SCANNER TX ERROR:",
@@ -3851,11 +3560,13 @@ async function scanPendingDeposits() {
         );
       }
     }
+
   } catch (error) {
     console.error(
       "DEPOSIT SCANNER ERROR:",
       error.message
     );
+
   } finally {
     scannerRunning =
       false;
@@ -3891,7 +3602,7 @@ async function startServer() {
       );
 
       console.log(
-        `NETWORK: TRON TRC20`
+        "NETWORK: TRON TRC20"
       );
 
       console.log(
@@ -3899,11 +3610,11 @@ async function startServer() {
       );
 
       console.log(
-        `MIN DEPOSIT: ${MIN_DEPOSIT} USDT`
+        `MIN INDIVIDUAL DEPOSIT: ${MIN_DEPOSIT} USDT`
       );
 
       console.log(
-        `QUALIFYING DEPOSIT: ${QUALIFYING_DEPOSIT} USDT`
+        `QUALIFYING DEPOSIT TOTAL: ${QUALIFYING_DEPOSIT} USDT`
       );
 
       console.log(
@@ -3911,7 +3622,7 @@ async function startServer() {
       );
 
       console.log(
-        `DAILY REWARD COOLDOWN: 24 HOURS`
+        "DAILY REWARD COOLDOWN: 24 HOURS"
       );
 
       console.log(
@@ -3936,7 +3647,6 @@ async function startServer() {
     }
   );
 
-  // Check pending deposits every 15 seconds.
   setInterval(
     () => {
       scanPendingDeposits()

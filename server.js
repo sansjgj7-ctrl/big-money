@@ -1,8 +1,4 @@
-
-
-# The complete corrected server.js is based on the user's supplied server.js,
-# with Supabase persistence integrated while preserving the existing business logic.
-code = r'''const express = require("express");
+const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
 const fs = require("fs");

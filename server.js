@@ -1,15 +1,4 @@
-// ============================================================
-// BIG MONEY BACKEND
-// Telegram Mini App + USDT TRC20
-//
-// RULES:
-// 1. Minimum individual deposit = 5 USDT
-// 2. Daily reward requires total confirmed deposits >= 10 USDT
-// 3. Daily reward = 5 USDT
-// 4. Daily reward cooldown = exactly 24 hours
-// 5. Deposit amount is read from blockchain using TXID
-// 6. A TXID cannot be credited twice
-// ============================================================
+
 
 const express = require("express");
 const cors = require("cors");

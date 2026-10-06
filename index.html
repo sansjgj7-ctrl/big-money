@@ -313,6 +313,7 @@ text-align:right;word-break:break-all
 
 <div class="hero">
 <div class="small-label">Available Balance</div>
+
 <div class="balance">
 <span id="balance">0.0000</span>
 <span class="balance-unit">USDT</span>
@@ -343,12 +344,14 @@ Connecting to Telegram...
 </div>
 
 <div class="card" style="margin-top:13px">
+
 <div class="section-title">Quick Actions</div>
 
 <div class="btn-row">
 <button class="secondary" onclick="showPage('send')">💸 Send</button>
 <button class="secondary" onclick="showPage('referral')">👥 Referral</button>
 </div>
+
 </div>
 
 <div class="card">
@@ -363,15 +366,21 @@ Connecting to Telegram...
 <div class="feature-icon">🎁</div>
 
 <div style="flex:1">
-<div class="feature-title">Earn 5 USDT every eligible day</div>
+
+<div class="feature-title">
+Earn 5 USDT every eligible day
+</div>
+
 <div id="dailyRewardStatus" class="feature-text">
 Checking reward status...
 </div>
-</div>
 
 </div>
 
-<button id="dailyRewardBtn"
+</div>
+
+<button
+id="dailyRewardBtn"
 class="primary"
 style="margin-top:14px"
 onclick="claimDailyReward()"
@@ -379,7 +388,8 @@ disabled>
 Checking...
 </button>
 
-<div id="dailyRewardCountdown"
+<div
+id="dailyRewardCountdown"
 class="muted"
 style="text-align:center;margin-top:9px">
 </div>
@@ -389,6 +399,7 @@ style="text-align:center;margin-top:9px">
 <div class="card">
 
 <div class="row">
+
 <div class="section-title" style="margin:0">
 Withdrawal Requirement
 </div>
@@ -396,6 +407,7 @@ Withdrawal Requirement
 <span class="badge">
 <span id="homeRefProgress">0</span>/5
 </span>
+
 </div>
 
 <div class="feature" style="margin-top:13px">
@@ -403,11 +415,15 @@ Withdrawal Requirement
 <div class="feature-icon">🔐</div>
 
 <div>
-<div class="feature-title">5 successful referrals</div>
+
+<div class="feature-title">
+5 successful referrals
+</div>
 
 <div class="feature-text">
 An invited user becomes successful after a confirmed deposit of at least 10 USDT.
 </div>
+
 </div>
 
 </div>
@@ -420,7 +436,9 @@ An invited user becomes successful after a confirmed deposit of at least 10 USDT
 
 <div class="card">
 
-<div class="section-title">Recent Transactions</div>
+<div class="section-title">
+Recent Transactions
+</div>
 
 <div id="homeTransactions">
 <div class="empty">No transactions yet.</div>
@@ -433,16 +451,27 @@ An invited user becomes successful after a confirmed deposit of at least 10 USDT
 
 <section id="page-deposit" class="page">
 
-<div class="section-title">Deposit USDT</div>
+<div class="section-title">
+Deposit USDT
+</div>
 
 <div class="card">
 
 <div class="row">
-<span class="badge">Minimum 5 USDT</span>
-<span class="muted">TRON TRC20 only</span>
+
+<span class="badge">
+Minimum 5 USDT
+</span>
+
+<span class="muted">
+TRON TRC20 only
+</span>
+
 </div>
 
-<label style="margin-top:15px">Deposit Amount</label>
+<label style="margin-top:15px">
+Deposit Amount
+</label>
 
 <input
 id="depAmount"
@@ -460,13 +489,20 @@ placeholder="Example: 10">
 
 </div>
 
-<label>TRC20 Deposit Address</label>
+<label>
+TRC20 Deposit Address
+</label>
 
 <div class="address-box">
 
-<input id="depositAddress" readonly value="Loading...">
+<input
+id="depositAddress"
+readonly
+value="Loading...">
 
-<button class="copy-btn" onclick="copyDepositAddress()">
+<button
+class="copy-btn"
+onclick="copyDepositAddress()">
 Copy
 </button>
 
@@ -474,17 +510,25 @@ Copy
 
 <div id="qrWrap" class="qr-wrap">
 
-<img id="qrImage" alt="Deposit QR">
+<img
+id="qrImage"
+alt="Deposit QR">
 
 </div>
 
 <div class="notice">
+
 Send <b class="green">USDT only on TRON TRC20</b>.
-A confirmed deposit of at least <b class="green">10 USDT</b>
+
+A confirmed deposit of at least
+<b class="green">10 USDT</b>
 also qualifies for the daily reward condition.
+
 </div>
 
-<label>Transaction ID (TXID)</label>
+<label>
+Transaction ID (TXID)
+</label>
 
 <input
 id="txid"
@@ -511,18 +555,24 @@ Check Blockchain
 
 <div class="card">
 
-<div class="section-title">Deposit Rules</div>
+<div class="section-title">
+Deposit Rules
+</div>
 
 <div class="feature" style="margin-bottom:14px">
 
 <div class="feature-icon">💵</div>
 
 <div>
-<div class="feature-title">Minimum: 5 USDT</div>
+
+<div class="feature-title">
+Minimum: 5 USDT
+</div>
 
 <div class="feature-text">
 Deposits from 5 USDT can be submitted for blockchain verification.
 </div>
+
 </div>
 
 </div>
@@ -532,11 +582,15 @@ Deposits from 5 USDT can be submitted for blockchain verification.
 <div class="feature-icon">🎁</div>
 
 <div>
-<div class="feature-title">Reward threshold: 10 USDT</div>
+
+<div class="feature-title">
+Reward threshold: 10 USDT
+</div>
 
 <div class="feature-text">
 A confirmed deposit of 10 USDT or more qualifies for the daily reward condition.
 </div>
+
 </div>
 
 </div>
@@ -546,12 +600,16 @@ A confirmed deposit of 10 USDT or more qualifies for the daily reward condition.
 <div class="feature-icon">🛡️</div>
 
 <div>
-<div class="feature-title">Verify before crediting</div>
+
+<div class="feature-title">
+Verify before crediting
+</div>
 
 <div class="feature-text">
 The server checks the official USDT contract, recipient address,
 transaction status and Transfer event.
 </div>
+
 </div>
 
 </div>
@@ -563,7 +621,9 @@ transaction status and Transfer event.
 
 <section id="page-withdraw" class="page">
 
-<div class="section-title">Withdraw</div>
+<div class="section-title">
+Withdraw
+</div>
 
 <div class="card">
 
@@ -574,7 +634,9 @@ USDT is not automatically sent from this page.
 
 <div class="stat" style="margin-bottom:14px">
 
-<div class="stat-title">Successful Referrals</div>
+<div class="stat-title">
+Successful Referrals
+</div>
 
 <div class="stat-value">
 <span id="withdrawRefCount">0</span> / 5
@@ -586,7 +648,9 @@ USDT is not automatically sent from this page.
 
 </div>
 
-<label>TRC20 USDT Address</label>
+<label>
+TRC20 USDT Address
+</label>
 
 <input
 id="withdrawAddress"
@@ -594,7 +658,9 @@ type="text"
 placeholder="T..."
 autocomplete="off">
 
-<label>Amount</label>
+<label>
+Amount
+</label>
 
 <input
 id="withdrawAmount"
@@ -614,7 +680,9 @@ Request Withdrawal
 
 <div class="card">
 
-<div class="section-title">Withdrawal History</div>
+<div class="section-title">
+Withdrawal History
+</div>
 
 <div id="withdrawalHistory">
 <div class="empty">Loading...</div>
@@ -627,7 +695,9 @@ Request Withdrawal
 
 <section id="page-send" class="page">
 
-<div class="section-title">Send USDT</div>
+<div class="section-title">
+Send USDT
+</div>
 
 <div class="card">
 
@@ -641,11 +711,15 @@ Withdrawals are submitted as requests and reviewed by an admin.
 <div class="feature-icon">💚</div>
 
 <div>
-<div class="feature-title">Internal transfer — coming soon</div>
+
+<div class="feature-title">
+Internal transfer — coming soon
+</div>
 
 <div class="feature-text">
 This area is reserved for a future internal transfer feature.
 </div>
+
 </div>
 
 </div>
@@ -657,18 +731,29 @@ This area is reserved for a future internal transfer feature.
 
 <section id="page-referral" class="page">
 
-<div class="section-title">Referral</div>
+<div class="section-title">
+Referral
+</div>
 
 <div class="card">
 
 <div class="row">
 
 <div>
-<div class="small-label">Successful Referrals</div>
-<div class="stat-value" id="refPageCount">0</div>
+
+<div class="small-label">
+Successful Referrals
 </div>
 
-<span class="badge">Goal 5</span>
+<div class="stat-value" id="refPageCount">
+0
+</div>
+
+</div>
+
+<span class="badge">
+Goal 5
+</span>
 
 </div>
 
@@ -677,18 +762,29 @@ This area is reserved for a future internal transfer feature.
 </div>
 
 <div class="notice" style="margin-top:14px">
+
 There is currently
 <b class="warning">no 3-point referral reward</b>.
-Successful referrals count toward the 5-referral withdrawal requirement.
+
+Successful referrals count toward the
+5-referral withdrawal requirement.
+
 </div>
 
-<label>Your Referral Link</label>
+<label>
+Your Referral Link
+</label>
 
 <div class="address-box">
 
-<input id="referralLink" readonly value="Loading...">
+<input
+id="referralLink"
+readonly
+value="Loading...">
 
-<button class="copy-btn" onclick="copyReferralLink()">
+<button
+class="copy-btn"
+onclick="copyReferralLink()">
 Copy
 </button>
 
@@ -705,18 +801,24 @@ Share Referral Link
 
 <div class="card">
 
-<div class="section-title">How it works</div>
+<div class="section-title">
+How it works
+</div>
 
 <div class="feature" style="margin-bottom:15px">
 
 <div class="feature-icon">1</div>
 
 <div>
-<div class="feature-title">Invite a user</div>
+
+<div class="feature-title">
+Invite a user
+</div>
 
 <div class="feature-text">
 Share your personal Mini App referral link.
 </div>
+
 </div>
 
 </div>
@@ -726,11 +828,15 @@ Share your personal Mini App referral link.
 <div class="feature-icon">2</div>
 
 <div>
-<div class="feature-title">They deposit</div>
+
+<div class="feature-title">
+They deposit
+</div>
 
 <div class="feature-text">
 The invited user must make a confirmed deposit of at least 10 USDT.
 </div>
+
 </div>
 
 </div>
@@ -740,11 +846,15 @@ The invited user must make a confirmed deposit of at least 10 USDT.
 <div class="feature-icon">3</div>
 
 <div>
-<div class="feature-title">Referral becomes successful</div>
+
+<div class="feature-title">
+Referral becomes successful
+</div>
 
 <div class="feature-text">
 The referral is counted toward your 5-referral withdrawal requirement.
 </div>
+
 </div>
 
 </div>
@@ -756,21 +866,29 @@ The referral is counted toward your 5-referral withdrawal requirement.
 
 <section id="page-profile" class="page">
 
-<div class="section-title">Profile</div>
+<div class="section-title">
+Profile
+</div>
 
 <div class="card">
 
 <div class="profile-header">
 
-<div class="profile-avatar">👤</div>
+<div class="profile-avatar">
+👤
+</div>
 
 <div style="min-width:0">
 
-<div id="profileFirstName" class="profile-main-name">
+<div
+id="profileFirstName"
+class="profile-main-name">
 Telegram User
 </div>
 
-<div id="profileUsername" class="profile-username">
+<div
+id="profileUsername"
+class="profile-username">
 No username
 </div>
 
@@ -849,7 +967,9 @@ Your Referral Code
 Use your personal referral link to invite new users.
 </div>
 
-<label>Referral Code</label>
+<label>
+Referral Code
+</label>
 
 <div class="ref-code-box">
 
@@ -901,9 +1021,7 @@ USDT
 Points
 </div>
 
-<div
-class="stat-value"
-id="profilePoints">
+<div class="stat-value" id="profilePoints">
 0
 </div>
 
@@ -970,12 +1088,17 @@ Points Conversion
 </div>
 
 <div class="notice">
+
 Current conversion rate:
 <b class="green">1 Point = 1 USDT</b>.
+
 Only points actually present in your account can be converted.
+
 </div>
 
-<label>Points to Convert</label>
+<label>
+Points to Convert
+</label>
 
 <input
 id="convertPoints"
@@ -1020,7 +1143,9 @@ Refresh
 <div
 id="adminWithdrawals"
 style="margin-top:12px">
-<div class="empty">Loading...</div>
+<div class="empty">
+Loading...
+</div>
 </div>
 
 </div>
@@ -1036,40 +1161,65 @@ style="margin-top:12px">
 id="nav-home"
 class="nav-btn active"
 onclick="showPage('home')">
-<span class="nav-icon">🏠</span>
+
+<span class="nav-icon">
+🏠
+</span>
+
 Home
+
 </button>
 
 <button
 id="nav-deposit"
 class="nav-btn"
 onclick="showPage('deposit')">
-<span class="nav-icon">💰</span>
+
+<span class="nav-icon">
+💰
+</span>
+
 Deposit
+
 </button>
 
 <button
 id="nav-withdraw"
 class="nav-btn"
 onclick="showPage('withdraw')">
-<span class="nav-icon">↗️</span>
+
+<span class="nav-icon">
+↗️
+</span>
+
 Withdraw
+
 </button>
 
 <button
 id="nav-referral"
 class="nav-btn"
 onclick="showPage('referral')">
-<span class="nav-icon">👥</span>
+
+<span class="nav-icon">
+👥
+</span>
+
 Referral
+
 </button>
 
 <button
 id="nav-profile"
 class="nav-btn"
 onclick="showPage('profile')">
-<span class="nav-icon">👤</span>
+
+<span class="nav-icon">
+👤
+</span>
+
 Profile
+
 </button>
 
 </nav>
@@ -1110,6 +1260,7 @@ function telegramInitData(){
   }
 
   return tg.initData;
+
 }
 
 
@@ -1148,6 +1299,7 @@ function getTelegramUser(){
   }
 
   return null;
+
 }
 
 
@@ -1173,6 +1325,7 @@ function normalizeUsername(username){
   }
 
   return value;
+
 }
 
 
@@ -1183,7 +1336,9 @@ function normalizeUsername(username){
 function showToast(message){
 
   const el=
-    document.getElementById("toast");
+    document.getElementById(
+      "toast"
+    );
 
   el.textContent=
     message;
@@ -1483,12 +1638,16 @@ async function loadAccount(){
 
   try{
 
+    /*
+      IMPORTANT:
+      Backend /api/account uses GET.
+    */
+
     const data=
       await apiFetch(
         "/api/account",
         {
-          method:"POST",
-          body:JSON.stringify({})
+          method:"GET"
         }
       );
 
@@ -1516,7 +1675,9 @@ async function loadAccount(){
     currentUser.successfulReferrals=
       Number(
         data.successfulReferrals ??
+        currentUser.successfulReferralCount ??
         currentUser.successfulReferrals ??
+        currentUser.referralCount ??
         0
       );
 
@@ -1525,6 +1686,7 @@ async function loadAccount(){
       Number(
         data.totalInvited ??
         currentUser.totalInvited ??
+        currentUser.referralCount ??
         0
       );
 
@@ -1533,6 +1695,41 @@ async function loadAccount(){
       data.dailyReward ||
       currentUser.dailyReward ||
       null;
+
+
+    /*
+      Get the real Telegram profile directly
+      from Telegram WebApp data.
+    */
+
+    const tgUser=
+      getTelegramUser();
+
+
+    if(tgUser){
+
+      currentUser.telegramId=
+        tgUser.id ||
+        currentUser.telegramId ||
+        currentUser.telegram_id ||
+        "";
+
+      currentUser.username=
+        tgUser.username ||
+        currentUser.username ||
+        "";
+
+      currentUser.firstName=
+        tgUser.first_name ||
+        currentUser.firstName ||
+        "";
+
+      currentUser.lastName=
+        tgUser.last_name ||
+        currentUser.lastName ||
+        "";
+
+    }
 
 
     updateAccountUI();
@@ -1545,7 +1742,55 @@ async function loadAccount(){
 
   }catch(e){
 
-    console.error(e);
+    console.error(
+      "LOAD ACCOUNT ERROR:",
+      e
+    );
+
+
+    /*
+      Even if the backend request fails,
+      Telegram profile information can still
+      be displayed.
+    */
+
+    const tgUser=
+      getTelegramUser();
+
+
+    if(tgUser){
+
+      currentUser={
+        ...(currentUser || {}),
+
+        telegramId:
+          tgUser.id,
+
+        username:
+          tgUser.username || "",
+
+        firstName:
+          tgUser.first_name || "",
+
+        lastName:
+          tgUser.last_name || "",
+
+        balance:
+          Number(
+            currentUser?.balance || 0
+          ),
+
+        points:
+          Number(
+            currentUser?.points || 0
+          )
+
+      };
+
+
+      updateAccountUI();
+
+    }
 
 
     document.getElementById(
@@ -1589,22 +1834,20 @@ function updateAccountUI(){
   const refs=
     Number(
       currentUser.successfulReferrals ??
+      currentUser.successfulReferralCount ??
       currentUser.referrals ??
+      currentUser.referralCount ??
       0
     );
 
-
-  /* -------------------------------------------------------
-     REAL TELEGRAM USER
-  ------------------------------------------------------- */
 
   const tgUser=
     getTelegramUser();
 
 
-  /* -------------------------------------------------------
-     TELEGRAM ID
-  ------------------------------------------------------- */
+  /*
+    Telegram ID
+  */
 
   const telegramId=
     tgUser?.id ??
@@ -1614,11 +1857,9 @@ function updateAccountUI(){
     "";
 
 
-  /* -------------------------------------------------------
-     USERNAME
-
-     Telegram username has priority.
-  ------------------------------------------------------- */
+  /*
+    Username
+  */
 
   const telegramUsername=
     normalizeUsername(
@@ -1640,9 +1881,9 @@ function updateAccountUI(){
     "No username";
 
 
-  /* -------------------------------------------------------
-     FIRST NAME
-  ------------------------------------------------------- */
+  /*
+    First Name
+  */
 
   const firstName=
     tgUser?.first_name ||
@@ -1651,9 +1892,9 @@ function updateAccountUI(){
     "Telegram User";
 
 
-  /* -------------------------------------------------------
-     LAST NAME
-  ------------------------------------------------------- */
+  /*
+    Last Name
+  */
 
   const lastName=
     tgUser?.last_name ||
@@ -1662,9 +1903,9 @@ function updateAccountUI(){
     "";
 
 
-  /* -------------------------------------------------------
-     FULL NAME
-  ------------------------------------------------------- */
+  /*
+    Full Name
+  */
 
   const fullName=
     [firstName,lastName]
@@ -1674,9 +1915,9 @@ function updateAccountUI(){
     "Telegram User";
 
 
-  /* -------------------------------------------------------
-     REFERRAL CODE
-  ------------------------------------------------------- */
+  /*
+    Referral Code
+  */
 
   const referralCode=
     currentUser.referralCode ||
@@ -1687,9 +1928,9 @@ function updateAccountUI(){
     );
 
 
-  /* -------------------------------------------------------
-     HOME
-  ------------------------------------------------------- */
+  /*
+    HOME
+  */
 
   const balanceEl=
     document.getElementById(
@@ -1779,9 +2020,9 @@ function updateAccountUI(){
   }
 
 
-  /* -------------------------------------------------------
-     PROFILE HEADER
-  ------------------------------------------------------- */
+  /*
+    PROFILE HEADER
+  */
 
   const profileFirstName=
     document.getElementById(
@@ -1811,9 +2052,9 @@ function updateAccountUI(){
   }
 
 
-  /* -------------------------------------------------------
-     PROFILE DATA
-  ------------------------------------------------------- */
+  /*
+    PROFILE TELEGRAM ID
+  */
 
   const profileTelegramId=
     document.getElementById(
@@ -1829,6 +2070,10 @@ function updateAccountUI(){
   }
 
 
+  /*
+    PROFILE USERNAME
+  */
+
   const profileUsernameInfo=
     document.getElementById(
       "profileUsernameInfo"
@@ -1842,6 +2087,10 @@ function updateAccountUI(){
 
   }
 
+
+  /*
+    PROFILE FIRST NAME
+  */
 
   const profileFirstNameInfo=
     document.getElementById(
@@ -1857,6 +2106,10 @@ function updateAccountUI(){
   }
 
 
+  /*
+    PROFILE LAST NAME
+  */
+
   const profileLastNameInfo=
     document.getElementById(
       "profileLastNameInfo"
@@ -1870,6 +2123,10 @@ function updateAccountUI(){
 
   }
 
+
+  /*
+    PROFILE REFERRAL CODE
+  */
 
   const profileReferralCode=
     document.getElementById(
@@ -1885,9 +2142,9 @@ function updateAccountUI(){
   }
 
 
-  /* -------------------------------------------------------
-     BALANCE
-  ------------------------------------------------------- */
+  /*
+    BALANCE
+  */
 
   const profileBalance=
     document.getElementById(
@@ -1931,9 +2188,9 @@ function updateAccountUI(){
   }
 
 
-  /* -------------------------------------------------------
-     REFERRAL PROGRESS
-  ------------------------------------------------------- */
+  /*
+    REFERRAL PROGRESS
+  */
 
   const pct=
     Math.min(
@@ -1974,10 +2231,6 @@ function updateAccountUI(){
 
   }
 
-
-  /* -------------------------------------------------------
-     DEBUG
-  ------------------------------------------------------- */
 
   console.log(
     "BIG MONEY TELEGRAM USER",
@@ -2046,6 +2299,7 @@ async function loadReferral(){
       Number(
         data.successfulReferrals ??
         currentUser?.successfulReferrals ??
+        currentUser?.successfulReferralCount ??
         0
       );
 
@@ -2507,17 +2761,13 @@ function shareReferral(){
   }
 
 
-  const text=
-    encodeURIComponent(
-      "Join Big Money and start using the app: "+link
-    );
-
-
   const url=
     "https://t.me/share/url?url="+
     encodeURIComponent(link)+
     "&text="+
-    text;
+    encodeURIComponent(
+      "Join Big Money and start using the app."
+    );
 
 
   try{
@@ -2759,7 +3009,9 @@ async function requestWithdrawal(){
 
   const refs=
     Number(
-      currentUser?.successfulReferrals ?? 0
+      currentUser?.successfulReferrals ??
+      currentUser?.successfulReferralCount ??
+      0
     );
 
 
@@ -2879,6 +3131,10 @@ async function requestWithdrawal(){
 
 }
 
+
+/* =========================================================
+   WITHDRAWAL HISTORY
+========================================================= */
 
 async function loadWithdrawals(){
 
@@ -3625,10 +3881,6 @@ function renderTransactions(deposits){
 
 async function initialize(){
 
-  /*
-    Big Money must be opened from Telegram.
-  */
-
   if(
     !tg ||
     !tg.initData
@@ -3649,10 +3901,6 @@ async function initialize(){
 
   }
 
-
-  /*
-    Check Telegram user.
-  */
 
   const telegramUser=
     getTelegramUser();
@@ -3712,5 +3960,6 @@ document.addEventListener(
 </script>
 
 </div>
+
 </body>
-  </html>
+   </html>

@@ -414,7 +414,6 @@ input:focus{
     <div class="network">USDT · TRC20</div>
   </div>
 
-
   <!-- HOME -->
   <section id="page-home" class="page active">
 
@@ -427,16 +426,16 @@ input:focus{
       </div>
 
       <div class="small" id="welcomeText">
-        Welcome to Big Money
+        Connecting to Telegram...
       </div>
     </div>
-
 
     <div class="card reward-box">
 
       <div class="row">
         <div>
           <div class="small">Daily Reward</div>
+
           <div class="reward-amount">
             +<span id="rewardAmount">5</span> USDT
           </div>
@@ -444,6 +443,7 @@ input:focus{
 
         <div class="center">
           <div class="small">Status</div>
+
           <div id="rewardStatus" class="green">
             Checking...
           </div>
@@ -469,13 +469,13 @@ input:focus{
 
     </div>
 
-
     <div class="stat-grid">
 
       <div class="stat">
         <div class="stat-title">
           Total Deposited
         </div>
+
         <div class="stat-value green">
           <span id="totalDeposited">0.000000</span>
           USDT
@@ -486,13 +486,13 @@ input:focus{
         <div class="stat-title">
           Referrals
         </div>
+
         <div class="stat-value">
           <span id="referralCount">0</span>
         </div>
       </div>
 
     </div>
-
 
     <div class="card">
 
@@ -523,11 +523,11 @@ input:focus{
       <div class="notice">
         Minimum individual deposit:
         <strong>5 USDT</strong>.<br>
+
         Daily Reward becomes available after
         confirmed deposits reach
         <strong>10 USDT total</strong>.
       </div>
-
 
       <label class="label">
         Deposit Amount
@@ -540,7 +540,6 @@ input:focus{
         step="0.000001"
         placeholder="Minimum 5 USDT"
       >
-
 
       <div class="amount-grid">
 
@@ -574,11 +573,9 @@ input:focus{
 
       </div>
 
-
       <div class="small" style="margin-top:15px">
         Send USDT on TRON TRC20 only.
       </div>
-
 
       <div
         id="depositAddress"
@@ -587,14 +584,12 @@ input:focus{
         Loading deposit address...
       </div>
 
-
       <button
         class="btn btn-secondary"
         onclick="copyDepositAddress()"
       >
         Copy Address
       </button>
-
 
       <img
         id="depositQR"
@@ -603,7 +598,6 @@ input:focus{
         style="display:none"
       >
 
-
       <div class="notice">
         After sending USDT, wait until the
         transaction is confirmed on the TRON
@@ -611,7 +605,6 @@ input:focus{
       </div>
 
     </div>
-
 
     <div class="card">
 
@@ -758,11 +751,11 @@ input:focus{
         Profile
       </div>
 
-
       <div class="profile-row">
         <div class="profile-label">
           Username
         </div>
+
         <div
           id="profileUsername"
           class="profile-value"
@@ -771,11 +764,11 @@ input:focus{
         </div>
       </div>
 
-
       <div class="profile-row">
         <div class="profile-label">
           First Name
         </div>
+
         <div
           id="profileFirstName"
           class="profile-value"
@@ -784,11 +777,11 @@ input:focus{
         </div>
       </div>
 
-
       <div class="profile-row">
         <div class="profile-label">
           Last Name
         </div>
+
         <div
           id="profileLastName"
           class="profile-value"
@@ -797,11 +790,11 @@ input:focus{
         </div>
       </div>
 
-
       <div class="profile-row">
         <div class="profile-label">
           Telegram ID
         </div>
+
         <div
           id="profileTelegramId"
           class="profile-value"
@@ -810,11 +803,11 @@ input:focus{
         </div>
       </div>
 
-
       <div class="profile-row">
         <div class="profile-label">
           Referral Code
         </div>
+
         <div
           id="profileReferralCode"
           class="profile-value"
@@ -823,11 +816,11 @@ input:focus{
         </div>
       </div>
 
-
       <div class="profile-row">
         <div class="profile-label">
           Referral Link
         </div>
+
         <div
           id="profileReferralLink"
           class="profile-value"
@@ -835,7 +828,6 @@ input:focus{
           -
         </div>
       </div>
-
 
       <button
         class="btn btn-secondary"
@@ -846,7 +838,6 @@ input:focus{
 
     </div>
 
-
     <div class="card">
 
       <div class="section-title">
@@ -856,6 +847,7 @@ input:focus{
       <div class="stat-grid">
 
         <div class="stat">
+
           <div class="stat-title">
             Referrals
           </div>
@@ -865,10 +857,11 @@ input:focus{
               0
             </span>
           </div>
+
         </div>
 
-
         <div class="stat">
+
           <div class="stat-title">
             Points
           </div>
@@ -878,6 +871,7 @@ input:focus{
               0
             </span>
           </div>
+
         </div>
 
       </div>
@@ -908,7 +902,6 @@ input:focus{
     Home
   </button>
 
-
   <button
     id="nav-deposit"
     class="nav-btn"
@@ -917,7 +910,6 @@ input:focus{
     <span class="nav-icon">💰</span>
     Deposit
   </button>
-
 
   <button
     id="nav-send"
@@ -928,7 +920,6 @@ input:focus{
     Send
   </button>
 
-
   <button
     id="nav-withdraw"
     class="nav-btn"
@@ -937,7 +928,6 @@ input:focus{
     <span class="nav-icon">💸</span>
     Withdraw
   </button>
-
 
   <button
     id="nav-profile"
@@ -952,12 +942,14 @@ input:focus{
 
 
 <script>
+
 /* =========================================================
    BIG MONEY FRONTEND
 ========================================================= */
 
 const API =
   "https://big-money.onrender.com";
+
 
 const tg =
   window.Telegram &&
@@ -967,10 +959,10 @@ const tg =
 
 
 let config = {
-  minDeposit: 5,
-  qualifyingDeposit: 10,
-  dailyReward: 5,
-  botUsername: "bigmoney2026bot"
+  minDeposit:5,
+  qualifyingDeposit:10,
+  dailyReward:5,
+  botUsername:"bigmoney2026bot"
 };
 
 
@@ -984,37 +976,57 @@ let lastReferralLink = "";
    TELEGRAM INIT
 ========================================================= */
 
-function initTelegram() {
+function initTelegram(){
 
-  if (!tg) {
+  if(!tg){
+
+    showMessage(
+      "Please open Big Money inside Telegram.",
+      true
+    );
+
     return;
   }
 
-  try {
+  try{
+
     tg.ready();
     tg.expand();
 
-    if (tg.setHeaderColor) {
+    if(tg.setHeaderColor){
       tg.setHeaderColor("#06130c");
     }
 
-    if (tg.setBackgroundColor) {
+    if(tg.setBackgroundColor){
       tg.setBackgroundColor("#06130c");
     }
 
-  } catch (e) {
-    console.log(e);
+  }catch(e){
+
+    console.error(
+      "TELEGRAM INIT:",
+      e
+    );
+
   }
+
 }
 
 
-function getInitData() {
+/* =========================================================
+   GET TELEGRAM INIT DATA
+========================================================= */
 
-  if (
+function getInitData(){
+
+  if(
     tg &&
-    tg.initData
-  ) {
+    typeof tg.initData === "string" &&
+    tg.initData.length > 0
+  ){
+
     return tg.initData;
+
   }
 
   return "";
@@ -1027,10 +1039,10 @@ function getInitData() {
 
 async function apiRequest(
   endpoint,
-  options = {}
-) {
+  options={}
+){
 
-  const headers = {
+  const headers={
     "Content-Type":
       "application/json"
   };
@@ -1040,10 +1052,19 @@ async function apiRequest(
     getInitData();
 
 
-  if (initData) {
+  /*
+    VERY IMPORTANT:
+    Telegram authentication is sent
+    in this header.
+  */
+
+  if(initData){
+
     headers[
       "X-Telegram-Init-Data"
-    ] = initData;
+    ] =
+      initData;
+
   }
 
 
@@ -1052,8 +1073,10 @@ async function apiRequest(
       API + endpoint,
       {
         ...options,
-        headers: {
+
+        headers:{
           ...headers,
+
           ...(options.headers || {})
         }
       }
@@ -1064,31 +1087,40 @@ async function apiRequest(
     await response.text();
 
 
-  let data = null;
+  let data=null;
 
-  try {
+
+  try{
+
     data =
       text
         ? JSON.parse(text)
         : null;
-  } catch {
-    data = {
-      ok: false,
-      error: text || "Unknown server response"
+
+  }catch{
+
+    data={
+      ok:false,
+      error:
+        text ||
+        "Unknown server response"
     };
+
   }
 
 
-  if (!response.ok) {
+  if(!response.ok){
 
     throw new Error(
       data?.error ||
       `Server error ${response.status}`
     );
+
   }
 
 
   return data;
+
 }
 
 
@@ -1096,28 +1128,34 @@ async function apiRequest(
    MESSAGE
 ========================================================= */
 
-let messageTimer = null;
+let messageTimer=null;
 
 
 function showMessage(
   text,
-  isError = false
-) {
+  isError=false
+){
 
   const el =
     document.getElementById(
       "message"
     );
 
-  if (!el) return;
+
+  if(!el)return;
 
 
   el.textContent =
     text;
 
+
   el.className =
     "message" +
-    (isError ? " error" : "");
+    (
+      isError
+        ? " error"
+        : ""
+    );
 
 
   el.style.display =
@@ -1131,12 +1169,13 @@ function showMessage(
 
   messageTimer =
     setTimeout(
-      () => {
+      ()=>{
         el.style.display =
           "none";
       },
-      3500
+      5000
     );
+
 }
 
 
@@ -1144,9 +1183,7 @@ function showMessage(
    PAGE NAVIGATION
 ========================================================= */
 
-function showPage(
-  page
-) {
+function showPage(page){
 
   document
     .querySelectorAll(".page")
@@ -1164,10 +1201,12 @@ function showPage(
     );
 
 
-  if (target) {
+  if(target){
+
     target.classList.add(
       "active"
     );
+
   }
 
 
@@ -1187,10 +1226,12 @@ function showPage(
     );
 
 
-  if (nav) {
+  if(nav){
+
     nav.classList.add(
       "active"
     );
+
   }
 
 
@@ -1200,14 +1241,19 @@ function showPage(
   });
 
 
-  if (page === "profile") {
+  if(page==="profile"){
+
     loadProfile();
+
   }
 
 
-  if (page === "home") {
+  if(page==="home"){
+
     refreshAll();
+
   }
+
 }
 
 
@@ -1215,9 +1261,9 @@ function showPage(
    CONFIG
 ========================================================= */
 
-async function loadConfig() {
+async function loadConfig(){
 
-  try {
+  try{
 
     const data =
       await apiRequest(
@@ -1225,13 +1271,12 @@ async function loadConfig() {
       );
 
 
-    if (data?.ok) {
+    if(data?.ok){
 
-      config =
-        {
-          ...config,
-          ...data
-        };
+      config={
+        ...config,
+        ...data
+      };
 
 
       const amount =
@@ -1239,11 +1284,14 @@ async function loadConfig() {
           "rewardAmount"
         );
 
-      if (amount) {
+
+      if(amount){
+
         amount.textContent =
           Number(
             config.dailyReward || 5
           );
+
       }
 
 
@@ -1252,70 +1300,179 @@ async function loadConfig() {
           "depositAmount"
         );
 
-      if (depositInput) {
+
+      if(depositInput){
 
         depositInput.min =
           Number(
             config.minDeposit || 5
           );
 
+
         depositInput.placeholder =
-          `Minimum ${config.minDeposit || 5} USDT`;
+          `Minimum ${
+            config.minDeposit || 5
+          } USDT`;
+
       }
 
     }
 
-  } catch (error) {
+  }catch(error){
 
     console.error(
       "CONFIG:",
       error
     );
+
   }
+
 }
 
 
 /* =========================================================
-   LOAD ACCOUNT
+   LOAD ACCOUNT - FIXED
 ========================================================= */
 
-async function loadAccount() {
+async function loadAccount(){
 
-  try {
+  try{
+
+    const initData =
+      getInitData();
+
+
+    /*
+      Telegram initData is required.
+    */
+
+    if(!initData){
+
+      throw new Error(
+        "Telegram user data is not available. Please open Big Money from Telegram."
+      );
+
+    }
+
+
+    /*
+      IMPORTANT FIX:
+      Use POST /api/account
+      and send initData in body.
+      It is also sent in the
+      X-Telegram-Init-Data header
+      by apiRequest().
+    */
 
     const data =
       await apiRequest(
-        "/api/account"
+        "/api/account",
+        {
+          method:"POST",
+
+          body:
+            JSON.stringify({
+              initData:initData
+            })
+        }
       );
 
 
-    if (!data?.ok) {
+    console.log(
+      "ACCOUNT RESPONSE:",
+      data
+    );
+
+
+    if(!data?.ok){
+
       throw new Error(
         data?.error ||
         "Could not load account"
       );
+
     }
 
 
-    account =
-      data.account;
+    /*
+      Support all possible backend
+      response structures.
+    */
+
+    const serverAccount =
+      data.account ||
+      data.user ||
+      data;
+
+
+    const serverBalance =
+      data.balance ??
+      serverAccount.balance ??
+      0;
+
+
+    account={
+
+      ...serverAccount,
+
+      balance:
+        Number(
+          serverBalance || 0
+        ),
+
+      totalDeposited:
+        Number(
+          serverAccount.totalDeposited ??
+          data.totalDeposited ??
+          0
+        ),
+
+      referralCount:
+        Number(
+          serverAccount.referralCount ??
+          data.referralCount ??
+          0
+        ),
+
+      points:
+        Number(
+          serverAccount.points ??
+          data.points ??
+          0
+        ),
+
+      dailyReward:
+        serverAccount.dailyReward ||
+        data.dailyReward ||
+        null
+
+    };
+
+
+    console.log(
+      "FINAL ACCOUNT:",
+      account
+    );
 
 
     renderAccount();
 
 
-  } catch (error) {
+  }catch(error){
 
     console.error(
-      "ACCOUNT:",
+      "ACCOUNT LOAD ERROR:",
       error
     );
+
 
     showMessage(
       error.message,
       true
     );
+
   }
+
 }
 
 
@@ -1323,10 +1480,12 @@ async function loadAccount() {
    RENDER ACCOUNT
 ========================================================= */
 
-function renderAccount() {
+function renderAccount(){
 
-  if (!account) {
+  if(!account){
+
     return;
+
   }
 
 
@@ -1336,32 +1495,64 @@ function renderAccount() {
     );
 
 
-  document.getElementById(
-    "balance"
-  ).textContent =
-    balance.toFixed(6);
-
-
-  document.getElementById(
-    "withdrawBalance"
-  ).textContent =
-    balance.toFixed(6);
-
-
-  document.getElementById(
-    "totalDeposited"
-  ).textContent =
-    Number(
-      account.totalDeposited || 0
-    ).toFixed(6);
-
-
-  document.getElementById(
-    "referralCount"
-  ).textContent =
-    Number(
-      account.referralCount || 0
+  const balanceEl =
+    document.getElementById(
+      "balance"
     );
+
+
+  if(balanceEl){
+
+    balanceEl.textContent =
+      balance.toFixed(6);
+
+  }
+
+
+  const withdrawBalance =
+    document.getElementById(
+      "withdrawBalance"
+    );
+
+
+  if(withdrawBalance){
+
+    withdrawBalance.textContent =
+      balance.toFixed(6);
+
+  }
+
+
+  const totalDeposited =
+    document.getElementById(
+      "totalDeposited"
+    );
+
+
+  if(totalDeposited){
+
+    totalDeposited.textContent =
+      Number(
+        account.totalDeposited || 0
+      ).toFixed(6);
+
+  }
+
+
+  const referralCount =
+    document.getElementById(
+      "referralCount"
+    );
+
+
+  if(referralCount){
+
+    referralCount.textContent =
+      Number(
+        account.referralCount || 0
+      );
+
+  }
 
 
   const firstName =
@@ -1370,15 +1561,24 @@ function renderAccount() {
     "User";
 
 
-  document.getElementById(
-    "welcomeText"
-  ).textContent =
-    `Welcome, ${firstName}`;
+  const welcomeText =
+    document.getElementById(
+      "welcomeText"
+    );
+
+
+  if(welcomeText){
+
+    welcomeText.textContent =
+      `Welcome, ${firstName}`;
+
+  }
 
 
   renderReward(
     account.dailyReward
   );
+
 }
 
 
@@ -1386,12 +1586,12 @@ function renderAccount() {
    DAILY REWARD
 ========================================================= */
 
-function renderReward(
-  reward
-) {
+function renderReward(reward){
 
-  if (!reward) {
+  if(!reward){
+
     return;
+
   }
 
 
@@ -1400,15 +1600,18 @@ function renderReward(
       "rewardStatus"
     );
 
+
   const info =
     document.getElementById(
       "rewardInfo"
     );
 
+
   const button =
     document.getElementById(
       "claimRewardBtn"
     );
+
 
   const progress =
     document.getElementById(
@@ -1437,17 +1640,25 @@ function renderReward(
     );
 
 
-  progress.style.width =
-    percentage + "%";
+  if(progress){
+
+    progress.style.width =
+      percentage + "%";
+
+  }
 
 
-  if (!reward.qualified) {
+  if(!reward.qualified){
 
-    status.textContent =
-      "Locked";
+    if(status){
 
-    status.className =
-      "yellow";
+      status.textContent =
+        "Locked";
+
+      status.className =
+        "yellow";
+
+    }
 
 
     const remaining =
@@ -1455,55 +1666,93 @@ function renderReward(
         reward.remainingToQualify ||
         Math.max(
           0,
-          required - total
+          required-total
         )
       );
 
 
-    info.innerHTML =
-      `Deposit another <strong>${remaining.toFixed(6)} USDT</strong> ` +
-      `to reach ${required} USDT and unlock the daily reward.`;
+    if(info){
+
+      info.innerHTML =
+        `Deposit another <strong>${
+          remaining.toFixed(6)
+        } USDT</strong> to reach ${
+          required
+        } USDT and unlock the daily reward.`;
+
+    }
 
 
-    button.disabled =
-      true;
+    if(button){
 
-    button.textContent =
-      `Need ${remaining.toFixed(6)} USDT`;
+      button.disabled=true;
+
+      button.textContent =
+        `Need ${remaining.toFixed(6)} USDT`;
+
+    }
+
 
     return;
+
   }
 
 
-  if (reward.canClaim) {
+  if(reward.canClaim){
+
+    if(status){
+
+      status.textContent =
+        "Ready";
+
+      status.className =
+        "green";
+
+    }
+
+
+    if(info){
+
+      info.innerHTML =
+        `You have reached ${
+          required
+        } USDT in confirmed deposits. Your <strong>+${
+          Number(
+            config.dailyReward || 5
+          ).toFixed(2)
+        } USDT</strong> reward is ready.`;
+
+    }
+
+
+    if(button){
+
+      button.disabled=false;
+
+      button.textContent =
+        `Claim ${
+          Number(
+            config.dailyReward || 5
+          ).toFixed(2)
+        } USDT`;
+
+    }
+
+
+    return;
+
+  }
+
+
+  if(status){
 
     status.textContent =
-      "Ready";
+      "24H Cooldown";
 
     status.className =
-      "green";
+      "yellow";
 
-
-    info.innerHTML =
-      `You have reached ${required} USDT in confirmed deposits. ` +
-      `Your <strong>+${Number(config.dailyReward || 5).toFixed(2)} USDT</strong> reward is ready.`;
-
-
-    button.disabled =
-      false;
-
-    button.textContent =
-      `Claim ${Number(config.dailyReward || 5).toFixed(2)} USDT`;
-
-    return;
   }
-
-
-  status.textContent =
-    "24H Cooldown";
-
-  status.className =
-    "yellow";
 
 
   const seconds =
@@ -1512,16 +1761,27 @@ function renderReward(
     );
 
 
-  info.innerHTML =
-    `Next daily reward available in ` +
-    `<strong>${formatCountdown(seconds)}</strong>.`;
+  if(info){
+
+    info.innerHTML =
+      `Next daily reward available in <strong>${
+        formatCountdown(seconds)
+      }</strong>.`;
+
+  }
 
 
-  button.disabled =
-    true;
+  if(button){
 
-  button.textContent =
-    `Available in ${formatCountdown(seconds)}`;
+    button.disabled=true;
+
+    button.textContent =
+      `Available in ${
+        formatCountdown(seconds)
+      }`;
+
+  }
+
 }
 
 
@@ -1531,12 +1791,14 @@ function renderReward(
 
 function formatCountdown(
   totalSeconds
-) {
+){
 
   totalSeconds =
     Math.max(
       0,
-      Number(totalSeconds || 0)
+      Number(
+        totalSeconds || 0
+      )
     );
 
 
@@ -1556,13 +1818,14 @@ function formatCountdown(
     totalSeconds % 60;
 
 
-  return (
-    String(hours).padStart(2,"0") +
-    ":" +
-    String(minutes).padStart(2,"0") +
-    ":" +
+  return(
+    String(hours).padStart(2,"0")+
+    ":"+
+    String(minutes).padStart(2,"0")+
+    ":"+
     String(seconds).padStart(2,"0")
   );
+
 }
 
 
@@ -1571,46 +1834,49 @@ function formatCountdown(
 ========================================================= */
 
 setInterval(
-  () => {
+  ()=>{
 
-    if (
+    if(
       account &&
       account.dailyReward
-    ) {
+    ){
 
       const reward =
         account.dailyReward;
 
 
-      if (
+      if(
         reward.qualified &&
         !reward.canClaim &&
         Number(
           reward.secondsRemaining || 0
         ) > 0
-      ) {
+      ){
 
         reward.secondsRemaining =
           Math.max(
             0,
             Number(
               reward.secondsRemaining
-            ) - 1
+            )-1
           );
 
 
-        if (
-          reward.secondsRemaining <= 0
-        ) {
-          reward.canClaim =
-            true;
+        if(
+          reward.secondsRemaining<=0
+        ){
+
+          reward.canClaim=true;
+
         }
 
 
         renderReward(
           reward
         );
+
       }
+
     }
 
   },
@@ -1622,7 +1888,7 @@ setInterval(
    CLAIM REWARD
 ========================================================= */
 
-async function claimDailyReward() {
+async function claimDailyReward(){
 
   const button =
     document.getElementById(
@@ -1630,42 +1896,48 @@ async function claimDailyReward() {
     );
 
 
-  button.disabled =
-    true;
+  button.disabled=true;
 
   button.textContent =
     "Claiming...";
 
 
-  try {
+  try{
 
     const data =
       await apiRequest(
         "/api/daily-reward/claim",
         {
           method:"POST",
-          body:JSON.stringify({})
+          body:
+            JSON.stringify({})
         }
       );
 
 
-    if (!data?.ok) {
+    if(!data?.ok){
+
       throw new Error(
         data?.error ||
         "Could not claim reward"
       );
+
     }
 
 
     showMessage(
-      `🎉 +${Number(data.reward || 5).toFixed(2)} USDT added to your balance`
+      `🎉 +${
+        Number(
+          data.reward || 5
+        ).toFixed(2)
+      } USDT added to your balance`
     );
 
 
     await loadAccount();
 
 
-  } catch (error) {
+  }catch(error){
 
     showMessage(
       error.message,
@@ -1674,7 +1946,9 @@ async function claimDailyReward() {
 
 
     await loadAccount();
+
   }
+
 }
 
 
@@ -1685,12 +1959,20 @@ async function claimDailyReward() {
 function setAmount(
   amount,
   button
-) {
+){
 
-  document.getElementById(
-    "depositAmount"
-  ).value =
-    amount;
+  const input =
+    document.getElementById(
+      "depositAmount"
+    );
+
+
+  if(input){
+
+    input.value =
+      amount;
+
+  }
 
 
   document
@@ -1705,11 +1987,14 @@ function setAmount(
     );
 
 
-  if (button) {
+  if(button){
+
     button.classList.add(
       "active"
     );
+
   }
+
 }
 
 
@@ -1717,9 +2002,9 @@ function setAmount(
    LOAD DEPOSIT ADDRESS
 ========================================================= */
 
-async function loadDepositAddress() {
+async function loadDepositAddress(){
 
-  try {
+  try{
 
     const data =
       await apiRequest(
@@ -1727,10 +2012,10 @@ async function loadDepositAddress() {
       );
 
 
-    if (
+    if(
       data?.ok &&
       data.depositAddress
-    ) {
+    ){
 
       const address =
         data.depositAddress;
@@ -1751,21 +2036,25 @@ async function loadDepositAddress() {
       qr.src =
         "https://api.qrserver.com/v1/create-qr-code/" +
         "?size=220x220&data=" +
-        encodeURIComponent(address);
+        encodeURIComponent(
+          address
+        );
 
 
       qr.style.display =
         "block";
+
     }
 
-
-  } catch (error) {
+  }catch(error){
 
     console.error(
       "DEPOSIT ADDRESS:",
       error
     );
+
   }
+
 }
 
 
@@ -1773,7 +2062,7 @@ async function loadDepositAddress() {
    COPY DEPOSIT ADDRESS
 ========================================================= */
 
-async function copyDepositAddress() {
+async function copyDepositAddress(){
 
   const address =
     document.getElementById(
@@ -1781,10 +2070,10 @@ async function copyDepositAddress() {
     ).textContent.trim();
 
 
-  if (
+  if(
     !address ||
     address.includes("Loading")
-  ) {
+  ){
 
     showMessage(
       "Deposit address is not ready",
@@ -1792,26 +2081,31 @@ async function copyDepositAddress() {
     );
 
     return;
+
   }
 
 
-  try {
+  try{
 
     await navigator.clipboard.writeText(
       address
     );
 
+
     showMessage(
       "Deposit address copied"
     );
 
-  } catch {
+
+  }catch{
 
     showMessage(
       "Could not copy address",
       true
     );
+
   }
+
 }
 
 
@@ -1819,17 +2113,19 @@ async function copyDepositAddress() {
    VERIFY DEPOSIT
 ========================================================= */
 
-async function verifyDeposit() {
+async function verifyDeposit(){
 
   const input =
     document.getElementById(
       "txidInput"
     );
 
+
   const button =
     document.getElementById(
       "verifyBtn"
     );
+
 
   const result =
     document.getElementById(
@@ -1841,7 +2137,7 @@ async function verifyDeposit() {
     input.value.trim();
 
 
-  if (!txid) {
+  if(!txid){
 
     showMessage(
       "Please enter TXID",
@@ -1849,12 +2145,15 @@ async function verifyDeposit() {
     );
 
     return;
+
   }
 
 
-  if (
-    !/^[a-fA-F0-9]{64}$/.test(txid)
-  ) {
+  if(
+    !/^[a-fA-F0-9]{64}$/.test(
+      txid
+    )
+  ){
 
     showMessage(
       "TXID must be 64 hexadecimal characters",
@@ -1862,11 +2161,11 @@ async function verifyDeposit() {
     );
 
     return;
+
   }
 
 
-  button.disabled =
-    true;
+  button.disabled=true;
 
   button.textContent =
     "Checking Blockchain...";
@@ -1875,36 +2174,34 @@ async function verifyDeposit() {
   result.style.display =
     "block";
 
+
   result.textContent =
     "Checking confirmed TRON USDT transaction...";
 
 
-  try {
-
-    /*
-      IMPORTANT:
-      We send ONLY TXID.
-      Backend reads the REAL amount
-      directly from blockchain.
-    */
+  try{
 
     const data =
       await apiRequest(
         "/api/deposits/verify",
         {
           method:"POST",
-          body:JSON.stringify({
-            txid:txid
-          })
+
+          body:
+            JSON.stringify({
+              txid:txid
+            })
         }
       );
 
 
-    if (!data?.ok) {
+    if(!data?.ok){
+
       throw new Error(
         data?.error ||
         "Deposit verification failed"
       );
+
     }
 
 
@@ -1915,33 +2212,34 @@ async function verifyDeposit() {
 
 
     result.innerHTML =
-      `✅ Deposit confirmed!<br>` +
-      `<strong>Amount: ${amount.toFixed(6)} USDT</strong><br>` +
-      `Your new balance: ` +
-      `<strong>${Number(data.balance || 0).toFixed(6)} USDT</strong>`;
+      `✅ Deposit confirmed!<br>`+
+      `<strong>Amount: ${
+        amount.toFixed(6)
+      } USDT</strong><br>`+
+      `Your new balance: `+
+      `<strong>${
+        Number(
+          data.balance || 0
+        ).toFixed(6)
+      } USDT</strong>`;
 
 
     showMessage(
-      `Deposit confirmed: +${amount.toFixed(6)} USDT`
+      `Deposit confirmed: +${
+        amount.toFixed(6)
+      } USDT`
     );
 
 
-    input.value =
-      "";
+    input.value="";
 
-
-    /*
-      Refresh account immediately
-      so balance and Daily Reward
-      status update.
-    */
 
     await loadAccount();
 
     await loadTransactions();
 
 
-  } catch (error) {
+  }catch(error){
 
     console.error(
       "VERIFY DEPOSIT:",
@@ -1950,9 +2248,11 @@ async function verifyDeposit() {
 
 
     result.innerHTML =
-      `❌ ${escapeHtml(
-        error.message
-      )}`;
+      `❌ ${
+        escapeHtml(
+          error.message
+        )
+      }`;
 
 
     showMessage(
@@ -1960,14 +2260,16 @@ async function verifyDeposit() {
       true
     );
 
-  } finally {
 
-    button.disabled =
-      false;
+  }finally{
+
+    button.disabled=false;
 
     button.textContent =
       "Check & Credit Deposit";
+
   }
+
 }
 
 
@@ -1975,9 +2277,9 @@ async function verifyDeposit() {
    LOAD TRANSACTIONS
 ========================================================= */
 
-async function loadTransactions() {
+async function loadTransactions(){
 
-  try {
+  try{
 
     const data =
       await apiRequest(
@@ -1985,27 +2287,30 @@ async function loadTransactions() {
       );
 
 
-    if (
+    if(
       data?.ok &&
       Array.isArray(
         data.transactions
       )
-    ) {
+    ){
 
       transactions =
         data.transactions;
 
+
       renderTransactions();
+
     }
 
-
-  } catch (error) {
+  }catch(error){
 
     console.error(
       "TRANSACTIONS:",
       error
     );
+
   }
+
 }
 
 
@@ -2013,7 +2318,7 @@ async function loadTransactions() {
    RENDER TRANSACTIONS
 ========================================================= */
 
-function renderTransactions() {
+function renderTransactions(){
 
   const container =
     document.getElementById(
@@ -2021,9 +2326,9 @@ function renderTransactions() {
     );
 
 
-  if (
+  if(
     !transactions.length
-  ) {
+  ){
 
     container.innerHTML =
       `<div class="empty">
@@ -2031,6 +2336,7 @@ function renderTransactions() {
       </div>`;
 
     return;
+
   }
 
 
@@ -2038,10 +2344,10 @@ function renderTransactions() {
     transactions
       .slice(0,10)
       .map(
-        tx => {
+        tx=>{
 
           const isDeposit =
-            tx.type === "deposit";
+            tx.type==="deposit";
 
 
           const sign =
@@ -2068,14 +2374,21 @@ function renderTransactions() {
               <div class="row">
 
                 <div>
+
                   <div class="tx-amount">
-                    ${isDeposit ? "💰" : "💸"}
+                    ${
+                      isDeposit
+                        ? "💰"
+                        : "💸"
+                    }
+
                     ${sign}${amount} USDT
                   </div>
 
                   <div class="tx-status">
-                    ${status}
+                    ${escapeHtml(status)}
                   </div>
+
                 </div>
 
                 <div class="small">
@@ -2086,9 +2399,11 @@ function renderTransactions() {
 
             </div>
           `;
+
         }
       )
       .join("");
+
 }
 
 
@@ -2096,9 +2411,9 @@ function renderTransactions() {
    PROFILE
 ========================================================= */
 
-async function loadProfile() {
+async function loadProfile(){
 
-  try {
+  try{
 
     const data =
       await apiRequest(
@@ -2106,11 +2421,13 @@ async function loadProfile() {
       );
 
 
-    if (!data?.ok) {
+    if(!data?.ok){
+
       throw new Error(
         data?.error ||
         "Could not load profile"
       );
+
     }
 
 
@@ -2121,25 +2438,30 @@ async function loadProfile() {
     renderProfile();
 
 
-  } catch (error) {
+  }catch(error){
 
     console.error(
       "PROFILE:",
       error
     );
 
+
     showMessage(
       error.message,
       true
     );
+
   }
+
 }
 
 
-function renderProfile() {
+function renderProfile(){
 
-  if (!profile) {
+  if(!profile){
+
     return;
+
   }
 
 
@@ -2147,7 +2469,7 @@ function renderProfile() {
     "profileUsername"
   ).textContent =
     profile.username
-      ? "@" + profile.username
+      ? "@"+profile.username
       : "No username";
 
 
@@ -2205,6 +2527,7 @@ function renderProfile() {
   lastReferralLink =
     profile.referralLink ||
     "";
+
 }
 
 
@@ -2212,9 +2535,9 @@ function renderProfile() {
    COPY REFERRAL LINK
 ========================================================= */
 
-async function copyReferralLink() {
+async function copyReferralLink(){
 
-  if (!lastReferralLink) {
+  if(!lastReferralLink){
 
     showMessage(
       "Referral link is not ready",
@@ -2222,26 +2545,31 @@ async function copyReferralLink() {
     );
 
     return;
+
   }
 
 
-  try {
+  try{
 
     await navigator.clipboard.writeText(
       lastReferralLink
     );
 
+
     showMessage(
       "Referral link copied"
     );
 
-  } catch {
+
+  }catch{
 
     showMessage(
       "Could not copy referral link",
       true
     );
+
   }
+
 }
 
 
@@ -2249,7 +2577,7 @@ async function copyReferralLink() {
    WITHDRAW
 ========================================================= */
 
-async function requestWithdraw() {
+async function requestWithdraw(){
 
   const address =
     document.getElementById(
@@ -2265,7 +2593,7 @@ async function requestWithdraw() {
     );
 
 
-  if (!address) {
+  if(!address){
 
     showMessage(
       "Enter your TRON wallet address",
@@ -2273,13 +2601,14 @@ async function requestWithdraw() {
     );
 
     return;
+
   }
 
 
-  if (
+  if(
     !Number.isFinite(amount) ||
-    amount <= 0
-  ) {
+    amount<=0
+  ){
 
     showMessage(
       "Enter a valid withdrawal amount",
@@ -2287,29 +2616,34 @@ async function requestWithdraw() {
     );
 
     return;
+
   }
 
 
-  try {
+  try{
 
     const data =
       await apiRequest(
         "/api/withdrawals/request",
         {
           method:"POST",
-          body:JSON.stringify({
-            address,
-            amount
-          })
+
+          body:
+            JSON.stringify({
+              address,
+              amount
+            })
         }
       );
 
 
-    if (!data?.ok) {
+    if(!data?.ok){
+
       throw new Error(
         data?.error ||
         "Withdrawal request failed"
       );
+
     }
 
 
@@ -2320,25 +2654,28 @@ async function requestWithdraw() {
 
     document.getElementById(
       "withdrawAddress"
-    ).value = "";
+    ).value="";
 
 
     document.getElementById(
       "withdrawAmount"
-    ).value = "";
+    ).value="";
 
 
     await loadAccount();
+
     await loadTransactions();
 
 
-  } catch (error) {
+  }catch(error){
 
     showMessage(
       error.message,
       true
     );
+
   }
+
 }
 
 
@@ -2346,11 +2683,12 @@ async function requestWithdraw() {
    SEND DEMO
 ========================================================= */
 
-function demoSend() {
+function demoSend(){
 
   showMessage(
     "Send feature is not enabled yet"
   );
+
 }
 
 
@@ -2358,16 +2696,16 @@ function demoSend() {
    FORMAT DATE
 ========================================================= */
 
-function formatDate(
-  value
-) {
+function formatDate(value){
 
-  if (!value) {
+  if(!value){
+
     return "-";
+
   }
 
 
-  try {
+  try{
 
     const date =
       new Date(value);
@@ -2381,10 +2719,13 @@ function formatDate(
       }
     );
 
-  } catch {
+
+  }catch{
 
     return "-";
+
   }
+
 }
 
 
@@ -2392,9 +2733,7 @@ function formatDate(
    ESCAPE HTML
 ========================================================= */
 
-function escapeHtml(
-  value
-) {
+function escapeHtml(value){
 
   return String(value)
     .replace(
@@ -2417,6 +2756,7 @@ function escapeHtml(
       /'/g,
       "&#039;"
     );
+
 }
 
 
@@ -2424,23 +2764,26 @@ function escapeHtml(
    REFRESH EVERYTHING
 ========================================================= */
 
-async function refreshAll() {
+async function refreshAll(){
 
   await loadAccount();
 
   await loadTransactions();
 
-  if (!profile) {
+  if(!profile){
+
     await loadProfile();
+
   }
+
 }
 
 
 /* =========================================================
-   START
+   START APP
 ========================================================= */
 
-async function startApp() {
+async function startApp(){
 
   initTelegram();
 
@@ -2454,7 +2797,7 @@ async function startApp() {
 
 
 /* =========================================================
-   RUN
+   START
 ========================================================= */
 
 startApp();
@@ -2462,4 +2805,4 @@ startApp();
 </script>
 
 </body>
-  </html>
+          </html>

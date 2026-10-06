@@ -4142,8 +4142,4 @@ async function startServer() {
 }
 
 startServer();
-'''
 
-p = Path("/mnt/data/server.js")
-p.write_text(code, encoding="utf-8")
-print(f"Created {p} ({len(code.splitlines())} lines)")

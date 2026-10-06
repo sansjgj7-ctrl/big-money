@@ -114,10 +114,6 @@ function nowISO() {
   return new Date().toISOString();
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 function randomId(prefix) {
   return (
     prefix +
@@ -135,7 +131,7 @@ function normalizeAmount(value) {
     return 0;
   }
 
-  return Math.round(n * 1e6) / 1e6;
+  return Math.round(n * 1000000) / 1000000;
 }
 
 function rawToAmount(raw) {
@@ -158,22 +154,25 @@ function supabaseConfigured() {
 function supabaseHeaders() {
   return {
     apikey: SUPABASE_SECRET_KEY,
-    Authorization: `Bearer ${SUPABASE_SECRET_KEY}`,
+    Authorization:
+      `Bearer ${SUPABASE_SECRET_KEY}`,
     "Content-Type": "application/json",
     Accept: "application/json"
   };
 }
 
+/* =========================================================
+   LOCAL DATABASE
+   ========================================================= */
+
 async function loadLocalDatabase() {
   try {
-    await fs.promises.mkdir(DATA_DIR, {
-      recursive: true
-    });
+    await fs.promises.mkdir(
+      DATA_DIR,
+      { recursive: true }
+    );
 
-    const exists =
-      fs.existsSync(LOCAL_DB_FILE);
-
-    if (!exists) {
+    if (!fs.existsSync(LOCAL_DB_FILE)) {
       database = emptyDatabase();
 
       await fs.promises.writeFile(
@@ -197,6 +196,7 @@ async function loadLocalDatabase() {
       );
 
     return database;
+
   } catch (error) {
     console.error(
       "Local database load error:",
@@ -212,9 +212,7 @@ async function loadLocalDatabase() {
 async function saveLocalDatabase() {
   await fs.promises.mkdir(
     DATA_DIR,
-    {
-      recursive: true
-    }
+    { recursive: true }
   );
 
   const temp =
@@ -232,6 +230,10 @@ async function saveLocalDatabase() {
   );
 }
 
+/* =========================================================
+   SUPABASE
+   ========================================================= */
+
 async function supabaseGetDatabase() {
   if (!supabaseConfigured()) {
     throw new Error(
@@ -243,18 +245,11 @@ async function supabaseGetDatabase() {
     `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}` +
     `?id=eq.1&select=id,data,updated_at`;
 
-  let response;
-
-  try {
-    response = await fetch(url, {
+  const response =
+    await fetch(url, {
       method: "GET",
       headers: supabaseHeaders()
     });
-  } catch (error) {
-    throw new Error(
-      `Supabase GET connection failed: ${error.message}`
-    );
-  }
 
   if (!response.ok) {
     throw new Error(
@@ -285,10 +280,8 @@ async function supabaseSaveDatabase() {
   const url =
     `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`;
 
-  let response;
-
-  try {
-    response = await fetch(url, {
+  const response =
+    await fetch(url, {
       method: "POST",
       headers: {
         ...supabaseHeaders(),
@@ -301,11 +294,6 @@ async function supabaseSaveDatabase() {
         updated_at: nowISO()
       })
     });
-  } catch (error) {
-    throw new Error(
-      `Supabase SAVE connection failed: ${error.message}`
-    );
-  }
 
   if (!response.ok) {
     throw new Error(
@@ -341,7 +329,6 @@ async function initializeDatabase() {
     console.log(
       "Supabase persistence: DISABLED"
     );
-
     return;
   }
 
@@ -364,6 +351,7 @@ async function initializeDatabase() {
         "Big Money database created in Supabase."
       );
     }
+
   } catch (error) {
     console.error(
       "Supabase database load error:",
@@ -439,7 +427,9 @@ function telegramAuthValid(initData) {
   }
 
   const authDate =
-    Number(params.get("auth_date") || 0);
+    Number(
+      params.get("auth_date") || 0
+    );
 
   if (!authDate) {
     return false;
@@ -481,12 +471,55 @@ function getTelegramUserFromInitData(initData) {
   }
 }
 
+function getStartParam(initData) {
+  if (!initData) {
+    return "";
+  }
+
+  const params =
+    new URLSearchParams(initData);
+
+  return (
+    params.get("start_param") ||
+    params.get("startapp") ||
+    ""
+  );
+}
+
+function authMiddleware(req, res, next) {
+  const initData =
+    req.headers["x-telegram-init-data"] ||
+    "";
+
+  const user =
+    getTelegramUserFromInitData(
+      initData
+    );
+
+  if (
+    !user ||
+    !user.id
+  ) {
+    return res.status(401).json({
+      ok: false,
+      error:
+        "Telegram authentication required"
+    });
+  }
+
+  req.telegramUser = user;
+  req.initData = initData;
+
+  next();
+}
+
 /* =========================================================
-   TELEGRAM BOT API
-   این قسمت Username را مستقیماً از Telegram می‌گیرد
+   TELEGRAM PROFILE
    ========================================================= */
 
-async function getTelegramProfileFromBot(telegramId) {
+async function getTelegramProfileFromBot(
+  telegramId
+) {
   if (
     !TELEGRAM_BOT_TOKEN ||
     !telegramId
@@ -512,8 +545,7 @@ async function getTelegramProfileFromBot(telegramId) {
     if (!response.ok) {
       console.error(
         "Telegram getChat HTTP error:",
-        response.status,
-        await response.text()
+        response.status
       );
 
       return null;
@@ -526,15 +558,11 @@ async function getTelegramProfileFromBot(telegramId) {
       !result.ok ||
       !result.result
     ) {
-      console.error(
-        "Telegram getChat error:",
-        result
-      );
-
       return null;
     }
 
     return result.result;
+
   } catch (error) {
     console.error(
       "Telegram getChat failed:",
@@ -545,48 +573,8 @@ async function getTelegramProfileFromBot(telegramId) {
   }
 }
 
-function getStartParam(initData) {
-  if (!initData) {
-    return "";
-  }
-
-  const params =
-    new URLSearchParams(initData);
-
-  return (
-    params.get("start_param") ||
-    params.get("startapp") ||
-    ""
-  );
-}
-
-function authMiddleware(req, res, next) {
-  const initData =
-    req.headers["x-telegram-init-data"] ||
-    "";
-
-  const user =
-    getTelegramUserFromInitData(initData);
-
-  if (
-    !user ||
-    !user.id
-  ) {
-    return res.status(401).json({
-      ok: false,
-      error:
-        "Telegram authentication required"
-    });
-  }
-
-  req.telegramUser = user;
-  req.initData = initData;
-
-  next();
-}
-
 /* =========================================================
-   USER DATABASE
+   USERS
    ========================================================= */
 
 function getUser(userId) {
@@ -632,17 +620,10 @@ function getUser(userId) {
   return database.users[id];
 }
 
-/* =========================================================
-   UPDATE TELEGRAM USER
-   ========================================================= */
-
 async function updateTelegramUser(user) {
   const dbUser =
     getUser(user.id);
 
-  /*
-   * اطلاعات مستقیم Telegram WebApp
-   */
   let username =
     user.username || "";
 
@@ -652,10 +633,6 @@ async function updateTelegramUser(user) {
   let lastName =
     user.last_name || "";
 
-  /*
-   * اگر Username یا نام‌ها از initData موجود نبود،
-   * از Telegram Bot API دریافت می‌کنیم.
-   */
   if (
     !username ||
     !firstName ||
@@ -681,9 +658,6 @@ async function updateTelegramUser(user) {
     }
   }
 
-  /*
-   * ذخیره اطلاعات کاربر
-   */
   dbUser.telegramId =
     String(user.id);
 
@@ -753,7 +727,7 @@ function adminMiddleware(req, res, next) {
 }
 
 /* =========================================================
-   TRON
+   TRON / TRONGRID
    ========================================================= */
 
 function tronHeaders() {
@@ -785,10 +759,26 @@ async function tronGet(url) {
   return response.json();
 }
 
+/* =========================================================
+   GET CONFIRMED USDT TRANSFERS BY TXID
+   ========================================================= */
+
 async function getConfirmedUsdtTransfers(txid) {
+  const cleanTxid =
+    String(txid || "").trim();
+
+  if (!cleanTxid) {
+    return [];
+  }
+
   const url =
-    `${TRONGRID_URL}/v1/transactions/${txid}/events` +
+    `${TRONGRID_URL}/v1/transactions/${cleanTxid}/events` +
     `?only_confirmed=true&limit=200`;
+
+  console.log(
+    "Checking Tron transaction:",
+    cleanTxid
+  );
 
   const data =
     await tronGet(url);
@@ -802,16 +792,21 @@ async function getConfirmedUsdtTransfers(txid) {
     const contract =
       String(
         event.contract_address || ""
-      ).trim();
+      )
+        .trim()
+        .toLowerCase();
 
     const eventName =
       String(
         event.event_name || ""
-      ).trim();
+      )
+        .trim()
+        .toLowerCase();
 
     return (
-      contract === USDT_CONTRACT &&
-      eventName === "Transfer"
+      contract ===
+        USDT_CONTRACT.toLowerCase() &&
+      eventName === "transfer"
     );
   });
 }
@@ -845,9 +840,16 @@ function eventToTransfer(event) {
     from,
     to,
     rawValue: value,
-    amount: rawToAmount(value)
+    amount:
+      normalizeAmount(
+        rawToAmount(value)
+      )
   };
 }
+
+/* =========================================================
+   VERIFY TRANSACTION
+   ========================================================= */
 
 async function verifyTransaction(
   txid,
@@ -867,9 +869,23 @@ async function verifyTransaction(
       cleanTxid
     );
 
+  console.log(
+    "USDT events found:",
+    events.length
+  );
+
   for (const event of events) {
     const transfer =
       eventToTransfer(event);
+
+    if (!transfer.to) {
+      continue;
+    }
+
+    console.log(
+      "Transfer:",
+      transfer
+    );
 
     if (
       transfer.to.toLowerCase() !==
@@ -878,22 +894,30 @@ async function verifyTransaction(
       continue;
     }
 
-    if (
-      expectedAmount &&
-      Math.abs(
-        transfer.amount -
-        Number(expectedAmount)
-      ) > 0.000001
-    ) {
-      continue;
-    }
+    /*
+     * مبلغ واقعی از بلاکچین گرفته می‌شود.
+     *
+     * expectedAmount فقط برای اطلاعات است.
+     * بنابراین اگر کاربر 10 USDT یا 10.25 USDT
+     * فرستاده باشد، همان مبلغ واقعی ثبت می‌شود.
+     */
 
     return {
       confirmed: true,
-      txid: cleanTxid,
-      amount: transfer.amount,
-      from: transfer.from,
-      to: transfer.to
+
+      txid:
+        cleanTxid,
+
+      amount:
+        normalizeAmount(
+          transfer.amount
+        ),
+
+      from:
+        transfer.from,
+
+      to:
+        transfer.to
     };
   }
 
@@ -904,14 +928,16 @@ async function verifyTransaction(
 }
 
 /* =========================================================
-   DEPOSIT
+   DEPOSIT AMOUNT
    ========================================================= */
 
 function generateUniquePaymentAmount(
   baseAmount
 ) {
   const base =
-    normalizeAmount(baseAmount);
+    normalizeAmount(
+      baseAmount
+    );
 
   for (
     let i = 0;
@@ -937,7 +963,9 @@ function generateUniquePaymentAmount(
         d =>
           d.status === "pending" &&
           Math.abs(
-            Number(d.paymentAmount) -
+            Number(
+              d.paymentAmount
+            ) -
             amount
           ) < 0.000001
       );
@@ -952,36 +980,53 @@ function generateUniquePaymentAmount(
   );
 }
 
+/* =========================================================
+   PROCESS DEPOSIT
+   ========================================================= */
+
 async function processDeposit(
   deposit,
   transfer
 ) {
   if (
-    deposit.status !== "pending"
+    deposit.status ===
+    "confirmed"
   ) {
     return false;
   }
 
+  const actualAmount =
+    normalizeAmount(
+      transfer.amount
+    );
+
   if (
-    Math.abs(
-      Number(deposit.paymentAmount) -
-      Number(transfer.amount)
-    ) > 0.000001
+    actualAmount <= 0
   ) {
     return false;
   }
 
   const user =
-    getUser(deposit.userId);
+    getUser(
+      deposit.userId
+    );
 
   deposit.status =
     "confirmed";
 
   deposit.txid =
-    transfer.txid;
+    transfer.txid ||
+    deposit.txid;
 
   deposit.confirmedAmount =
-    transfer.amount;
+    actualAmount;
+
+  /*
+   * بسیار مهم:
+   * paymentAmount نیز مبلغ واقعی بلاکچین می‌شود.
+   */
+  deposit.paymentAmount =
+    actualAmount;
 
   deposit.confirmedAt =
     nowISO();
@@ -989,17 +1034,20 @@ async function processDeposit(
   user.balance =
     normalizeAmount(
       Number(user.balance) +
-      Number(transfer.amount)
+      actualAmount
     );
 
   user.totalDeposited =
     normalizeAmount(
       Number(user.totalDeposited) +
-      Number(transfer.amount)
+      actualAmount
     );
 
+  /*
+   * Daily Reward
+   */
   if (
-    Number(transfer.amount) >= 10
+    actualAmount >= 10
   ) {
     if (
       !deposit.qualifyingDeposit
@@ -1031,8 +1079,24 @@ async function processDeposit(
 
   await saveDatabase();
 
+  console.log(
+    "DEPOSIT CONFIRMED:",
+    {
+      userId:
+        user.id,
+      amount:
+        actualAmount,
+      txid:
+        deposit.txid
+    }
+  );
+
   return true;
 }
+
+/* =========================================================
+   SUCCESSFUL REFERRAL
+   ========================================================= */
 
 async function processSuccessfulReferral(
   user
@@ -1073,7 +1137,8 @@ async function processSuccessfulReferral(
     reward:
       REFERRAL_REWARD,
 
-    successful: true,
+    successful:
+      true,
 
     createdAt:
       nowISO()
@@ -1081,7 +1146,8 @@ async function processSuccessfulReferral(
 
   inviter.successfulReferralCount =
     Number(
-      inviter.successfulReferralCount || 0
+      inviter.successfulReferralCount ||
+      0
     ) + 1;
 
   if (
@@ -1103,12 +1169,18 @@ async function processSuccessfulReferral(
   await saveDatabase();
 }
 
+/* =========================================================
+   REFERRAL
+   ========================================================= */
+
 async function processReferral(
   user,
   startParam
 ) {
   const code =
-    String(startParam || "").trim();
+    String(
+      startParam || ""
+    ).trim();
 
   if (
     !code.startsWith("ref_")
@@ -1156,13 +1228,18 @@ async function processReferral(
   await saveDatabase();
 }
 
+/* =========================================================
+   BACKGROUND DEPOSIT SCANNER
+   ========================================================= */
+
 async function scanPendingDeposits() {
   const pending =
     Object.values(
       database.deposits
     ).filter(
       d =>
-        d.status === "pending"
+        d.status === "pending" &&
+        d.txid
     );
 
   if (!pending.length) {
@@ -1173,42 +1250,29 @@ async function scanPendingDeposits() {
     const deposit of pending
   ) {
     try {
-      const events =
-        await getConfirmedUsdtTransfers(
-          deposit.txid || ""
+      const verified =
+        await verifyTransaction(
+          deposit.txid
         );
 
-      if (deposit.txid) {
-        for (
-          const event of events
-        ) {
-          const transfer =
-            eventToTransfer(
-              event
-            );
-
-          transfer.txid =
-            deposit.txid;
-
-          if (
-            transfer.to.toLowerCase() ===
-              DEPOSIT_ADDRESS.toLowerCase() &&
-            Math.abs(
-              transfer.amount -
-              Number(
-                deposit.paymentAmount
-              )
-            ) <= 0.000001
-          ) {
-            await processDeposit(
-              deposit,
-              transfer
-            );
-
-            break;
-          }
-        }
+      if (
+        !verified.confirmed
+      ) {
+        continue;
       }
+
+      if (
+        verified.to.toLowerCase() !==
+        DEPOSIT_ADDRESS.toLowerCase()
+      ) {
+        continue;
+      }
+
+      await processDeposit(
+        deposit,
+        verified
+      );
+
     } catch (error) {
       console.error(
         "Deposit scanner error:",
@@ -1224,27 +1288,28 @@ async function scanPendingDeposits() {
 
 app.use(
   cors({
-    origin: function (
-      origin,
-      callback
-    ) {
-      if (
-        !origin ||
-        ALLOWED_ORIGIN === "*" ||
-        origin === ALLOWED_ORIGIN
+    origin:
+      function (
+        origin,
+        callback
       ) {
-        return callback(
-          null,
-          true
-        );
-      }
+        if (
+          !origin ||
+          ALLOWED_ORIGIN === "*" ||
+          origin === ALLOWED_ORIGIN
+        ) {
+          return callback(
+            null,
+            true
+          );
+        }
 
-      return callback(
-        new Error(
-          "CORS blocked"
-        )
-      );
-    },
+        return callback(
+          new Error(
+            "CORS blocked"
+          )
+        );
+      },
 
     allowedHeaders: [
       "Content-Type",
@@ -1287,10 +1352,12 @@ app.get(
   (req, res) => {
     res.json({
       ok: true,
-      name: "Big Money Backend",
-      network: "TRON TRC20",
+      name:
+        "Big Money Backend",
+      network:
+        "TRON TRC20",
       version:
-        "profile-username-v3"
+        "deposit-txid-v4"
     });
   }
 );
@@ -1410,7 +1477,8 @@ app.get(
 
           successfulReferralCount:
             Number(
-              user.successfulReferralCount || 0
+              user.successfulReferralCount ||
+              0
             ),
 
           totalDeposited:
@@ -1424,6 +1492,7 @@ app.get(
             )
         }
       });
+
     } catch (error) {
       console.error(
         "/api/account error:",
@@ -1432,7 +1501,8 @@ app.get(
 
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
@@ -1497,10 +1567,12 @@ app.get(
             user.totalWithdrawn
         }
       });
+
     } catch (error) {
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
@@ -1546,10 +1618,12 @@ app.get(
 
         referrals
       });
+
     } catch (error) {
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
@@ -1599,7 +1673,8 @@ app.post(
         requestedAmount:
           amount,
 
-        paymentAmount,
+        paymentAmount:
+          paymentAmount,
 
         address:
           DEPOSIT_ADDRESS,
@@ -1630,10 +1705,12 @@ app.post(
         ok: true,
         deposit
       });
+
     } catch (error) {
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
@@ -1678,7 +1755,8 @@ app.post(
             d =>
               String(
                 d.txid || ""
-              ) === txid
+              ).toLowerCase() ===
+              txid.toLowerCase()
           );
       }
 
@@ -1710,6 +1788,12 @@ app.post(
         return res.json({
           ok: true,
           confirmed: true,
+          amount:
+            Number(
+              deposit.confirmedAmount ||
+              deposit.paymentAmount ||
+              0
+            ),
           deposit
         });
       }
@@ -1724,8 +1808,7 @@ app.post(
 
       const verified =
         await verifyTransaction(
-          txid,
-          deposit.paymentAmount
+          txid
         );
 
       if (
@@ -1734,7 +1817,9 @@ app.post(
         return res.json({
           ok: true,
           confirmed: false,
-          deposit
+          deposit,
+          message:
+            "Transaction not found or not confirmed yet."
         });
       }
 
@@ -1748,20 +1833,35 @@ app.post(
 
       res.json({
         ok: true,
-        confirmed: true,
+
+        confirmed:
+          true,
+
+        amount:
+          Number(
+            verified.amount
+          ),
+
         deposit
       });
+
     } catch (error) {
+      console.error(
+        "/api/deposits/check error:",
+        error
+      );
+
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
 );
 
 /* =========================================================
-   DEPOSIT VERIFY
+   DEPOSIT VERIFY BY TXID
    ========================================================= */
 
 app.post(
@@ -1774,11 +1874,6 @@ app.post(
           req.body.txid || ""
         ).trim();
 
-      const amount =
-        normalizeAmount(
-          req.body.amount
-        );
-
       if (!txid) {
         return res.status(400).json({
           ok: false,
@@ -1787,20 +1882,70 @@ app.post(
         });
       }
 
-      if (
-        amount < MIN_DEPOSIT
-      ) {
-        return res.status(400).json({
-          ok: false,
-          error:
-            "Invalid amount"
-        });
+      console.log(
+        "VERIFY DEPOSIT:",
+        txid
+      );
+
+      /*
+       * اگر TXID قبلاً ثبت شده باشد
+       */
+      const existing =
+        Object.values(
+          database.deposits
+        ).find(
+          d =>
+            String(
+              d.txid || ""
+            ).toLowerCase() ===
+            txid.toLowerCase()
+        );
+
+      if (existing) {
+        if (
+          String(existing.userId) !==
+          String(
+            req.telegramUser.id
+          )
+        ) {
+          return res.status(403).json({
+            ok: false,
+            error:
+              "This transaction belongs to another account"
+          });
+        }
+
+        if (
+          existing.status ===
+          "confirmed"
+        ) {
+          return res.json({
+            ok: true,
+
+            confirmed:
+              true,
+
+            amount:
+              Number(
+                existing.confirmedAmount ||
+                existing.paymentAmount ||
+                0
+              ),
+
+            txid,
+
+            deposit:
+              existing
+          });
+        }
       }
 
+      /*
+       * بررسی مستقیم TXID در TronGrid
+       */
       const result =
         await verifyTransaction(
-          txid,
-          amount
+          txid
         );
 
       if (
@@ -1808,70 +1953,149 @@ app.post(
       ) {
         return res.json({
           ok: true,
-          confirmed: false,
+
+          confirmed:
+            false,
+
+          txid,
+
           message:
-            "Transaction not found or not confirmed yet."
+            "Transaction not found, not a USDT transfer to the deposit address, or not confirmed yet."
         });
       }
 
+      /*
+       * بررسی حداقل مبلغ
+       */
+      if (
+        Number(result.amount) <
+        Number(MIN_DEPOSIT)
+      ) {
+        return res.json({
+          ok: true,
+
+          confirmed:
+            false,
+
+          txid,
+
+          amount:
+            Number(result.amount),
+
+          message:
+            `Deposit amount is below the minimum of ${MIN_DEPOSIT} USDT.`
+        });
+      }
+
+      /*
+       * کاربر فعلی
+       */
       const user =
         getUser(
           req.telegramUser.id
         );
 
-      const existing =
+      /*
+       * پیدا کردن Deposit pending
+       */
+      let deposit =
         Object.values(
           database.deposits
         ).find(
           d =>
-            d.txid === txid &&
-            d.status ===
-            "confirmed"
+            String(d.userId) ===
+            String(user.id) &&
+            d.status === "pending"
         );
 
-      if (existing) {
-        return res.json({
-          ok: true,
-          confirmed: true,
-          deposit: existing
+      /*
+       * اگر Deposit pending نبود،
+       * یکی جدید می‌سازیم.
+       */
+      if (!deposit) {
+        deposit = {
+          id:
+            randomId("dep"),
+
+          userId:
+            String(user.id),
+
+          requestedAmount:
+            Number(
+              result.amount
+            ),
+
+          paymentAmount:
+            Number(
+              result.amount
+            ),
+
+          address:
+            DEPOSIT_ADDRESS,
+
+          status:
+            "pending",
+
+          txid:
+            txid,
+
+          createdAt:
+            nowISO(),
+
+          confirmedAt:
+            null,
+
+          confirmedAmount:
+            0
+        };
+
+        database.deposits[
+          deposit.id
+        ] = deposit;
+
+      } else {
+        deposit.txid =
+          txid;
+
+        /*
+         * مبلغ واقعی بلاکچین
+         */
+        deposit.paymentAmount =
+          Number(
+            result.amount
+          );
+      }
+
+      /*
+       * جلوگیری از ثبت یک TXID
+       * برای دو کاربر
+       */
+      const txAlreadyUsed =
+        Object.values(
+          database.deposits
+        ).find(
+          d =>
+            d.id !== deposit.id &&
+            String(
+              d.txid || ""
+            ).toLowerCase() ===
+            txid.toLowerCase() &&
+            d.status === "confirmed"
+        );
+
+      if (txAlreadyUsed) {
+        return res.status(400).json({
+          ok: false,
+          error:
+            "This transaction has already been credited."
         });
       }
 
-      const deposit = {
-        id:
-          randomId("dep"),
+      await saveDatabase();
 
-        userId:
-          String(user.id),
-
-        requestedAmount:
-          amount,
-
-        paymentAmount:
-          result.amount,
-
-        address:
-          DEPOSIT_ADDRESS,
-
-        status:
-          "pending",
-
-        txid,
-
-        createdAt:
-          nowISO(),
-
-        confirmedAt:
-          null,
-
-        confirmedAmount:
-          0
-      };
-
-      database.deposits[
-        deposit.id
-      ] = deposit;
-
+      /*
+       * اعتباردهی مبلغ واقعی
+       */
       await processDeposit(
         deposit,
         result
@@ -1879,13 +2103,30 @@ app.post(
 
       res.json({
         ok: true,
-        confirmed: true,
+
+        confirmed:
+          true,
+
+        amount:
+          Number(
+            result.amount
+          ),
+
+        txid,
+
         deposit
       });
+
     } catch (error) {
+      console.error(
+        "/api/deposits/verify error:",
+        error
+      );
+
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
@@ -2040,10 +2281,12 @@ app.post(
         ok: true,
         withdrawal
       });
+
     } catch (error) {
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
@@ -2151,10 +2394,12 @@ app.post(
         ok: true,
         withdrawal
       });
+
     } catch (error) {
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
@@ -2184,9 +2429,9 @@ app.post(
 
       if (
         withdrawal.status !==
-        "pending" &&
+          "pending" &&
         withdrawal.status !==
-        "approved"
+          "approved"
       ) {
         return res.status(400).json({
           ok: false,
@@ -2218,10 +2463,12 @@ app.post(
         ok: true,
         withdrawal
       });
+
     } catch (error) {
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
@@ -2269,8 +2516,12 @@ app.post(
 
       user.totalWithdrawn =
         normalizeAmount(
-          Number(user.totalWithdrawn) +
-          Number(withdrawal.amount)
+          Number(
+            user.totalWithdrawn
+          ) +
+          Number(
+            withdrawal.amount
+          )
         );
 
       withdrawal.status =
@@ -2288,10 +2539,12 @@ app.post(
         ok: true,
         withdrawal
       });
+
     } catch (error) {
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
@@ -2328,7 +2581,9 @@ app.post(
       }
 
       const user =
-        getUser(telegramId);
+        getUser(
+          telegramId
+        );
 
       user.balance =
         normalizeAmount(
@@ -2342,10 +2597,12 @@ app.post(
         ok: true,
         user
       });
+
     } catch (error) {
       res.status(500).json({
         ok: false,
-        error: error.message
+        error:
+          error.message
       });
     }
   }
@@ -2359,7 +2616,8 @@ app.use(
   (req, res) => {
     res.status(404).json({
       ok: false,
-      error: "Not found"
+      error:
+        "Not found"
     });
   }
 );
@@ -2373,6 +2631,14 @@ async function startServer() {
     await initializeDatabase();
 
     console.log(
+      "================================="
+    );
+
+    console.log(
+      "Big Money Backend"
+    );
+
+    console.log(
       "Deposit address:",
       DEPOSIT_ADDRESS
     );
@@ -2383,19 +2649,42 @@ async function startServer() {
     );
 
     console.log(
-      `Daily reward: ${DAILY_REWARD} USDT every 24 hours`
+      "Minimum deposit:",
+      MIN_DEPOSIT
     );
 
     console.log(
-      `Required successful referrals: ${REQUIRED_REFERRALS}`
+      "Minimum withdrawal:",
+      MIN_WITHDRAWAL
     );
 
     console.log(
-      "Telegram username backend lookup: ENABLED"
+      "Daily reward:",
+      DAILY_REWARD
     );
 
     console.log(
-      "Big Money API starting..."
+      "Required successful referrals:",
+      REQUIRED_REFERRALS
+    );
+
+    console.log(
+      "TRON deposit verification: ENABLED"
+    );
+
+    console.log(
+      "TXID amount detection: ENABLED"
+    );
+
+    console.log(
+      "Supabase:",
+      supabaseConfigured()
+        ? "ENABLED"
+        : "DISABLED"
+    );
+
+    console.log(
+      "================================="
     );
 
     app.listen(
@@ -2409,16 +2698,13 @@ async function startServer() {
         console.log(
           "Network: TRON TRC20"
         );
-
-        console.log(
-          "Supabase persistence:",
-          supabaseConfigured()
-            ? "ENABLED"
-            : "DISABLED"
-        );
       }
     );
 
+    /*
+     * هر 15 ثانیه Deposit های pending
+     * که TXID دارند بررسی می‌شوند.
+     */
     setInterval(
       async () => {
         try {
@@ -2432,6 +2718,7 @@ async function startServer() {
       },
       15000
     );
+
   } catch (error) {
     console.error(
       "Startup error:",

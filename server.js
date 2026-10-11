@@ -284,6 +284,37 @@ function migrateUser(user) {
   }
 
   /*
+     Enable daily rewards for legacy users who already
+     have a confirmed qualifying deposit of 10 USDT or more.
+     Keep existing balances and reward timestamps unchanged.
+  */
+  const legacyDeposits = [
+    ...(Array.isArray(user.deposits) ? user.deposits : []),
+    ...(Array.isArray(db.deposits) ? db.deposits : []).filter(
+      deposit =>
+        normalizeTelegramId(deposit.telegramUserId) ===
+        normalizeTelegramId(user.telegramUserId)
+    )
+  ];
+
+  const hasLegacyQualifyingDeposit =
+    legacyDeposits.some(
+      deposit =>
+        deposit &&
+        deposit.status === "confirmed" &&
+        Number(deposit.amount) >= QUALIFYING_DEPOSIT
+    );
+
+  if (hasLegacyQualifyingDeposit) {
+    user.dailyRewardEligible = true;
+
+    if (!user.qualifiedAt) {
+      user.qualifiedAt =
+        user.createdAt || nowISO();
+    }
+  }
+
+  /*
      IMPORTANT:
      This is used for the exact 24-hour daily reward system.
   */

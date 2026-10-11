@@ -1952,6 +1952,44 @@ app.post(
 );
 
 /* =========================================================
+   DAILY REWARD STATUS
+========================================================= */
+
+app.get(
+  "/api/daily-reward/status",
+  telegramAuth,
+  (req, res) => {
+    try {
+      const user = ensureUser(req.telegramUser);
+      const status = getDailyRewardStatus(user);
+
+      return res.json({
+        ok: true,
+        amount: DAILY_REWARD_USDT,
+        eligible: status.eligible,
+        canClaim: status.canClaim,
+        lastRewardAt: status.lastRewardAt,
+        nextRewardAt: status.nextRewardAt,
+        remainingSeconds: status.remainingSeconds,
+        balance: roundNumber(user.balance),
+        message: !status.eligible
+          ? "A confirmed deposit of at least 10 USDT is required."
+          : status.canClaim
+            ? "Your daily reward is ready to claim."
+            : "Your next daily reward is not ready yet."
+      });
+    } catch (error) {
+      console.error("Daily reward status error:", error);
+
+      return res.status(500).json({
+        ok: false,
+        error: "Failed to load daily reward status."
+      });
+    }
+  }
+);
+
+/* =========================================================
    DAILY REWARD CLAIM
 ========================================================= */
 

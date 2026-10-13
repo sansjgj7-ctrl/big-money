@@ -225,113 +225,106 @@ function findUser(telegramUserId) {
 function migrateUser(user) {
   if (!user) return user;
 
-  if (!Array.isArray(user.referrals)) {
-    user.referrals = [];
-  }
+  if (!Array.isArray(user.referrals)) user.referrals = [];
+  if (!Array.isArray(user.dailyRewards)) user.dailyRewards = [];
+  if (!Array.isArray(user.pointConversions)) user.pointConversions = [];
+  if (!Array.isArray(user.transactions)) user.transactions = [];
+  if (!Array.isArray(user.deposits)) user.deposits = [];
+  if (!Array.isArray(user.withdrawals)) user.withdrawals = [];
 
-  if (!Array.isArray(user.dailyRewards)) {
-    user.dailyRewards = [];
-  }
-
-  if (!Array.isArray(user.pointConversions)) {
-    user.pointConversions = [];
-  }
-
-  if (!Array.isArray(user.transactions)) {
-    user.transactions = [];
-  }
-
-  if (!Array.isArray(user.deposits)) {
-    user.deposits = [];
-  }
-
-  if (!Array.isArray(user.withdrawals)) {
-    user.withdrawals = [];
-  }
-
-  if (typeof user.balance !== "number") {
-    user.balance = safeNumber(user.balance);
-  }
-
-  if (typeof user.points !== "number") {
-    user.points = safeNumber(user.points);
-  }
+  user.balance = safeNumber(user.balance);
+  user.points = safeNumber(user.points);
 
   if (typeof user.totalInvited !== "number") {
     user.totalInvited = user.referrals.length;
   }
 
   if (typeof user.successfulReferrals !== "number") {
-    user.successfulReferrals = user.referrals.filter(
-      x => x && x.successful
-    ).length;
+    user.successfulReferrals =
+      user.referrals.filter(x => x && x.successful).length;
   }
 
-  if (!("referredBy" in user)) {
-    user.referredBy = null;
-  }
-
+  if (!("referredBy" in user)) user.referredBy = null;
   if (!("dailyRewardEligible" in user)) {
     user.dailyRewardEligible = false;
   }
-
-  if (!("qualifiedAt" in user)) {
-    user.qualifiedAt = null;
-  }
-
+  if (!("qualifiedAt" in user)) user.qualifiedAt = null;
   if (!("lastQualifyingDeposit" in user)) {
     user.lastQualifyingDeposit = 0;
   }
 
-  /*
-     Enable daily rewards for legacy users who already
-     have a confirmed qualifying deposit of 10 USDT or more.
-     Keep existing balances and reward timestamps unchanged.
-  */
-  const legacyDeposits = [
-    ...(Array.isArray(user.deposits) ? user.deposits : []),
-    ...(Array.isArray(db.deposits) ? db.deposits : []).filter(
-      deposit =>
-        normalizeTelegramId(deposit.telegramUserId) ===
-        normalizeTelegramId(user.telegramUserId)
+  if (!("createdAt" in user)) user.createdAt = nowISO();
+  if (!("updatedAt" in user)) user.updatedAt = nowISO();
+
+  const userId = normalizeTelegramId(user.telegramUserId);
+
+  // Combine this user's history with the global deposit history.
+  const deposits = [
+    ...user.deposits,
+    ...db.deposits.filter(
+      d => normalizeTelegramId(d.telegramUserId) === userId
     )
   ];
 
-  const hasLegacyQualifyingDeposit =
-    legacyDeposits.some(
-      deposit =>
-        deposit &&
-        deposit.status === "confirmed" &&
-        Number(deposit.amount) >= QUALIFYING_DEPOSIT
-    );
+  // These records are written by the existing server only after
+  // blockchain verification succeeds.
+  const verifiedTransactions = db.usedTransactions.filter(
+    t => normalizeTelegramId(t.telegramUserId) === userId
+  );
 
-  if (hasLegacyQualifyingDeposit) {
+  const confirmedDepositExists = deposits.some(d => {
+    if (!d) return false;
+
+    const status = String(d.status || "").toLowerCase();
+
+    return (
+      status === "confirmed" &&
+      Number(d.amount) >= QUALIFYING_DEPOSIT
+    );
+  });
+
+  const verifiedTransactionExists = verifiedTransactions.some(t => {
+    return (
+      t &&
+      Number(t.amount) >= QUALIFYING_DEPOSIT &&
+      isValidTxid(t.txid)
+    );
+  });
+
+  // Preserve existing eligibility and enable qualifying legacy users.
+  if (confirmedDepositExists || verifiedTransactionExists) {
     user.dailyRewardEligible = true;
 
     if (!user.qualifiedAt) {
+      const qualifyingDeposit = deposits.find(d =>
+        d &&
+        String(d.status || "").toLowerCase() === "confirmed" &&
+        Number(d.amount) >= QUALIFYING_DEPOSIT
+      );
+
       user.qualifiedAt =
-        user.createdAt || nowISO();
+        qualifyingDeposit?.createdAt ||
+        user.createdAt ||
+        nowISO();
     }
   }
 
-  /*
-     IMPORTANT:
-     This is used for the exact 24-hour daily reward system.
-  */
-  if (!("lastDailyRewardAt" in user)) {
-    user.lastDailyRewardAt = null;
-  }
+  // Preserve the 24-hour restriction using the existing reward history.
+  if (!("lastDailyRewardAt" in user) || !user.lastDailyRewardAt) {
+    const previousRewards = user.dailyRewards
+      .map(item => {
+        if (typeof item === "string") return item;
+        return item?.createdAt || item?.claimedAt || null;
+      })
+      .filter(value => value && Number.isFinite(Date.parse(value)))
+      .sort((a, b) => Date.parse(b) - Date.parse(a));
 
-  if (!("createdAt" in user)) {
-    user.createdAt = nowISO();
-  }
-
-  if (!("updatedAt" in user)) {
-    user.updatedAt = nowISO();
+    user.lastDailyRewardAt = previousRewards[0] || null;
   }
 
   return user;
 }
+
 
 function migrateAllUsers() {
   for (const user of db.users) {

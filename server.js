@@ -225,12 +225,29 @@ function findUser(telegramUserId) {
 function migrateUser(user) {
   if (!user) return user;
 
-  if (!Array.isArray(user.referrals)) user.referrals = [];
-  if (!Array.isArray(user.dailyRewards)) user.dailyRewards = [];
-  if (!Array.isArray(user.pointConversions)) user.pointConversions = [];
-  if (!Array.isArray(user.transactions)) user.transactions = [];
-  if (!Array.isArray(user.deposits)) user.deposits = [];
-  if (!Array.isArray(user.withdrawals)) user.withdrawals = [];
+  if (!Array.isArray(user.referrals)) {
+    user.referrals = [];
+  }
+
+  if (!Array.isArray(user.dailyRewards)) {
+    user.dailyRewards = [];
+  }
+
+  if (!Array.isArray(user.pointConversions)) {
+    user.pointConversions = [];
+  }
+
+  if (!Array.isArray(user.transactions)) {
+    user.transactions = [];
+  }
+
+  if (!Array.isArray(user.deposits)) {
+    user.deposits = [];
+  }
+
+  if (!Array.isArray(user.withdrawals)) {
+    user.withdrawals = [];
+  }
 
   user.balance = safeNumber(user.balance);
   user.points = safeNumber(user.points);
@@ -240,90 +257,125 @@ function migrateUser(user) {
   }
 
   if (typeof user.successfulReferrals !== "number") {
-    user.successfulReferrals =
-      user.referrals.filter(x => x && x.successful).length;
+    user.successfulReferrals = user.referrals.filter(
+      item => item && item.successful === true
+    ).length;
   }
 
-  if (!("referredBy" in user)) user.referredBy = null;
+  if (!("referredBy" in user)) {
+    user.referredBy = null;
+  }
+
   if (!("dailyRewardEligible" in user)) {
     user.dailyRewardEligible = false;
   }
-  if (!("qualifiedAt" in user)) user.qualifiedAt = null;
+
+  if (!("qualifiedAt" in user)) {
+    user.qualifiedAt = null;
+  }
+
   if (!("lastQualifyingDeposit" in user)) {
     user.lastQualifyingDeposit = 0;
   }
 
-  if (!("createdAt" in user)) user.createdAt = nowISO();
-  if (!("updatedAt" in user)) user.updatedAt = nowISO();
+  if (!("lastDailyRewardAt" in user)) {
+    user.lastDailyRewardAt = null;
+  }
 
-  const userId = normalizeTelegramId(user.telegramUserId);
+  if (!user.createdAt) {
+    user.createdAt = nowISO();
+  }
 
-  // Combine this user's history with the global deposit history.
-  const deposits = [
+  if (!user.updatedAt) {
+    user.updatedAt = nowISO();
+  }
+
+  const userId = normalizeTelegramId(
+    user.telegramUserId
+  );
+
+  // Collect deposits associated with this user.
+  const userDeposits = [
     ...user.deposits,
-    ...db.deposits.filter(
-      d => normalizeTelegramId(d.telegramUserId) === userId
+    ...db.deposits.filter(deposit =>
+      normalizeTelegramId(deposit.telegramUserId) ===
+      userId
     )
   ];
 
-  // These records are written by the existing server only after
-  // blockchain verification succeeds.
-  const verifiedTransactions = db.usedTransactions.filter(
-    t => normalizeTelegramId(t.telegramUserId) === userId
+  // Find a qualifying confirmed deposit.
+  const qualifyingDeposit = userDeposits.find(
+    deposit =>
+      deposit &&
+      String(deposit.status || "").toLowerCase() ===
+        "confirmed" &&
+      safeNumber(deposit.amount) >= QUALIFYING_DEPOSIT
   );
 
-  const confirmedDepositExists = deposits.some(d => {
-    if (!d) return false;
-
-    const status = String(d.status || "").toLowerCase();
-
-    return (
-      status === "confirmed" &&
-      Number(d.amount) >= QUALIFYING_DEPOSIT
+  // Older verified transactions may exist only here.
+  const qualifyingUsedTransaction =
+    db.usedTransactions.find(
+      transaction =>
+        transaction &&
+        normalizeTelegramId(transaction.telegramUserId) ===
+          userId &&
+        safeNumber(transaction.amount) >=
+          QUALIFYING_DEPOSIT &&
+        isValidTxid(transaction.txid)
     );
-  });
 
-  const verifiedTransactionExists = verifiedTransactions.some(t => {
-    return (
-      t &&
-      Number(t.amount) >= QUALIFYING_DEPOSIT &&
-      isValidTxid(t.txid)
-    );
-  });
-
-  // Preserve existing eligibility and enable qualifying legacy users.
-  if (confirmedDepositExists || verifiedTransactionExists) {
+  // Enable eligibility for users with qualifying history.
+  if (qualifyingDeposit || qualifyingUsedTransaction) {
     user.dailyRewardEligible = true;
 
     if (!user.qualifiedAt) {
-      const qualifyingDeposit = deposits.find(d =>
-        d &&
-        String(d.status || "").toLowerCase() === "confirmed" &&
-        Number(d.amount) >= QUALIFYING_DEPOSIT
-      );
-
       user.qualifiedAt =
         qualifyingDeposit?.createdAt ||
-        user.createdAt ||
-        nowISO();
+        qualifyingUsedTransaction?.createdAt ||
+        user.createdAt;
     }
   }
 
-  // Preserve the 24-hour restriction using the existing reward history.
-  if (!("lastDailyRewardAt" in user) || !user.lastDailyRewardAt) {
-    const previousRewards = user.dailyRewards
-      .map(item => {
-        if (typeof item === "string") return item;
-        return item?.createdAt || item?.claimedAt || null;
-      })
-      .filter(value => value && Number.isFinite(Date.parse(value)))
-      .sort((a, b) => Date.parse(b) - Date.parse(a));
+  /*
+   * Restore the last reward timestamp from history
+   * only when the saved timestamp is missing or invalid.
+   * This prevents an old user from claiming twice
+   * within the same 24-hour period.
+   */
+  const savedTimestamp = user.lastDailyRewardAt
+    ? new Date(user.lastDailyRewardAt).getTime()
+    : NaN;
 
-    user.lastDailyRewardAt = previousRewards[0] || null;
+  if (!Number.isFinite(savedTimestamp)) {
+    const rewardTimes = user.dailyRewards
+      .map(reward => {
+        if (typeof reward === "string") {
+          return reward;
+        }
+
+        if (reward && typeof reward === "object") {
+          return reward.claimedAt || reward.createdAt || null;
+        }
+
+        return null;
+      })
+      .filter(Boolean)
+      .map(value => ({
+        value,
+        time: new Date(value).getTime()
+      }))
+      .filter(item => Number.isFinite(item.time))
+      .sort((a, b) => b.time - a.time);
+
+    user.lastDailyRewardAt =
+      rewardTimes.length > 0
+        ? new Date(rewardTimes[0].time).toISOString()
+        : null;
   }
 
   return user;
 }
+
 
 
 function migrateAllUsers() {

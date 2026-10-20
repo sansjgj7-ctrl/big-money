@@ -861,6 +861,7 @@ function getDailyRewardStatus(user) {
    APPLY DAILY REWARD
 ========================================================= */
 
+
 function applyDailyReward(user) {
   if (!user) {
     return {
@@ -871,6 +872,84 @@ function applyDailyReward(user) {
       remainingSeconds: null
     };
   }
+
+  migrateUser(user);
+
+  // Daily reward is available to every user.
+  // No deposit or eligibility requirement.
+  user.dailyRewardEligible = true;
+
+  const now = Date.now();
+  const last = user.lastDailyRewardAt
+    ? new Date(user.lastDailyRewardAt).getTime()
+    : 0;
+
+  if (
+    Number.isFinite(last) &&
+    last > 0 &&
+    now - last < DAILY_REWARD_INTERVAL_MS
+  ) {
+    const next = last + DAILY_REWARD_INTERVAL_MS;
+
+    return {
+      awarded: false,
+      amount: 0,
+      reason: "You can claim your next reward after 24 hours.",
+      nextRewardAt: new Date(next).toISOString(),
+      remainingSeconds: Math.ceil(
+        Math.max(0, next - now) / 1000
+      )
+    };
+  }
+
+  // Add the reward to the user's balance.
+  user.balance = roundNumber(
+    safeNumber(user.balance) + DAILY_REWARD_USDT
+  );
+
+  const rewardTime = new Date(now).toISOString();
+
+  user.lastDailyRewardAt = rewardTime;
+
+  if (!Array.isArray(user.dailyRewards)) {
+    user.dailyRewards = [];
+  }
+
+  user.dailyRewards.push({
+    amount: DAILY_REWARD_USDT,
+    claimedAt: rewardTime
+  });
+
+  if (!Array.isArray(user.transactions)) {
+    user.transactions = [];
+  }
+
+  user.transactions.unshift({
+    type: "daily_reward",
+    amount: DAILY_REWARD_USDT,
+    status: "completed",
+    createdAt: rewardTime
+  });
+
+  user.updatedAt = rewardTime;
+
+  saveDatabase();
+
+  const next = now + DAILY_REWARD_INTERVAL_MS;
+
+  console.log(
+    `Daily reward claimed: user=${user.telegramUserId}, amount=${DAILY_REWARD_USDT} USDT`
+  );
+
+  return {
+    awarded: true,
+    amount: DAILY_REWARD_USDT,
+    reason: "Daily reward successfully added.",
+    nextRewardAt: new Date(next).toISOString(),
+    remainingSeconds: 24 * 60 * 60
+  };
+}
+
 
   migrateUser(user);
 

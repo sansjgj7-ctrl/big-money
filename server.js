@@ -266,9 +266,9 @@ function migrateUser(user) {
     user.referredBy = null;
   }
 
-  if (!("dailyRewardEligible" in user)) {
-    user.dailyRewardEligible = false;
-  }
+  // Daily reward is available to every user.
+// A deposit is not required to claim daily rewards.
+user.dailyRewardEligible = true;
 
   if (!("qualifiedAt" in user)) {
     user.qualifiedAt = null;

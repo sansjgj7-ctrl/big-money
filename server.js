@@ -217,7 +217,48 @@ function findUser(telegramUserId) {
       normalizeTelegramId(user.telegramUserId) === id
   );
 }
+function hasQualifyingDeposit(user) {
+  if (!user) return false;
 
+  const userId = normalizeTelegramId(
+    user.telegramUserId
+  );
+
+  const userDeposits = [
+    ...(Array.isArray(user.deposits)
+      ? user.deposits
+      : []),
+    ...(Array.isArray(db.deposits)
+      ? db.deposits.filter(deposit =>
+          normalizeTelegramId(
+            deposit.telegramUserId
+          ) === userId
+        )
+      : [])
+  ];
+
+  const confirmedDeposit = userDeposits.some(
+    deposit =>
+      deposit &&
+      String(deposit.status || "").toLowerCase() ===
+        "confirmed" &&
+      safeNumber(deposit.amount) >= QUALIFYING_DEPOSIT
+  );
+
+  const verifiedTransaction =
+    Array.isArray(db.usedTransactions) &&
+    db.usedTransactions.some(transaction =>
+      transaction &&
+      normalizeTelegramId(
+        transaction.telegramUserId
+      ) === userId &&
+      safeNumber(transaction.amount) >=
+        QUALIFYING_DEPOSIT &&
+      isValidTxid(transaction.txid)
+    );
+
+  return confirmedDeposit || verifiedTransaction;
+}
 /* =========================================================
    USER MIGRATION
 ========================================================= */

@@ -976,7 +976,7 @@ function ensureUser(telegramUser) {
 
       dailyRewards: [],
 
-      dailyRewardEligible: false,
+      dailyRewardEligible: true,
 
       qualifiedAt: null,
 

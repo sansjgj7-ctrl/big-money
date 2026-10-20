@@ -2246,7 +2246,13 @@ app.post(
 
       user.successfulReferrals =
         successful;
-
+if (!hasQualifyingDeposit(user)) {
+  return res.status(403).json({
+    ok: false,
+    error:
+      "You must first make a confirmed deposit of at least 10 USDT before withdrawing."
+  });
+       }
       /*
          Must have 5 successful referrals.
       */

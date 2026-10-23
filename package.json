@@ -13,5 +13,6 @@
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "tronweb": "^6.0.4"
+    "@supabase/supabase-js": "^2.56.0"
   }
 }
